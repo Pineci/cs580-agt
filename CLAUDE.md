@@ -76,12 +76,17 @@ in the vault.
 ## Lean proofs
 
 - **Setup and checking.** `./setup_lean.sh` sets everything up once.
-  `lean/check.sh` builds the project and reports open targets, leaks and
-  non-standard axioms. Run it after every Lean change, and report its
-  summary rather than claiming a result is "proved".
-- **Workflow.** New results start in `lean/DatingAlgo/Targets.lean`, stated with
-  `sorry`. Once proved, move them to the right file. `check.sh` must show no
-  leaks, meaning no `sorry` dependence outside `Targets.lean`.
+  `lean/check.sh` builds the project and reports open results, results that
+  depend on open ones, and non-standard axioms. Run it after every Lean
+  change, and report its summary rather than claiming a result is "proved".
+- **Single files.** `lake env lean File.lean` ignores the lakefile's
+  `autoImplicit := false`. Check single files with
+  `lake env lean -DautoImplicit=false -DrelaxedAutoImplicit=false File.lean`;
+  `lake build` is the ground truth. Parallel provers must not run
+  `lake build` at the same time.
+- **Workflow.** New results start as statements closed with `sorry`, in the
+  file where they belong or in `lean/DatingAlgo/Targets.lean`. The status
+  table in `lean/README.md` records what is proved, open, or refuted.
 - **Faithfulness.** Statements must match the math in the vault, especially
   `vault/notes/Match Quality in the Dating Heuristic Framework.md`. Docstrings
   name the result they formalize. Never weaken a statement just to make it

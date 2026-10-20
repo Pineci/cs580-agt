@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Builds the Lean project and reports what is and isn't fully proved.
-# Usage: lean/check.sh           build, then list open targets (exits 0 if the build succeeds)
-#        lean/check.sh --strict  also fail if anything depends on sorry or a non-standard axiom
+# Usage: lean/check.sh           build, then list open results (exits 0 if the build succeeds
+#                                and no non-standard axioms are used)
+#        lean/check.sh --strict  also fail if anything is open or depends on an open result
 set -euo pipefail
 cd "$(dirname "$0")"
 [ -x "$HOME/.elan/bin/lake" ] && export PATH="$HOME/.elan/bin:$PATH"
@@ -15,28 +16,31 @@ lake build
 
 echo
 echo "== Axiom check (scripts/AxiomCheck.lean)"
-out=$(lake env lean scripts/AxiomCheck.lean)
+if ! out=$(lake env lean scripts/AxiomCheck.lean 2>&1); then
+  echo "$out"
+  echo "The axiom check itself failed to run."
+  exit 1
+fi
 checked=$(echo "$out" | awk '/^CHECKED/ {print $2}')
-targets=$(echo "$out" | awk '/^SORRY/ && $3 == "DatingAlgo.Targets" {print "  " $2}')
-leaks=$(echo "$out" | awk '/^SORRY/ && $3 != "DatingAlgo.Targets" {print "  " $2 " (" $3 ")"}')
+open=$(echo "$out" | awk '/^OPEN/ {print "  " $2 "  (" $3 ")"}')
+depends=$(echo "$out" | awk '/^DEPENDS/ {print "  " $2 "  (" $3 ")"}')
 axioms=$(echo "$out" | awk '/^AXIOM/ {$1=""; print " " $0}')
 count() { [ -z "$1" ] && echo 0 || echo "$1" | wc -l | tr -d ' '; }
+n_open=$(count "$open"); n_dep=$(count "$depends")
 
-echo "Checked ${checked:-0} declarations."
-echo "Open targets (sorry in Targets.lean): $(count "$targets")"
-[ -n "$targets" ] && echo "$targets"
-if [ -n "$leaks" ]; then
-  echo "WARNING: these declarations outside Targets.lean depend on sorry:"
-  echo "$leaks"
-fi
+echo "Checked ${checked:-0} theorems: $((${checked:-0} - n_open - n_dep)) fully proved,"
+echo "$n_open open (contain sorry), $n_dep proved but depending on an open result."
+[ -n "$open" ] && { echo; echo "Open:"; echo "$open"; }
+[ -n "$depends" ] && { echo; echo "Depending on an open result:"; echo "$depends"; }
 if [ -n "$axioms" ]; then
-  echo "WARNING: these declarations use non-standard axioms:"
+  echo
+  echo "ERROR: these declarations use non-standard axioms:"
   echo "$axioms"
+  exit 1
 fi
-[ -z "$leaks" ] && [ -z "$axioms" ] && echo "Everything outside Targets.lean is fully proved."
 
-if [ "$strict" = 1 ] && { [ -n "$targets" ] || [ -n "$leaks" ] || [ -n "$axioms" ]; }; then
-  echo "--strict: failing because something is not fully proved."
+if [ "$strict" = 1 ] && [ $((n_open + n_dep)) -gt 0 ]; then
+  echo "--strict: failing because some results are not fully proved."
   exit 1
 fi
 exit 0

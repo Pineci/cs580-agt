@@ -1,8 +1,10 @@
 # Lean proofs
 
-Machine-checked versions of the project's results, in Lean 4 with Mathlib. The math
-these files formalize is in the vault note
-`vault/notes/Match Quality in the Dating Heuristic Framework.md`.
+Machine-checked versions of Rios & Torrico's dating-heuristic results and of the
+project's own match-quality results, in Lean 4 with Mathlib.
+- The math is in the vault notes `vault/sources/Rios 2026 - The Dating Heuristic.md` and
+  `vault/notes/Match Quality in the Dating Heuristic Framework.md`.
+- `lean/check.sh` reports the current status.
 
 ## Setup
 
@@ -26,52 +28,100 @@ Both are gitignored.
 ## Day to day
 
 ```bash
-lean/check.sh            # build, then list open targets
+lean/check.sh            # build, then report what is proved
 lean/check.sh --strict   # also fail unless everything is fully proved
 ```
 
 `check.sh` runs `lake build`, then `scripts/AxiomCheck.lean`. That script asks Lean
-which axioms every declaration depends on and reports:
-- **open targets:** theorems in `DatingAlgo/Targets.lean`, still closed with `sorry`;
-- **leaks:** any declaration *outside* `Targets.lean` that depends on `sorry`, even
-  indirectly, for example by using an open target;
-- **non-standard axioms:** anything beyond `propext`, `Classical.choice` and `Quot.sound`.
+which axioms every theorem depends on and reports:
+- **open:** the theorem's own proof contains `sorry`;
+- **depending on an open result:** no `sorry` of its own, but it relies on one,
+  possibly indirectly;
+- **non-standard axioms:** anything beyond `propext`, `Classical.choice` and
+  `Quot.sound`. This makes the check fail.
 
-A file can look finished and still rely on an open target. That's why the check uses
-axioms rather than grepping for `sorry`.
+**Check single files with the build's options.** `lake env lean File.lean` ignores the
+`autoImplicit := false` setting in `lakefile.toml`, so a file can pass it and still
+fail `lake build`. To check one file, use
+`lake env lean -DautoImplicit=false -DrelaxedAutoImplicit=false File.lean`.
+`lake build` (or `check.sh`) is the ground truth.
+
+## Status
+
+Current count: 197 theorems, 195 fully proved, 1 open, 1 depending on it.
+
+### Rios & Torrico's results
+
+| Paper result | File | Status |
+| --- | --- | --- |
+| **Theorem 4.3**: DH-int is a $(1-1/e)$-approximation (two periods, every design) | `TwoPeriod.lean` (`dhInt_approx`), `Designs.lean` (`dhInt_approx_market`) | proved |
+| Correlation-gap step of Thm 4.3 (Agrawal et al. 2010, for weighted top-K) | `CorrelationGap.lean` (`topK_correlation_gap`) | proved from scratch |
+| Lemma C.5 (DH-int's program bounds OPT) | `TwoPeriod.lean` | proved |
+| Lemma 4.1 (`f` monotone submodular) | `TopK.lean`, `Submodularity.lean` | proved |
+| Lemma C.2 (`M²` monotone submodular) | `Submodularity.lean` | proved |
+| Proposition 3.4 (`f` not submodular with period-2 mutual views) | `NonSubmodular.lean` | proved (smaller instance than the paper's) |
+| Proposition D.1 (local greedy can be $O(1/n)$-bad) | `Baselines.lean` | proved |
+| Lemma E.5, §E.1 (designs as partition matroids) | `Designs.lean` | proved |
+| **Theorem 5.4** ($T$ periods, one-directional) | `MultiPeriod.lean` | **refuted**: proved counterexample, ratio 0.50 < 0.632 |
+| **Theorem 5.3** ($T$ periods, DHT) | — | **refuted** by brute force (`data/scripts/thm53_counterexample.py`), not yet in Lean |
+| Lemmas C.3, C.4 | — | not needed: our direct correlation-gap proof replaces them |
+| Thm 4.4, Props E.1/E.6/E.10/E.12 | — | not formalized: they apply cited algorithms (continuous greedy, local search, dependent rounding) to the structure above |
+| Lemma E.9, E.11; Thm E.13; Prop D.2; Lemma 5.2, F.2; Prop B.2; Lemma B.1 | — | not formalized |
+
+### Match-quality results (vault note)
+
+| Result | File | Status |
+| --- | --- | --- |
+| R1: sharper constant $c_K$ for DH-int | `Targets.lean` (`dhInt_approx_cK`) | proved, *conditional on* the open key lemma |
+| R1 key lemma: $\mathbb E\min(X,K)\ge c_K\min(\mu,K)$ | `Targets.lean` (`poissonBinomial_min_ge`) | **open**. Needs a Poisson / convex-order argument; the $1-1/e$ version is proved |
+| $c_K \ge 1-1/e$ | `CorrelationGap.lean` | proved |
+| R2: quality-weighted DH-int keeps $1-1/e$ | `TwoPeriod.lean` (`dhInt_quality_approx`) | proved |
+| R3: no quality guarantee for DH-int as written; trade-off; mixing | `QualityBounds.lean` | proved |
+| R4: additive optimum loses $(K+1)/2$ in best-match quality ($k=1$) | `QualityTopK.lean` | proved |
+| R5: top-1 algorithm | — | open mathematically |
 
 ## Layout
 
 | File | Contents |
 | --- | --- |
-| `DatingAlgo/Basic.lean` | `cK k = 1 - e^{-k} k^k / k!`; `indepExp`, the expectation over independent coin flips, done as a finite sum with no measure theory |
-| `DatingAlgo/QualityBounds.lean` | R3: the quality guarantee from a bounded quality range, the count–quality trade-off instance, and the mixing guarantee |
-| `DatingAlgo/TopK.lean` | weighted top-K, the period-2 value of a responder: monotone, non-negative, and equal to the plain sum when the backlog fits |
-| `DatingAlgo/Targets.lean` | open targets, stated with `sorry` |
+| `DatingAlgo/Basic.lean` | `cK`; `indepExp`, the expectation over independent coin flips as a finite sum |
+| `DatingAlgo/IndepExp.lean` | linearity, marginals, generating function, conditioning, monotonicity in the ground set |
+| `DatingAlgo/TopK.lean` | weighted top-K: recursion, concavity in the cap, submodularity |
+| `DatingAlgo/CorrelationGap.lean` | unweighted and weighted correlation gap, `c_K ≥ 1 - 1/e` |
+| `DatingAlgo/TwoPeriod.lean` | abstract two-period model, DH-int's program, Lemma C.5, Theorem 4.3, R2 |
+| `DatingAlgo/Submodularity.lean` | Lemma 4.1, Lemma C.2 |
+| `DatingAlgo/Designs.lean` | concrete markets and designs, Thm 4.3 per design, Appendix E matroid structure |
+| `DatingAlgo/Baselines.lean` | Proposition D.1 |
+| `DatingAlgo/NonSubmodular.lean` | Proposition 3.4 |
+| `DatingAlgo/QualityBounds.lean` | R3 |
+| `DatingAlgo/QualityTopK.lean` | R4 |
+| `DatingAlgo/MultiPeriod.lean` | one-directional $T$-period model; counterexample to Theorem 5.4 |
+| `DatingAlgo/Targets.lean` | open targets (R1) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
+
+## Modeling choices
+
+- **Abstract first stage.** The two-period model takes first-stage decisions as
+  abstract. A design is any predicate on decisions, so Theorem 4.3 holds "for every
+  design" literally. `Designs.lean` connects it to concrete display sets.
+- **No measure theory.** All randomness is independent coin flips over finite sets, so
+  expectations are finite sums (`indepExp`).
+- **Count and quality share one theorem.** Count and quality are the same model with
+  different rewards (`r2 = φ²` versus `φ² q`), so Theorem 4.3 and R2 are one theorem.
+- **Bounding DHT in the counterexample.** The Theorem 5.4 counterexample bounds DHT's
+  responders by clairvoyant ones (who know their own future likes). The alternative
+  policy's responders use only observable information.
 
 ## Conventions
 
-- **Stating vs. proving.** New results go into `Targets.lean` as a statement closed
-  with `sorry`. Once proved, move the theorem to the file where it belongs.
-  `check.sh` must then report no leaks.
+- **Stating vs. proving.** New results start as statements closed with `sorry`, in
+  the file where they belong or in `Targets.lean`.
 - **Faithful statements first.** A precisely stated open target is useful; a proved
-  theorem that says the wrong thing is harmful. Each docstring should say which
-  result in the vault note it formalizes.
+  theorem that says the wrong thing is harmful. Each docstring says which result it
+  formalizes. Two statement bugs caught during this work show why:
+  - a Mathlib API change made a pair condition vacuous;
+  - an undeclared variable passed `lake env lean` but not `lake build`.
 - **Pinned versions.** `lean-toolchain` and the Mathlib `rev` in `lakefile.toml` are
   pinned to the same release (`v4.35.0`). Bump them together, run
   `lake update && lean/check.sh`, and commit `lake-manifest.json`.
 - `import Mathlib` triggers a harmless warning about Lean's new module system.
-
-## Status
-
-| Result (vault note) | Lean status | Difficulty to finish |
-| --- | --- | --- |
-| R3: bounded quality range, trade-off instance, mixing | proved | done |
-| `topK` basic facts (monotone, fits-in-cap) | proved | done |
-| Paper's Lemma 4.1 (top-K submodular) | target | moderate: finite combinatorics |
-| R1 key lemma: $\mathbb E\min(X,K)\ge c_K\min(\mu,K)$ | target | hard: needs a Poisson / convex-order argument; Mathlib's binomial and Poisson support helps |
-| R1/R2: weighted correlation gap for top-K | target | moderate once the key lemma is proved (layer-cake) |
-| Paper's Theorem 4.3 and R2 end to end | not stated yet | hard: needs a model of policies and the two-period dynamics |
-| R4: additive-optimal can lose $2k/(K+k)$ | not stated yet | moderate: a concrete instance |
-| R5: top-1 algorithm | open mathematically | research |

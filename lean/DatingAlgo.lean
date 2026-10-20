@@ -1,4 +1,13 @@
 import DatingAlgo.Basic
-import DatingAlgo.QualityBounds
+import DatingAlgo.IndepExp
 import DatingAlgo.TopK
+import DatingAlgo.CorrelationGap
+import DatingAlgo.TwoPeriod
+import DatingAlgo.Submodularity
+import DatingAlgo.Designs
+import DatingAlgo.Baselines
+import DatingAlgo.NonSubmodular
+import DatingAlgo.QualityBounds
+import DatingAlgo.QualityTopK
+import DatingAlgo.MultiPeriod
 import DatingAlgo.Targets
