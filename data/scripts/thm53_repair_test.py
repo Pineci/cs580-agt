@@ -4,7 +4,7 @@ Relaxation (19) pools each user's display slots over all T periods (sum <= K T).
 ignores that nobody can respond in period 1 and that last-period likes are never
 answered. This script tests two repairs by exact brute force on small markets.
 
-R1, aggregated and timing-aware. For each user l, in place of (19)'s single budget:
+Rel_agg, aggregated and timing-aware. For each user l, in place of (19)'s single budget:
     responses                      sum_l' y[l,l']               <= K_l (T-1)
     initiations and mutual views   sum_l' x[l,l'] + sum_e w_e   <= K_l (T-1)
     total                                                       <= K_l T
@@ -12,7 +12,7 @@ R1, aggregated and timing-aware. For each user l, in place of (19)'s single budg
   as possible, in decreasing order of the target's like probability, then mutual views,
   then the backlog.
 
-R2, per-period (time-indexed). Binary x^t, w^t for each period; at most K_l
+Rel_tau, per-period (time-indexed). Binary x^t, w^t for each period; at most K_l
   initiations, mutual views and responses per period; responses only to likes received
   in an earlier period. For a fixed schedule the response part is a fractional
   transportation problem with nested (laminar) constraints, solved greedily.
@@ -32,16 +32,16 @@ sequential only), "two_ns" (both initiate; mutual views allowed except in period
 "Worst tie-break" takes the worst optimal solution of the relaxation; "best" the best.
 DHT's own choices (user order, which mutual view to try) are fixed: users in order I then
 J. Every instance also asserts that the relaxations bound OPT and that DHT-tau earns at
-least (1 - 1/e) R2.
+least (1 - 1/e) Rel_tau.
 
 Findings (default run, seed 1; seeds 2 and 3 agree):
-- R1 + DHT fails for T >= 3, even with the best optimal solution. The decoy family gives
-  ratio -> 1/(T-1): 0.505 at T = 3 and 0.347 at T = 4, where R1 = OPT. Step 7 orders
+- Rel_agg + DHT fails for T >= 3, even with the best optimal solution. The decoy family gives
+  ratio -> 1/(T-1): 0.505 at T = 3 and 0.347 at T = 4, where Rel_agg = OPT. Step 7 orders
   each initiator's targets by the target's like probability, which can push every like
   for a heavily liked user into period T-1. With adversarial optimal solutions and
   mutual views the ratio drops to 0.002: Steps 9-12 drop mutual views whose partner is
   already full in that period.
-- R2 + DHT-tau never fell below (1 - 1/e) R2, in line with the proof sketch in the vault
+- Rel_tau + DHT-tau never fell below (1 - 1/e) Rel_tau, in line with the proof sketch in the vault
   note "Counterexamples to the Multi-Period Dating Heuristic Guarantees".
 
 Usage: python3 data/scripts/thm53_repair_test.py [--trials N] [--seed S] [--climb M]
@@ -123,7 +123,7 @@ def resp_expected(items, caps, T, check=False):
 
 @lru_cache(maxsize=None)
 def resp_lp(items, caps, T):
-    """R2's response LP for one responder: max sum v y, 0 <= y <= q, and for each t,
+    """Rel_tau's response LP for one responder: max sum v y, 0 <= y <= q, and for each t,
     sum_{release >= t} y <= sum_{u > t} caps[u]. Nested constraints form a polymatroid,
     so greedy by value is optimal."""
     slack = [sum(caps[t:]) for t in range(T + 1)]  # slack[t]: periods t+1..T
@@ -216,8 +216,8 @@ def schedule_lp(m, sched):
 
 
 def opt_and_r2(m, check=False):
-    """OPT (best semi-adaptive policy), R2's optimum, and DHT-tau's worst and best value
-    over R2's optimal schedules."""
+    """OPT (best semi-adaptive policy), Rel_tau's optimum, and DHT-tau's worst and best value
+    over Rel_tau's optimal schedules."""
     opt, r2, r2_scheds = 0.0, -1.0, []
     for s in all_schedules(m):
         opt = max(opt, schedule_value(m, s, check))
@@ -233,7 +233,7 @@ def opt_and_r2(m, check=False):
 # ---------- aggregated relaxations and DHT ----------
 
 def aggregated_opt(m, timing):
-    """Optimal value and all optimal (X, W) of (19) (timing=False) or R1 (timing=True)."""
+    """Optimal value and all optimal (X, W) of (19) (timing=False) or Rel_agg (timing=True)."""
     T = m.T
     kinds = [None, "xIJ"]
     if m.design in ("two", "two_ns"):
@@ -324,7 +324,7 @@ def evaluate(m, check=False):
     r1, d1_lo, d1_hi = dht_values(m, timing=True)
     assert r0 >= opt - EPS and r1 >= opt - EPS and r2 >= opt - EPS, "relaxation below OPT"
     assert r1 <= r0 + EPS and r2 <= r1 + EPS
-    assert tau_lo >= BOUND * r2 - EPS, "DHT-tau below (1-1/e) R2: contradicts the proof sketch"
+    assert tau_lo >= BOUND * r2 - EPS, "DHT-tau below (1-1/e) Rel_tau: contradicts the proof sketch"
     return dict(opt=opt, r0=r0, r1=r1, r2=r2, dht19=(d0_lo, d0_hi), dhtR1=(d1_lo, d1_hi),
                 dhtR2=(tau_lo, tau_hi))
 
@@ -332,9 +332,9 @@ def evaluate(m, check=False):
 def show(name, m, res):
     o = res["opt"]
     print(f"{name}: T={m.T}, design={m.design}, OPT={o:.4f}; relaxations "
-          f"(19)={res['r0']:.4f}, R1={res['r1']:.4f}, R2={res['r2']:.4f}")
-    for key, label in (("dht19", "DHT on (19)"), ("dhtR1", "DHT on R1  "),
-                       ("dhtR2", "DHT-tau, R2")):
+          f"(19)={res['r0']:.4f}, Rel_agg={res['r1']:.4f}, Rel_tau={res['r2']:.4f}")
+    for key, label in (("dht19", "DHT on (19)"), ("dhtR1", "DHT on Rel_agg  "),
+                       ("dhtR2", "DHT-tau, Rel_tau")):
         lo, hi = res[key]
         print(f"    {label}: worst {lo:.4f} ({lo / o:.4f} of OPT), "
               f"best {hi:.4f} ({hi / o:.4f} of OPT)")
@@ -360,7 +360,7 @@ def thm54_instance():
 
 
 def decoy_instance(T, eps=0.01, eta=0.01):
-    """R1 + DHT failure. One-directional, K = 1. Initiators v_1..v_{T-1} like i surely,
+    """Rel_agg + DHT failure. One-directional, K = 1. Initiators v_1..v_{T-1} like i surely,
     and i likes each back w.p. 1 - eta. Each v also has T-2 "decoys" z: v likes z w.p.
     eps, z likes v back w.p. near 1. DHT shows decoys first, since they reciprocate more
     often, so every like for i arrives in period T-1, and i can answer only one."""
@@ -424,7 +424,7 @@ def main():
             if val < worst[key][0]:
                 worst[key] = (val, m)
 
-    # Hill-climb on DHT-on-R1 (best tie-breaking) from the worst random market found.
+    # Hill-climb on DHT-on-Rel_agg (best tie-breaking) from the worst random market found.
     m = worst["dhtR1best"][1]
     cur = ratio_of(evaluate(m), "dhtR1", 1)
     for _ in range(args.climb):
@@ -441,9 +441,9 @@ def main():
                     worst[k2] = (val, m2)
 
     labels = {"dht19": "DHT on (19), worst tie-break",
-              "dhtR1": "DHT on R1, worst tie-break ",
-              "dhtR1best": "DHT on R1, best tie-break  ",
-              "dhtR2": "DHT-tau on R2, worst       "}
+              "dhtR1": "DHT on Rel_agg, worst tie-break ",
+              "dhtR1best": "DHT on Rel_agg, best tie-break  ",
+              "dhtR2": "DHT-tau on Rel_tau, worst       "}
     for key, label in labels.items():
         val, mk = worst[key]
         print(f"  {label}: worst ratio to OPT {val:.4f}"

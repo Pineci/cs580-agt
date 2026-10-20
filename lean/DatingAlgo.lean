@@ -12,4 +12,6 @@ import DatingAlgo.QualityTopK
 import DatingAlgo.MultiPeriod
 import DatingAlgo.MultiPeriodDHT
 import DatingAlgo.PoissonGap
+import DatingAlgo.GreedyGap
+import DatingAlgo.MultiPeriodRepair
 import DatingAlgo.Targets

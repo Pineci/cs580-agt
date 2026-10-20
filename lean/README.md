@@ -48,7 +48,7 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 303 theorems, all fully proved. The count includes lemmas Lean generates
+Current count: 411 theorems, all fully proved. The count includes lemmas Lean generates
 for definitions and structures, such as the fields of `Feasible19`.
 
 ### Rios & Torrico's results
@@ -65,6 +65,8 @@ for definitions and structures, such as the fields of `Feasible19`.
 | Lemma E.5, §E.1 (designs as partition matroids) | `Designs.lean` | proved |
 | **Theorem 5.4** ($T$ periods, one-directional) | `MultiPeriod.lean` | **refuted**: proved counterexample, ratio 0.50 < 0.632 |
 | **Theorem 5.3** ($T$ periods, DHT) | `MultiPeriodDHT.lean` (`theorem_5_3_counterexample`) | **refuted**: proved counterexample, ratio 0.52 < 0.632. It covers every optimal solution of (19), both two-directional designs, and clairvoyant responders |
+| Theorem 5.3, **repaired** (vault note, per-period repair): per-period relaxation $\mathrm{Rel}_\tau$, DHT-τ shows initiations in $\mathrm{Rel}_\tau$'s periods, $\text{DHT-}\tau \ge (1-1/e)\,\mathrm{Rel}_\tau \ge (1-1/e)\,\mathrm{OPT}$ | `MultiPeriodRepair.lean` (`theorem_5_3_repair`, `dhtTau_approx`) | proved, for every design, every optimal solution of $\mathrm{Rel}_\tau$ and every tie-breaking. OPT is the best semi-adaptive policy with non-anticipating responses |
+| Correlation gap for greedy $T$-period backlog responses (one user; replaces the laminar-matroid gap) | `GreedyGap.lean` (`greedy_correlation_gap`, `greedy_optimal`) | proved |
 | Lemmas C.3, C.4 | — | not needed: our direct correlation-gap proof replaces them |
 | Thm 4.4, Props E.1/E.6/E.10/E.12 | — | not formalized: they apply cited algorithms (continuous greedy, local search, dependent rounding) to the structure above |
 | Lemma E.9, E.11; Thm E.13; Prop D.2; Lemma 5.2, F.2; Prop B.2; Lemma B.1 | — | not formalized |
@@ -98,6 +100,8 @@ for definitions and structures, such as the fields of `Feasible19`.
 | `DatingAlgo/QualityTopK.lean` | R4 |
 | `DatingAlgo/MultiPeriod.lean` | one-directional $T$-period model; counterexample to Theorem 5.4 |
 | `DatingAlgo/MultiPeriodDHT.lean` | two-directional $T$-period model, relaxation (19), DHT's schedules; counterexample to Theorem 5.3 |
+| `DatingAlgo/GreedyGap.lean` | one user over $T$ periods: greedy backlog responses are optimal on every sample path; their correlation gap; the splitting lemma |
+| `DatingAlgo/MultiPeriodRepair.lean` | per-period relaxation $\mathrm{Rel}_\tau$, DHT-τ, and the repaired Theorem 5.3 |
 | `DatingAlgo/PoissonGap.lean` | R1 and its key lemma, via the finite formula for $\mathbb E\min(\mathrm{Poi}(\mu),j)$ and its concavity |
 | `DatingAlgo/Targets.lean` | open targets (none at the moment) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
@@ -118,6 +122,15 @@ for definitions and structures, such as the fields of `Feasible19`.
 - **DHT as a predicate.** `IsDHTSchedule` lists properties that every run of Algorithm 3
   has, whatever its tie-breaking. The bound holds for every schedule with these properties.
   `thm53DHTSched_isDHT` shows the predicate is satisfiable.
+- **The repaired Theorem 5.3** (`MultiPeriodRepair.lean`) makes these modeling choices:
+  - $\mathrm{Rel}_\tau$'s binary variables are encoded as a `Schedule`, and a design is any predicate on
+    schedules.
+  - The benchmark policies follow two rules of the paper's model:
+    - each pair is shown at most one way;
+    - responses never anticipate a like (`RespBlind`). Every rule that uses only the
+      backlog satisfies this.
+  - Without either rule, $\mathrm{Rel}_\tau$ no longer bounds OPT (examples in the vault note).
+  - `exists_isOptTau` shows that the hypothesis "optimal solution of $\mathrm{Rel}_\tau$" can be met.
 
 ## Conventions
 
