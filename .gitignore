@@ -33,3 +33,7 @@ venv/
 
 # Claude Code per-user settings
 .claude/settings.local.json
+
+# Lean build files and Mathlib (about 7 GB; recreated by ./setup_lean.sh)
+lean/.lake
+lean/.lake.nosync

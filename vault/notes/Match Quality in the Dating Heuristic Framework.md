@@ -2,7 +2,7 @@
 type: synthesis
 question: "How should match quality be modeled in the Rios & Torrico dating-platform framework, and does DH-int guarantee expected quality?"
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-20
 tags: [dating/platforms, matching/quality, research/project]
 aliases: [match quality, quality-weighted DH-int, top-k match quality, price of counting]
 sources: ["[[Rios 2026 - The Dating Heuristic]]", "[[Filos-Ratsikas 2026 - The Distortion of Stable Matching]]"]
@@ -121,6 +121,9 @@ DH-int achieves at least $c_K=1-e^{-K}K^K/K!$ of the optimum, where $K=\min_\ell
 
 ## Gaps
 - **Not yet full proofs.** R1–R3 are short enough to write up rigorously next.
+- **Lean formalization (started 2026-10-20).** It lives in `lean/` in the repo; see `lean/README.md` for status.
+  - R3's three lemmas are machine-checked.
+  - R1's key lemma, the weighted correlation gap, and top-K submodularity are stated as open targets.
 - **R4 is a lower bound on the loss**, not the true worst case. More periods probably make it worse.
 - **R5 is unproven.** It still needs to handle correlation among a responder's own matches, mutual views, and integral period-1 decisions. A matching lower bound for $k=1$ is also open.
 - **Outside the theory**, as in the paper: history effects, $T>2$, and mutual views in the last period.

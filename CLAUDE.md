@@ -15,6 +15,8 @@ collaborators — anything committed here is visible to the whole team.
   cleanup / review workflows.
 - `data/` — datasets, analysis scripts, generated figures.
   - Scripts go in `data/scripts/`, outputs in `data/figures/`.
+- `lean/` — Lean 4 + Mathlib formalization of the project's results. See
+  "Lean proofs" below and `lean/README.md`.
 - `paper/` — **not set up yet.** The LaTeX writeup and how it syncs with
   Overleaf is still being decided (Overleaf's GitHub sync mirrors a whole
   repo, so `paper/` will likely end up as its own repo). Don't create
@@ -70,6 +72,23 @@ in the vault.
   `vault/sources/_raw/`.
 - For figures: write generation scripts to `data/scripts/`, outputs to
   `data/figures/`; copy a final figure into the paper only when it's ready.
+
+## Lean proofs
+
+- **Setup and checking.** `./setup_lean.sh` sets everything up once.
+  `lean/check.sh` builds the project and reports open targets, leaks and
+  non-standard axioms. Run it after every Lean change, and report its
+  summary rather than claiming a result is "proved".
+- **Workflow.** New results start in `lean/DatingAlgo/Targets.lean`, stated with
+  `sorry`. Once proved, move them to the right file. `check.sh` must show no
+  leaks, meaning no `sorry` dependence outside `Targets.lean`.
+- **Faithfulness.** Statements must match the math in the vault, especially
+  `vault/notes/Match Quality in the Dating Heuristic Framework.md`. Docstrings
+  name the result they formalize. Never weaken a statement just to make it
+  provable without saying so.
+- **Versions and size.** Don't bump the pinned Lean/Mathlib versions without
+  asking. `lean/.lake` (about 7 GB) is a symlink to the iCloud-excluded
+  `lean/.lake.nosync`; never commit either.
 
 ## Marking changes for review (LaTeX)
 

@@ -1,7 +1,7 @@
 ---
 type: map
 created: 2026-01-01
-updated: 2026-10-19
+updated: 2026-10-20
 origin: claude
 ---
 # Log
@@ -33,3 +33,6 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - ~ [[Dating Heuristic]] (linked the synthesis)
 - ~ [[Correlation Gap]] (linked the synthesis; noted the uniform-matroid constant)
 - ~ [[Rios 2026 - The Dating Heuristic]] (recorded the project direction)
+
+## [2026-10-20] update | Match Quality in the Dating Heuristic Framework
+- ~ [[Match Quality in the Dating Heuristic Framework]] (linked the new Lean formalization in `lean/`)

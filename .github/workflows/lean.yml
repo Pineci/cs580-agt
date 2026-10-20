@@ -1,0 +1,26 @@
+# Builds the Lean proofs in lean/ and reports open targets on every push and pull
+# request that touches them. Runs only once this repo is on GitHub.
+name: Lean proofs
+
+on:
+  push:
+    paths: ["lean/**", ".github/workflows/lean.yml"]
+  pull_request:
+    paths: ["lean/**", ".github/workflows/lean.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Installs elan, fetches the Mathlib cache, and runs `lake build` in lean/.
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: lean
+      # Lists open targets and fails if a proof outside Targets.lean depends on sorry.
+      # Switch to `lean/check.sh --strict` once Targets.lean is empty.
+      - name: Check axioms
+        run: |
+          lean/check.sh | tee check.log
+          ! grep -q "^WARNING" check.log
