@@ -122,8 +122,11 @@ DH-int achieves at least $c_K=1-e^{-K}K^K/K!$ of the optimum, where $K=\min_\ell
 ## Gaps
 - **Not yet full proofs.** R1–R3 are short enough to write up rigorously next.
 - **Lean formalization (2026-10-20).** It lives in `lean/`; see `lean/README.md` for the full status table.
-  - Machine-checked: R2, R3, R4 ($k=1$), $c_K \ge 1-1/e$, and the weighted correlation gap with constant $1-1/e$. Also the paper's Theorem 4.3 for every design, with its lemmas.
-  - R1 is proved *conditional on* its key lemma $\mathbb E\min(X,K)\ge c_K\min(\mu,K)$. That lemma is the one open target; it needs a Poisson / convex-order argument.
+  - Machine-checked: R1, R2, R3, R4 ($k=1$), $c_K \ge 1-1/e$, and the weighted correlation gap with constant $1-1/e$. Also the paper's Theorem 4.3 for every design, with its lemmas. No open targets remain.
+  - R1's key lemma $\mathbb E\min(X,K)\ge c_K\min(\mu,K)$ is proved without the Poisson distribution or infinite sums (`lean/DatingAlgo/PoissonGap.lean`).
+    - $P_j(\mu)=\mathbb E\min(\mathrm{Poi}(\mu),j)=j-e^{-\mu}\sum_{i<j}(j-i)\mu^i/i!$ is a finite formula. Its derivative is $\Pr[\mathrm{Poi}(\mu)<j]$, which decreases in $\mu$, so $P_j$ is concave on $\mu\ge0$.
+    - Induction over the coins shows $\mathbb E\min(X,j)\ge P_j(\mu)$ for every cap $j$ at once. A coin with probability $p$ turns $\mathbb E\min(X,j)$ into $(1-p)\,\mathbb E\min(X,j)+p\,(1+\mathbb E\min(X,j-1))$, and the matching step for $P_j$ is its tangent-line bound.
+    - Finally, $P_K(K)=K c_K$, and concavity with $P_K(0)=0$ gives $P_K(\mu)\ge c_K\min(\mu,K)$.
   - While formalizing we found that the paper's multi-period Theorems 5.3 and 5.4 appear false as stated (see [[Rios 2026 - The Dating Heuristic]]). The R-results here rest only on the two-period Theorem 4.3, which stands.
 - **R4 is a lower bound on the loss**, not the true worst case. More periods probably make it worse.
 - **R5 is unproven.** It still needs to handle correlation among a responder's own matches, mutual views, and integral period-1 decisions. A matching lower bound for $k=1$ is also open.

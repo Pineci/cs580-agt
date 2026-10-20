@@ -48,7 +48,8 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 197 theorems, 195 fully proved, 1 open, 1 depending on it.
+Current count: 214 theorems, all fully proved. The count includes the equation lemmas
+Lean generates for definitions.
 
 ### Rios & Torrico's results
 
@@ -72,8 +73,8 @@ Current count: 197 theorems, 195 fully proved, 1 open, 1 depending on it.
 
 | Result | File | Status |
 | --- | --- | --- |
-| R1: sharper constant $c_K$ for DH-int | `Targets.lean` (`dhInt_approx_cK`) | proved, *conditional on* the open key lemma |
-| R1 key lemma: $\mathbb E\min(X,K)\ge c_K\min(\mu,K)$ | `Targets.lean` (`poissonBinomial_min_ge`) | **open**. Needs a Poisson / convex-order argument; the $1-1/e$ version is proved |
+| R1: sharper constant $c_K$ for DH-int | `PoissonGap.lean` (`dhInt_approx_cK`) | proved |
+| R1 key lemma: $\mathbb E\min(X,K)\ge c_K\min(\mu,K)$ | `PoissonGap.lean` (`poissonBinomial_min_ge`) | proved: finite comparison with $\mathbb E\min(\mathrm{Poi}(\mu),K)$, no measure theory |
 | $c_K \ge 1-1/e$ | `CorrelationGap.lean` | proved |
 | R2: quality-weighted DH-int keeps $1-1/e$ | `TwoPeriod.lean` (`dhInt_quality_approx`) | proved |
 | R3: no quality guarantee for DH-int as written; trade-off; mixing | `QualityBounds.lean` | proved |
@@ -96,7 +97,8 @@ Current count: 197 theorems, 195 fully proved, 1 open, 1 depending on it.
 | `DatingAlgo/QualityBounds.lean` | R3 |
 | `DatingAlgo/QualityTopK.lean` | R4 |
 | `DatingAlgo/MultiPeriod.lean` | one-directional $T$-period model; counterexample to Theorem 5.4 |
-| `DatingAlgo/Targets.lean` | open targets (R1) |
+| `DatingAlgo/PoissonGap.lean` | R1 and its key lemma, via the finite formula for $\mathbb E\min(\mathrm{Poi}(\mu),j)$ and its concavity |
+| `DatingAlgo/Targets.lean` | open targets (none at the moment) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
 
 ## Modeling choices

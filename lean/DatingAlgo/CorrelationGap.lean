@@ -24,8 +24,8 @@ unweighted bound also works for weighted top-K and every fractional plan.
 3. Element `a` now has weight zero and can be dropped.
 4. Induct on `U`.
 
-With `c = 1 - 1/e` this gives the step in Theorem 4.3. With `c = c_K` (open target
-`poissonBinomial_min_ge`) it gives the sharper result R1 in the vault note.
+With `c = 1 - 1/e` this gives the step in Theorem 4.3. With `c = c_K`
+(`poissonBinomial_min_ge` in `PoissonGap.lean`) it gives the sharper result R1 in the vault note.
 -/
 
 namespace DatingAlgo

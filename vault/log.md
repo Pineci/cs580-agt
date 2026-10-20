@@ -42,3 +42,6 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - ~ [[Match Quality in the Dating Heuristic Framework]] (updated the Lean status: R2–R4 proved, R1 conditional on one open lemma)
 - + [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] (counterexamples to Theorems 5.3 and 5.4 moved out of the source note)
 - ~ [[Dating Heuristic]] (flagged DHT's T-period guarantee as disputed)
+
+## [2026-10-20] update | R1 key lemma proved in Lean
+- ~ [[Match Quality in the Dating Heuristic Framework]] (R1 now fully machine-checked; sketched the finite Poisson-comparison proof)

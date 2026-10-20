@@ -10,4 +10,5 @@ import DatingAlgo.NonSubmodular
 import DatingAlgo.QualityBounds
 import DatingAlgo.QualityTopK
 import DatingAlgo.MultiPeriod
+import DatingAlgo.PoissonGap
 import DatingAlgo.Targets

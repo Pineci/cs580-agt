@@ -180,7 +180,7 @@ theorem dhInt_approx {feasible : D → Prop} {d : D} {y : U → U → ℝ}
 
 /-- **Theorem 4.3 with any unweighted gap constant.** If every responder's
 cardinality gap holds with constant `c`, DH-int is a `c`-approximation. With `c = c_K`
-this is R1 (see `Targets.lean`). -/
+this is R1 (`dhInt_approx_cK` in `PoissonGap.lean`). -/
 theorem dhInt_approx_of_card_gap {feasible : D → Prop} {c : ℝ} (hc0 : 0 ≤ c) (hc1 : c ≤ 1)
     (hcard : ∀ (ℓ : U) (V : Finset U),
       c * min (∑ i ∈ V, M.φ1 i ℓ) (M.K ℓ) ≤
