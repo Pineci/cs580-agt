@@ -6,13 +6,13 @@ matching algorithms.
 ```
 .
 ├── CLAUDE.md          # instructions for Claude Code (shared with the team)
-├── notes/             # markdown notes, reading notes, drafts, outlines
+├── vault/             # Obsidian vault: papers, reading notes, concepts (own CLAUDE.md)
 ├── data/              # datasets, scripts (data/scripts/), figures (data/figures/)
-├── sources/           # PDFs of cited/referenced papers (tracked in git)
 └── check_latex_deps.sh
 ```
 
 The LaTeX writeup (`paper/`) and its Overleaf sync are not set up yet.
+See `vault/README.md` for opening the vault in Obsidian.
 
 ## Getting started
 
@@ -25,10 +25,10 @@ Always `git pull --rebase` before starting work, and keep commits small.
 
 ## Adding papers
 
-Drop PDFs into `sources/`, named by citation key: `lastnameYEARkeyword.pdf`
-(e.g. `gale1962college.pdf`). Optional reading notes go in
-`notes/papers/<citation-key>.md`. Keep files under 50 MB (GitHub's hard
-limit is 100 MB).
+Drop PDFs into `vault/inbox/` and ask Claude (started in `vault/`) to ingest
+them. Each paper gets a source note in `vault/sources/`, and its PDF moves to
+`vault/sources/_raw/<citekey>.pdf`, with citekeys like `gale1962college`.
+Keep files under 50 MB (GitHub's hard limit is 100 MB).
 
 ## LaTeX tooling
 

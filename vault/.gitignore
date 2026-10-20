@@ -1,0 +1,8 @@
+# Obsidian per-device UI state (keep the rest of .obsidian so settings/plugins sync)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.trash/
+.DS_Store
+# Claude Code personal settings
+.claude/settings.local.json

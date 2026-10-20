@@ -1,0 +1,7 @@
+# Vault files that several collaborators append to. On a conflicting merge or
+# rebase, git keeps both sides' lines instead of stopping with conflict
+# markers. After such a merge, check for duplicate frontmatter keys
+# (e.g. two `updated:` lines) and keep the latest.
+vault/log.md        merge=union
+vault/index.md      merge=union
+vault/journal/*.md  merge=union
