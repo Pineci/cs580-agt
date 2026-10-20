@@ -121,9 +121,10 @@ DH-int achieves at least $c_K=1-e^{-K}K^K/K!$ of the optimum, where $K=\min_\ell
 
 ## Gaps
 - **Not yet full proofs.** R1–R3 are short enough to write up rigorously next.
-- **Lean formalization (started 2026-10-20).** It lives in `lean/` in the repo; see `lean/README.md` for status.
-  - R3's three lemmas are machine-checked.
-  - R1's key lemma, the weighted correlation gap, and top-K submodularity are stated as open targets.
+- **Lean formalization (2026-10-20).** It lives in `lean/`; see `lean/README.md` for the full status table.
+  - Machine-checked: R2, R3, R4 ($k=1$), $c_K \ge 1-1/e$, and the weighted correlation gap with constant $1-1/e$. Also the paper's Theorem 4.3 for every design, with its lemmas.
+  - R1 is proved *conditional on* its key lemma $\mathbb E\min(X,K)\ge c_K\min(\mu,K)$. That lemma is the one open target; it needs a Poisson / convex-order argument.
+  - While formalizing we found that the paper's multi-period Theorems 5.3 and 5.4 appear false as stated (see [[Rios 2026 - The Dating Heuristic]]). The R-results here rest only on the two-period Theorem 4.3, which stands.
 - **R4 is a lower bound on the loss**, not the true worst case. More periods probably make it worse.
 - **R5 is unproven.** It still needs to handle correlation among a responder's own matches, mutual views, and integral period-1 decisions. A matching lower bound for $k=1$ is also open.
 - **Outside the theory**, as in the paper: history effects, $T>2$, and mutual views in the last period.

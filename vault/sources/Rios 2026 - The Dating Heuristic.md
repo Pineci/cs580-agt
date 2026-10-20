@@ -9,7 +9,7 @@ citekey: "rios2026dating"
 url: "https://arxiv.org/abs/2308.02584"
 raw: "[[rios2026dating.pdf]]"
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-20
 tags: [dating/platforms, matching/assortment, optimization/submodular]
 aliases: ["The Dating Heuristic: A Provably Strong Matching Algorithm for Dating Platforms"]
 origin: claude
@@ -88,6 +88,7 @@ status: seed
   - It fills each user's spare slots from their backlog, in order of like probability.
   - A semi-adaptive policy chooses initiations non-adaptively and backlog responses adaptively. The upper bound comes from Lemma 5.2.
 - **Thm 5.4.** For one-directional, sequential-only designs, a semi-adaptive policy is $(1-1/e)$ against the best fully *adaptive* policy. It uses the LP relaxation of (19), dependent rounding (Gandhi et al. 2006), and then DHT.
+- *Theorems 5.3 and 5.4 appear to be false as stated.* See the warning under "Limitations and gaps".
 
 ## Technique
 - **DH-int program (eq. 11).**
@@ -139,6 +140,14 @@ status: seed
   - Women initiating does better for every algorithm, and much better for DHT, Greedy, and the partner's algorithm.
 
 ## Limitations and gaps
+
+> [!warning] Theorems 5.3 and 5.4 appear to be false as stated (project analysis, 2026-10-20)
+> The $T$-period relaxations (19) and (41) pool each user's slots over all periods. They ignore that nobody can respond in period 1 and that last-period likes can never be answered.
+> - Counterexamples give ratios $0.52$ and $0.50$, below $1-1/e$. The 5.4 one is machine-checked in Lean.
+> - The two-period Theorem 4.3 is unaffected; it is machine-checked too.
+>
+> Details: [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]].
+
 - **Objective.** The objective is the number of matches. It ignores utilities, fairness across users, and stability, and a user can match many times. (These observations are mine.)
 - **Behavior.**
   - Users are stochastic but not strategic.

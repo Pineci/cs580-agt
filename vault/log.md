@@ -36,3 +36,9 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-10-20] update | Match Quality in the Dating Heuristic Framework
 - ~ [[Match Quality in the Dating Heuristic Framework]] (linked the new Lean formalization in `lean/`)
+
+## [2026-10-20] update | Lean formalization of Rios 2026 and the match-quality results
+- ~ [[Rios 2026 - The Dating Heuristic]] (warning: Theorems 5.3 and 5.4 appear false as stated; counterexamples, the 5.4 one machine-checked)
+- ~ [[Match Quality in the Dating Heuristic Framework]] (updated the Lean status: R2–R4 proved, R1 conditional on one open lemma)
+- + [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] (counterexamples to Theorems 5.3 and 5.4 moved out of the source note)
+- ~ [[Dating Heuristic]] (flagged DHT's T-period guarantee as disputed)
