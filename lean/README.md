@@ -48,7 +48,8 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 197 theorems, 195 fully proved, 1 open, 1 depending on it.
+Current count: 286 theorems, 284 fully proved, 1 open, 1 depending on it. The count
+includes lemmas the structures generate, such as the fields of `Feasible19`.
 
 ### Rios & Torrico's results
 
@@ -63,7 +64,7 @@ Current count: 197 theorems, 195 fully proved, 1 open, 1 depending on it.
 | Proposition D.1 (local greedy can be $O(1/n)$-bad) | `Baselines.lean` | proved |
 | Lemma E.5, §E.1 (designs as partition matroids) | `Designs.lean` | proved |
 | **Theorem 5.4** ($T$ periods, one-directional) | `MultiPeriod.lean` | **refuted**: proved counterexample, ratio 0.50 < 0.632 |
-| **Theorem 5.3** ($T$ periods, DHT) | — | **refuted** by brute force (`data/scripts/thm53_counterexample.py`), not yet in Lean |
+| **Theorem 5.3** ($T$ periods, DHT) | `MultiPeriodDHT.lean` (`theorem_5_3_counterexample`) | **refuted**: proved counterexample, ratio 0.52 < 0.632. It covers every optimal solution of (19), both two-directional designs, and clairvoyant responders |
 | Lemmas C.3, C.4 | — | not needed: our direct correlation-gap proof replaces them |
 | Thm 4.4, Props E.1/E.6/E.10/E.12 | — | not formalized: they apply cited algorithms (continuous greedy, local search, dependent rounding) to the structure above |
 | Lemma E.9, E.11; Thm E.13; Prop D.2; Lemma 5.2, F.2; Prop B.2; Lemma B.1 | — | not formalized |
@@ -96,6 +97,7 @@ Current count: 197 theorems, 195 fully proved, 1 open, 1 depending on it.
 | `DatingAlgo/QualityBounds.lean` | R3 |
 | `DatingAlgo/QualityTopK.lean` | R4 |
 | `DatingAlgo/MultiPeriod.lean` | one-directional $T$-period model; counterexample to Theorem 5.4 |
+| `DatingAlgo/MultiPeriodDHT.lean` | two-directional $T$-period model, relaxation (19), DHT's schedules; counterexample to Theorem 5.3 |
 | `DatingAlgo/Targets.lean` | open targets (R1) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
 
@@ -108,9 +110,13 @@ Current count: 197 theorems, 195 fully proved, 1 open, 1 depending on it.
   expectations are finite sums (`indepExp`).
 - **Count and quality share one theorem.** Count and quality are the same model with
   different rewards (`r2 = φ²` versus `φ² q`), so Theorem 4.3 and R2 are one theorem.
-- **Bounding DHT in the counterexample.** The Theorem 5.4 counterexample bounds DHT's
-  responders by clairvoyant ones (who know their own future likes). The alternative
-  policy's responders use only observable information.
+- **Bounding DHT in the counterexamples.** Both counterexamples bound DHT's responders by
+  clairvoyant ones, who know their own future likes. The alternative policies' responders
+  use only observable information. In `MultiPeriodDHT.lean` they are functions of the
+  backlog (`backlogResp`).
+- **DHT as a predicate.** `IsDHTSchedule` lists properties that every run of Algorithm 3
+  has, whatever its tie-breaking. The bound holds for every schedule with these properties.
+  `thm53DHTSched_isDHT` shows the predicate is satisfiable.
 
 ## Conventions
 
