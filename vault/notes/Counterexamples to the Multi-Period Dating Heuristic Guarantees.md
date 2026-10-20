@@ -32,6 +32,8 @@ No. Both are false as stated, and both counterexamples are machine-checked in Le
 
 **What still stands.** The two-period Theorem 4.3 is unaffected, because its program (16) keeps a separate capacity for each period. It is machine-checked in `lean/` for every design.
 
+**Repair.** Theorem 5.3 holds for a repaired algorithm, and this is machine-checked in Lean. The repair uses a per-period relaxation (R2), and DHT shows each initiation in the period that R2 chose. See "Repairing the relaxation".
+
 ## Evidence
 **Theorem 5.4 counterexample.** Machine-checked in Lean: `theorem_5_4_counterexample` in `lean/DatingAlgo/MultiPeriod.lean`. Also checked by brute force in `data/scripts/thm54_counterexample.py`.
 - **Instance.**
@@ -82,7 +84,7 @@ Two timing-aware repairs were tested by exact brute force in `data/scripts/thm53
     - with the worst optimal solution and mutual views: $0.002$, because Steps 9–12 drop mutual views.
 - **Conclusion.** The loss comes from DHT's schedule, not from the relaxation.
 
-**R2, per period: $1-1/e$ holds, with DHT showing each initiation in the period the solution chose ("DHT-$\tau$").**
+**R2, per period: $1-1/e$ holds, with DHT showing each initiation in the period the solution chose ("DHT-$\tau$"). Machine-checked in Lean.**
 - **The relaxation.** It is time-indexed, with binary $x^t_{\ell\ell'}$ and $w^t_e$ ($w^T=0$) and $y^t_{\ell\ell'}\in[0,1]$:
   - $\max \sum_{t,e}\beta_e w^t_e + \sum_{t,\ell,\ell'}\phi_{\ell\ell'} y^t_{\ell\ell'}$ subject to:
   - $\sum_{s\le t} y^s_{\ell\ell'} \le \phi_{\ell'\ell}\sum_{s<t} x^s_{\ell'\ell}$ (answer only likes received earlier);
@@ -96,10 +98,27 @@ Two timing-aware repairs were tested by exact brute force in `data/scripts/thm53
   4. *The LP is the concave closure.* Given $(x^*,w^*)$, R2's response part for $\ell$ is $\max\{\phi\cdot y: y\le q,\ y\in P(M_\ell)\}$. By Hall's theorem and the integrality of the matroid polytope, this is the concave closure $f^+_\ell(q)$.
   5. *[[Correlation Gap]].* $\mathbb E f_\ell(L_\ell)\ge(1-1/e)f^+_\ell(q)$. Summing over users gives $\text{DHT-}\tau\ge(1-1/e)\,\mathrm{R2}\ge(1-1/e)\,\mathrm{OPT}$.
 - **Cost.** R2 is a MIP with $T$ times as many binary variables as (19).
+- **Machine-checked.** `theorem_5_3_repair` and `dhtTau_approx` in `lean/DatingAlgo/MultiPeriodRepair.lean` prove $\text{DHT-}\tau\ge(1-1/e)\,\mathrm{R2}\ge(1-1/e)\,\mathrm{OPT}$.
+  - The result holds for every design, every optimal solution of R2, and every tie-breaking among equally good backlog profiles.
+  - DHT-$\tau$'s responses use only the backlog.
+  - Also proved:
+    - the lower bound holds for every *feasible* solution of R2 (`dhtTau_ge`);
+    - R2 has an optimal solution whenever it is feasible (`exists_isOptR2`).
+- **The Lean proof takes a simpler route than the sketch.**
+  - *Step 1 is an identity* (`expected_matches_eq`): for every policy in the benchmark, expected matches *equal* R2's objective at the policy's schedule and response probabilities.
+  - *No matroids.* Steps 2 and 4 are replaced by a splitting argument (`indepExp_split_le` in `lean/DatingAlgo/GreedyGap.lean`).
+    - Assign each profile that likes $\ell$ to period $t$ with probability $y^t_{\ell\ell'}/q_{\ell'}$. The profiles assigned to $t$ form an independent random set with marginals $y^t$.
+    - In each period, answering the best profiles assigned to it that fit its free slots is a feasible plan. So greedy earns at least the sum of these per-period values.
+    - The top-$K$ correlation gap that is already in `lean/` then bounds each period. So the laminar-matroid correlation gap is not needed.
+  - *Step 3* (`greedy_optimal`) is proved by counting rather than exchange. For every threshold $\theta>0$, greedy has answered at least as many profiles of weight $\ge\theta$ as any plan, clairvoyant or not, after every period.
+- **What the benchmark must satisfy.** Two rules of the paper's model are needed for $\mathrm{R2}\ge\mathrm{OPT}$, and the Lean benchmark assumes both.
+  - *Each pair is shown at most one way* ($x_{\ell\ell'}+x_{\ell'\ell}+w_e\le1$). Without it, two users could initiate toward each other in the last period. That acts as a mutual view, which R2 forbids there. With $T=1$ this earns $\beta_e>0$ while $\mathrm{R2}=0$.
+  - *Responses never anticipate likes.* Whether $\ell$ is shown $\ell'$ cannot depend on whether $\ell$ likes $\ell'$, which is revealed only when $\ell$ sees $\ell'$. Every non-anticipating policy satisfies this, including every rule that uses only the backlog. A clairvoyant responder can beat R2.
+    - Example: one-directional sequential design, $T=2$, every cap 1. Two initiators like $\ell$ for sure, and $\ell$ likes each with probability $1/2$.
+    - A responder who knows its own likes matches with probability $3/4$, but $\mathrm{R2}=1/2$.
 
 ## Gaps
-- **The R2 sketch is not in Lean.** It needs the correlation gap for weighted laminar-matroid rank functions. `lean/` proves it only for weighted top-$K$ (uniform matroids).
 - **R1 with a better scheduler is untested.** It is unknown whether some schedule built from R1's chosen sets always reaches $1-1/e$.
-- **Theorem 5.4 is not repaired.** An adaptive benchmark needs an LP version of R2 plus rounding.
+- **Theorem 5.4 is not repaired.** The Lean repair covers semi-adaptive policies only: responses may adapt to anything observed, but initiations are fixed in advance. An adaptive benchmark needs an LP version of R2 plus rounding; R2 itself is a MIP.
 - **The decoy family is not in Lean.** Only its $T=3$ and $T=4$ cases are checked, by brute force.
 - **Simulations unaffected.** The paper's simulations run DH-int as a rolling policy, which these counterexamples do not concern.

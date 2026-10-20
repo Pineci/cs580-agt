@@ -48,3 +48,8 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - ~ [[Rios 2026 - The Dating Heuristic]] (warning updated: both counterexamples machine-checked; repair)
 - ~ [[Dating Heuristic]] (DHT flag updated)
 - ~ [[Match Quality in the Dating Heuristic Framework]] (link to the counterexamples note)
+
+## [2026-10-20] update | Theorem 5.3 repair (R2, DHT-τ) machine-checked in Lean
+- ~ [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] (R2 repair now machine-checked; the Lean proof route; the two benchmark rules R2 needs; Gaps updated)
+- ~ [[Rios 2026 - The Dating Heuristic]] (warning: the repair is machine-checked)
+- ~ [[Dating Heuristic]] (DHT flag: the repair is machine-checked)
