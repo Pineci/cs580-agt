@@ -43,7 +43,7 @@ From Table 1 of [[Rios 2026 - The Dating Heuristic]]:
 - **Guarantees.** Both proofs use the [[Correlation Gap]] of monotone [[Submodular Maximization|submodular]] second-period values.
   - DH-int is a $(1-1/e)$-approximation of the optimal adaptive policy in the two-period model, for every platform design.
   - DHT is $(1-1/e)$ against the best semi-adaptive policy over $T$ periods, assuming like probabilities don't change over time.
-    - *This claim (the paper's Theorem 5.3) appears to be false; see [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]].* The two-period claim above is machine-checked in `lean/`.
+    - *This claim (the paper's Theorem 5.3) is false; the counterexample is machine-checked in `lean/`. A per-period relaxation repairs it; see [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]].* The two-period claim above is machine-checked too.
   - DH-int is not polynomial-time, because it solves a MIP.
 - **Why it works,** per the simulations in [[Rios 2026 - The Dating Heuristic]]:
   - It balances the chance of an initial like against the chance of reciprocation.

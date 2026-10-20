@@ -42,3 +42,9 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - ~ [[Match Quality in the Dating Heuristic Framework]] (updated the Lean status: R2–R4 proved, R1 conditional on one open lemma)
 - + [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] (counterexamples to Theorems 5.3 and 5.4 moved out of the source note)
 - ~ [[Dating Heuristic]] (flagged DHT's T-period guarantee as disputed)
+
+## [2026-10-20] update | Theorem 5.3 counterexample in Lean; timing-aware repairs tested
+- ~ [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] (5.3 counterexample now machine-checked; second flaw in DHT's schedule; decoy family with ratio → 1/(T-1); aggregated repair R1 fails, per-period repair R2 holds with proof sketch)
+- ~ [[Rios 2026 - The Dating Heuristic]] (warning updated: both counterexamples machine-checked; repair)
+- ~ [[Dating Heuristic]] (DHT flag updated)
+- ~ [[Match Quality in the Dating Heuristic Framework]] (link to the counterexamples note)
