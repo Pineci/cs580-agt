@@ -59,3 +59,8 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-10-20] update | Renamed the Theorem 5.3 repair relaxations
 - ~ [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] (repairs "R1"/"R2" renamed to $\mathrm{Rel}_{\text{agg}}$/$\mathrm{Rel}_\tau$ to avoid clashing with the match-quality R1–R4; Lean names `FeasibleR2` etc. renamed to `FeasibleTau` etc.)
+
+## [2026-10-20] update | Lean sanity check: corrected claims
+- ~ [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] (Theorem 5.4 is existential: only its proof is refuted, the claim is open; rounding step is prose; Lean's DHT predicate assumes no mutual-view interference)
+- ~ [[Rios 2026 - The Dating Heuristic]] (warning: Theorem 5.4's proof is wrong, not the theorem)
+- ~ [[Match Quality in the Dating Heuristic Framework]] (R1 now for unequal caps, R2 with $c_K$; what is not machine-checked in R1, R3, R4)

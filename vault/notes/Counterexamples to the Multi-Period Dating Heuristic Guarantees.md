@@ -14,11 +14,11 @@ status: growing
 > [!question] Do Theorems 5.3 and 5.4 of Rios & Torrico (multi-period DHT guarantees) hold as stated?
 
 ## Answer
-No. Both are false as stated, and both counterexamples are machine-checked in Lean. This is the project's own analysis from 2026-10-20; the paper does not acknowledge it.
+Theorem 5.3 is false as stated. Theorem 5.4's proof is wrong: the policy it builds misses $1-1/e$. But Theorem 5.4 only claims that *some* semi-adaptive policy reaches $1-1/e$, and that is still open. Both counterexamples are machine-checked in Lean. This is the project's own analysis from 2026-10-20; the paper does not acknowledge it.
 
 **What the theorems claim.** [[Rios 2026 - The Dating Heuristic]] claims that the $T$-period [[Dating Heuristic]] variants are $(1-1/e)$-approximations:
 - **Theorem 5.3:** DHT against the best semi-adaptive policy.
-- **Theorem 5.4:** a rounded-LP policy against the best adaptive policy, in the one-directional sequential design.
+- **Theorem 5.4:** *some* semi-adaptive policy against the best adaptive policy, in the one-directional sequential design. The proof uses a rounded-LP policy (Remark 5.5).
 
 **First flaw: the relaxations ignore timing.**
 - Both proofs use relaxations, (19) and (41), that pool each user's display slots over all periods: $\sum \le K_\ell T$. That ignores two timing facts:
@@ -35,16 +35,17 @@ No. Both are false as stated, and both counterexamples are machine-checked in Le
 **Repair.** Theorem 5.3 holds for a repaired algorithm, and this is machine-checked in Lean. The repair uses a per-period relaxation $\mathrm{Rel}_\tau$, and DHT shows each initiation in the period that $\mathrm{Rel}_\tau$ chose. See "Repairing the relaxation".
 
 ## Evidence
-**Theorem 5.4 counterexample.** Machine-checked in Lean: `theorem_5_4_counterexample` in `lean/DatingAlgo/MultiPeriod.lean`. Also checked by brute force in `data/scripts/thm54_counterexample.py`.
+**Counterexample to Theorem 5.4's proof.** Machine-checked in Lean: `theorem_5_4_counterexample` in `lean/DatingAlgo/MultiPeriod.lean`. Also checked by brute force in `data/scripts/thm54_counterexample.py`.
 - **Instance.**
   - $T=2$, and every display cap is 1.
   - Initiators $i_1, i_2$; responders $j_1, j_2$.
   - Every initiator likes every responder for sure.
   - $j_1$ reciprocates for sure, and $j_2$ with probability $0.99$.
-- **LP (41).** Its unique optimum is $x\equiv1$: each initiator initiates toward both responders. It is integral, so rounding returns it unchanged.
+- **LP (41).** Its unique optimum is $x\equiv1$: each initiator initiates toward both responders. It is integral, so rounding returns it unchanged. This rounding step is argued, not formalized in Lean.
 - **DHT.** It shows $j_1$ in period 1 and $j_2$ in period 2. $j_2$'s likes arrive in the last period and are never answered, so DHT earns at most 1 expected match, even with clairvoyant responders.
 - **Alternative.** Show $i_1\to j_1$ and $i_2\to j_2$ in period 1 and let responders answer in period 2. That earns $1.99$.
 - **Ratio:** $0.50 < 1-1/e \approx 0.632$.
+- **What this does not show.** The alternative is itself semi-adaptive, so this instance does not refute Theorem 5.4's existence claim.
 
 **Theorem 5.3 counterexample.** Machine-checked in Lean: `theorem_5_3_counterexample` in `lean/DatingAlgo/MultiPeriodDHT.lean`. Also checked by brute force in `data/scripts/thm53_counterexample.py`.
 - **Instance.**
@@ -121,6 +122,7 @@ Earlier versions of this note, the log and commit messages call these relaxation
 
 ## Gaps
 - **$\mathrm{Rel}_{\text{agg}}$ with a better scheduler is untested.** It is unknown whether some schedule built from $\mathrm{Rel}_{\text{agg}}$'s chosen sets always reaches $1-1/e$.
-- **Theorem 5.4 is not repaired.** The Lean repair covers semi-adaptive policies only: responses may adapt to anything observed, but initiations are fixed in advance. An adaptive benchmark needs an LP version of $\mathrm{Rel}_\tau$ plus rounding; $\mathrm{Rel}_\tau$ itself is a MIP.
+- **Theorem 5.4's existence claim is open.** No instance is known where every semi-adaptive policy misses $1-1/e$ of the best adaptive policy. The Lean repair covers semi-adaptive benchmarks only: responses may adapt to anything observed, but initiations are fixed in advance. An adaptive benchmark needs an LP version of $\mathrm{Rel}_\tau$ plus rounding; $\mathrm{Rel}_\tau$ itself is a MIP.
+- **Lean's DHT predicate assumes no mutual-view interference.** Every run of Algorithm 3 satisfies `IsDHTSchedule` when the solution has no mutual views, which covers the Theorem 5.3 counterexample. With mutual views, Algorithm 3 handles users one at a time, so Step 12 can fill a user's slot before that user's own initiations and push one to a later period; the predicate does not allow that.
 - **The decoy family is not in Lean.** Only its $T=3$ and $T=4$ cases are checked, by brute force.
 - **Simulations unaffected.** The paper's simulations run DH-int as a rolling policy, which these counterexamples do not concern.

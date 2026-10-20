@@ -199,60 +199,55 @@ theorem topK_correlation_gap (U : Finset α) (p w y : α → ℝ)
     (hp : ∀ i ∈ U, 0 ≤ p i ∧ p i ≤ 1) (hw : ∀ i ∈ U, 0 ≤ w i) (K : ℕ)
     (hy : ∀ i ∈ U, 0 ≤ y i ∧ y i ≤ p i) (hyK : ∑ i ∈ U, y i ≤ K) :
     (1 - Real.exp (-1)) * ∑ i ∈ U, w i * y i ≤ indepExp U p (topK w K) := by
-  have hc : 0 ≤ 1 - Real.exp (-1) := by
-    have : Real.exp (-1) ≤ 1 := Real.exp_le_one_iff.mpr (by norm_num)
-    linarith
-  exact weighted_gap_of_card_gap hc hp
+  exact weighted_gap_of_card_gap one_sub_exp_neg_one_nonneg hp
     (fun V hV => cardinality_gap V p (fun i hi => hp i (hV hi)) K) hw hy hyK
 
-/-- `K^K / K! ≤ e^{K-1}` for `K ≥ 1`, written with `K = n + 1`. -/
-theorem pow_self_div_factorial_le_exp (n : ℕ) :
-    ((n + 1 : ℕ) : ℝ) ^ (n + 1) / ((n + 1).factorial : ℝ) ≤ Real.exp n := by
-  induction n with
-  | zero => simp
-  | succ n ih =>
-    set k : ℝ := ((n + 1 : ℕ) : ℝ) with hk
-    have hkpos : 0 < k := by rw [hk]; positivity
-    have hfpos : (0 : ℝ) < ((n + 1).factorial : ℝ) := by exact_mod_cast Nat.factorial_pos _
-    have hk1 : ((n + 1 + 1 : ℕ) : ℝ) = k + 1 := by rw [hk]; push_cast; ring
-    have hfac : ((n + 1 + 1).factorial : ℝ) = (k + 1) * ((n + 1).factorial : ℝ) := by
-      rw [Nat.factorial_succ (n + 1)]; push_cast [hk]; ring
-    rw [hk1, hfac]
-    have hpow : (k + 1) ^ (n + 1 + 1) / ((k + 1) * ((n + 1).factorial : ℝ)) =
-        (k ^ (n + 1) / ((n + 1).factorial : ℝ)) * (1 + 1 / k) ^ (n + 1) := by
-      have hk1' : 1 + 1 / k = (k + 1) / k := by field_simp
-      rw [hk1', div_pow]
-      field_simp
-      ring
-    have hbern : (1 + 1 / k) ^ (n + 1) ≤ Real.exp 1 := by
-      have h1 : 1 + 1 / k ≤ Real.exp (1 / k) := by
-        have := Real.add_one_le_exp (1 / k); linarith
-      calc (1 + 1 / k) ^ (n + 1) ≤ Real.exp (1 / k) ^ (n + 1) :=
-            pow_le_pow_left₀ (by positivity) h1 _
-        _ = Real.exp 1 := by
-            rw [← Real.exp_nat_mul]
-            congr 1
-            have : ((n + 1 : ℕ) : ℝ) = k := hk.symm
-            rw [this]; field_simp
-    rw [hpow]
-    calc (k ^ (n + 1) / ((n + 1).factorial : ℝ)) * (1 + 1 / k) ^ (n + 1)
-        ≤ Real.exp n * Real.exp 1 :=
-          mul_le_mul ih hbern (by positivity) (Real.exp_pos _).le
-      _ = Real.exp ((n + 1 : ℕ) : ℝ) := by rw [← Real.exp_add]; push_cast; ring_nf
+/-- `(n + 1)^n ≤ e · n^n`, i.e. `(1 + 1/n)^n ≤ e`. -/
+theorem succ_pow_le_exp_one_mul_pow (n : ℕ) :
+    ((n : ℝ) + 1) ^ n ≤ Real.exp 1 * (n : ℝ) ^ n := by
+  rcases Nat.eq_zero_or_pos n with rfl | hn
+  · simp
+  · have hn' : (0 : ℝ) < n := by exact_mod_cast hn
+    have h1 : (n : ℝ) + 1 ≤ n * Real.exp (1 / n) := by
+      have := Real.add_one_le_exp (1 / (n : ℝ))
+      calc (n : ℝ) + 1 = n * (1 / n + 1) := by field_simp; ring
+        _ ≤ n * Real.exp (1 / n) := by gcongr
+    calc ((n : ℝ) + 1) ^ n ≤ (n * Real.exp (1 / n)) ^ n := by gcongr
+      _ = Real.exp 1 * (n : ℝ) ^ n := by
+        rw [mul_pow, ← Real.exp_nat_mul, mul_one_div_cancel hn'.ne', mul_comm]
 
-/-- `c_K ≥ 1 - 1/e` for every `K ≥ 1`, so R1 strengthens the paper's constant.
-Equivalent to `K^K / K! ≤ e^{K-1}`. -/
-theorem one_sub_exp_neg_one_le_cK {K : ℕ} (hK : 1 ≤ K) : 1 - Real.exp (-1) ≤ cK K := by
-  obtain ⟨n, rfl⟩ : ∃ n, K = n + 1 := ⟨K - 1, by omega⟩
+/-- `c_n ≤ c_{n+1}`. Since `(n+1)^{n+1} / (n+1)! = (n+1)^n / n!`, this is
+`(n + 1)^n ≤ e · n^n`. -/
+theorem cK_le_succ (n : ℕ) : cK n ≤ cK (n + 1) := by
   unfold cK
-  have h := pow_self_div_factorial_le_exp n
-  have key : Real.exp (-((n + 1 : ℕ) : ℝ)) * ((n + 1 : ℕ) : ℝ) ^ (n + 1) /
-      ((n + 1).factorial : ℝ) ≤ Real.exp (-1) := by
-    rw [mul_div_assoc]
-    calc _ ≤ Real.exp (-((n + 1 : ℕ) : ℝ)) * Real.exp n :=
-          mul_le_mul_of_nonneg_left h (Real.exp_pos _).le
-      _ = Real.exp (-1) := by rw [← Real.exp_add]; push_cast; ring_nf
+  have hf : ((n + 1).factorial : ℝ) = (n + 1) * n.factorial := by
+    rw [Nat.factorial_succ]; push_cast; ring
+  have hfpos : (0 : ℝ) < n.factorial := by exact_mod_cast n.factorial_pos
+  have key := succ_pow_le_exp_one_mul_pow n
+  have hexp : Real.exp (-((n : ℝ) + 1)) * Real.exp 1 = Real.exp (-(n : ℝ)) := by
+    rw [← Real.exp_add]; ring_nf
+  have : Real.exp (-((n + 1 : ℕ) : ℝ)) * ((n + 1 : ℕ) : ℝ) ^ (n + 1) /
+      ((n + 1).factorial : ℝ) ≤ Real.exp (-(n : ℝ)) * (n : ℝ) ^ n / (n.factorial : ℝ) := by
+    rw [hf, div_le_div_iff₀ (by positivity) hfpos]
+    push_cast
+    have hpos : 0 ≤ Real.exp (-((n : ℝ) + 1)) := (Real.exp_pos _).le
+    calc Real.exp (-((n : ℝ) + 1)) * ((n : ℝ) + 1) ^ (n + 1) * (n.factorial : ℝ)
+        = (Real.exp (-((n : ℝ) + 1)) * ((n : ℝ) + 1) ^ n) * (((n : ℝ) + 1) * n.factorial) := by
+          ring
+      _ ≤ (Real.exp (-((n : ℝ) + 1)) * (Real.exp 1 * (n : ℝ) ^ n)) *
+            (((n : ℝ) + 1) * n.factorial) := by gcongr
+      _ = Real.exp (-(n : ℝ)) * (n : ℝ) ^ n * (((n : ℝ) + 1) * n.factorial) := by
+          rw [← hexp]; ring
   linarith
+
+/-- `c_K` increases with `K`. -/
+theorem cK_mono : Monotone cK := monotone_nat_of_le_succ cK_le_succ
+
+/-- `c_K ≥ 1 - 1/e` for every `K ≥ 1`, so R1 strengthens the paper's constant:
+`c_1 = 1 - 1/e` and `c_K` increases. -/
+theorem one_sub_exp_neg_one_le_cK {K : ℕ} (hK : 1 ≤ K) : 1 - Real.exp (-1) ≤ cK K := by
+  have := cK_mono hK
+  rwa [cK_one] at this
 
 /-- `c_K ≥ 0`: `e^{-K} K^K / K!` is a Poisson probability, so it is at most 1. -/
 theorem cK_nonneg (K : ℕ) : 0 ≤ cK K := by

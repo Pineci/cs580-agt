@@ -12,7 +12,9 @@ The results are standard facts about product distributions, written as finite su
 - marginals;
 - the probability generating function of `|S|`;
 - conditioning on one element;
-- monotonicity in the ground set.
+- monotonicity in the ground set;
+- relabelling and restricting the coins, and independence from one coin;
+- the probability of an atom (all of `A` in, none of `B`).
 -/
 
 namespace DatingAlgo
@@ -172,5 +174,172 @@ theorem indepExp_le_of_subset_of_antitone {V V' : Finset α} {p : α → ℝ}
     exact this
   rw [e, e] at hneg
   linarith
+
+/-! ### Expectations: relabelling, restriction, independence from one coin -/
+
+/-- Relabelling coins: if `g` only looks at the coins `e '' V`, through an injective `e`, its
+expectation is an expectation over `V`. -/
+theorem indepExp_comap {β : Type*} [DecidableEq β] {e : β → α} (he : Function.Injective e)
+    (p : α → ℝ) :
+    ∀ (U : Finset α) (V : Finset β) (g : Finset β → ℝ), (∀ b ∈ V, e b ∈ U) →
+      indepExp U p (fun S => g (V.filter fun b => e b ∈ S)) =
+        indepExp V (fun b => p (e b)) g := by
+  intro U
+  induction U using Finset.induction_on with
+  | empty =>
+    intro V g hV
+    have hV0 : V = ∅ := Finset.eq_empty_of_forall_notMem fun b hb => by simpa using hV b hb
+    subst hV0
+    simp [indepExp]
+  | insert a U ha ih =>
+    intro V g hV
+    rw [indepExp_insert ha]
+    by_cases hb : ∃ b ∈ V, e b = a
+    · obtain ⟨b, hbV, hba⟩ := hb
+      have hV' : ∀ b' ∈ V.erase b, e b' ∈ U := by
+        intro b' hb'
+        obtain ⟨hne, hb'V⟩ := Finset.mem_erase.mp hb'
+        rcases Finset.mem_insert.mp (hV b' hb'V) with h | h
+        · exact absurd (he (h.trans hba.symm)) hne
+        · exact h
+      have h1 : indepExp U p (fun S => g (V.filter fun b => e b ∈ S)) =
+          indepExp U p (fun S => g ((V.erase b).filter fun b => e b ∈ S)) := by
+        apply indepExp_congr
+        intro S hS
+        congr 1
+        ext b'
+        simp only [Finset.mem_filter, Finset.mem_erase]
+        constructor
+        · rintro ⟨h1, h2⟩
+          refine ⟨⟨fun h => ?_, h1⟩, h2⟩
+          subst h
+          exact ha (hba ▸ hS h2)
+        · rintro ⟨⟨_, h1⟩, h2⟩
+          exact ⟨h1, h2⟩
+      have h2 : indepExp U p (fun S => g (V.filter fun b => e b ∈ insert a S)) =
+          indepExp U p (fun S => g (insert b ((V.erase b).filter fun b => e b ∈ S))) := by
+        apply indepExp_congr
+        intro S _
+        congr 1
+        ext b'
+        simp only [Finset.mem_filter, Finset.mem_insert, Finset.mem_erase]
+        constructor
+        · rintro ⟨h1, h2 | h2⟩
+          · exact Or.inl (he (h2.trans hba.symm))
+          · by_cases hbb : b' = b
+            · exact Or.inl hbb
+            · exact Or.inr ⟨⟨hbb, h1⟩, h2⟩
+        · rintro (h | ⟨⟨_, h1⟩, h2⟩)
+          · subst h
+            exact ⟨hbV, Or.inl hba⟩
+          · exact ⟨h1, Or.inr h2⟩
+      rw [h1, h2, ih (V.erase b) g hV', ih (V.erase b) (fun X => g (insert b X)) hV', ← hba]
+      conv_rhs => rw [← Finset.insert_erase hbV, indepExp_insert (Finset.notMem_erase b V)]
+    · simp only [not_exists, not_and] at hb
+      have hV' : ∀ b ∈ V, e b ∈ U := by
+        intro b hbV
+        rcases Finset.mem_insert.mp (hV b hbV) with h | h
+        · exact absurd h (hb b hbV)
+        · exact h
+      have h2 : indepExp U p (fun S => g (V.filter fun b => e b ∈ insert a S)) =
+          indepExp U p (fun S => g (V.filter fun b => e b ∈ S)) := by
+        apply indepExp_congr
+        intro S _
+        congr 1
+        ext b'
+        simp only [Finset.mem_filter, Finset.mem_insert]
+        constructor
+        · rintro ⟨h1, h2 | h2⟩
+          · exact absurd h2 (hb b' h1)
+          · exact ⟨h1, h2⟩
+        · rintro ⟨h1, h2⟩
+          exact ⟨h1, Or.inr h2⟩
+      rw [h2, ih V g hV']
+      ring
+
+/-- Restriction: a function of `S ∩ W` only needs the coins in `U ∩ W`. -/
+theorem indepExp_inter (U W : Finset α) (p : α → ℝ) (g : Finset α → ℝ) :
+    indepExp U p (fun S => g (S ∩ W)) = indepExp (U ∩ W) p g := by
+  have h := indepExp_comap (e := id) Function.injective_id p U (U ∩ W) g
+    (fun b hb => (Finset.mem_inter.mp hb).1)
+  rw [show indepExp (U ∩ W) p g = indepExp (U ∩ W) (fun b => p (id b)) g from rfl, ← h]
+  apply indepExp_congr
+  intro S hS
+  congr 1
+  ext a
+  simp only [Finset.mem_inter, Finset.mem_filter, id]
+  constructor
+  · rintro ⟨h1, h2⟩
+    exact ⟨⟨hS h1, h2⟩, h1⟩
+  · rintro ⟨⟨_, h2⟩, h1⟩
+    exact ⟨h1, h2⟩
+
+/-- If `h` does not depend on coin `a`, then `a` is independent of it:
+`E[h · 1{a ∈ S}] = p a · E[h]`. -/
+theorem indepExp_mul_mem_of_blind {U : Finset α} {a : α} (ha : a ∈ U) (p : α → ℝ)
+    (h : Finset α → ℝ) (hblind : ∀ S, h (insert a S) = h (S.erase a)) :
+    indepExp U p (fun S => h S * if a ∈ S then 1 else 0) = p a * indepExp U p h := by
+  have hU := Finset.insert_erase ha
+  have hnot := Finset.notMem_erase a U
+  rw [← hU, indepExp_insert hnot, indepExp_insert hnot]
+  have h1 : indepExp (U.erase a) p (fun S => h S * if a ∈ S then 1 else 0) = 0 := by
+    rw [indepExp_congr (h := fun _ => 0), indepExp_const]
+    intro S hS
+    have : a ∉ S := fun h' => hnot (hS h')
+    simp [this]
+  have h2 : indepExp (U.erase a) p
+      (fun S => h (insert a S) * if a ∈ insert a S then 1 else 0) =
+      indepExp (U.erase a) p (fun S => h (insert a S)) := by
+    apply indepExp_congr
+    intro S _
+    simp
+  have h3 : indepExp (U.erase a) p h = indepExp (U.erase a) p (fun S => h (insert a S)) := by
+    apply indepExp_congr
+    intro S hS
+    have : a ∉ S := fun h' => hnot (hS h')
+    rw [hblind, Finset.erase_eq_of_notMem this]
+  rw [h1, h2, h3]
+  ring
+
+/-! ### Atoms: all of `A` in, none of `B` -/
+
+/-- The probability that every element of `A` is in `S` and no element of `B` is:
+`∏_{a ∈ A} p a · ∏_{b ∈ B} (1 - p b)`, for disjoint `A, B ⊆ U`. -/
+theorem indepExp_subset_disjoint (p : α → ℝ) {U A B : Finset α}
+    (hA : A ⊆ U) (hB : B ⊆ U) (hAB : Disjoint A B) :
+    indepExp U p (fun S => if A ⊆ S ∧ Disjoint B S then 1 else 0) =
+      (∏ a ∈ A, p a) * ∏ b ∈ B, (1 - p b) := by
+  set g : Finset α → ℝ := fun S => if A ⊆ S ∧ Disjoint B S then 1 else 0
+  have hg : ∀ S, g S = g (S ∩ (A ∪ B)) := by
+    intro S
+    have : (A ⊆ S ∧ Disjoint B S) ↔ (A ⊆ S ∩ (A ∪ B) ∧ Disjoint B (S ∩ (A ∪ B))) := by
+      simp only [subset_inter_iff, subset_union_left, and_true, disjoint_left, mem_inter,
+        mem_union, not_and]
+      exact and_congr_right fun _ => forall₂_congr fun b hb => ⟨fun h h' => absurd h' h,
+        fun h h' => h h' (Or.inr hb)⟩
+    simp only [g, if_congr this rfl rfl]
+  rw [indepExp_congr (h := fun S => g (S ∩ (A ∪ B))) (fun S _ => hg S), indepExp_inter,
+    inter_eq_right.mpr (union_subset hA hB)]
+  unfold indepExp
+  rw [sum_eq_single A]
+  · simp only [g, subset_refl, hAB.symm, and_self, ite_true, mul_one, union_sdiff_cancel_left hAB]
+  · intro S hS hne
+    have hS' : ¬(A ⊆ S ∧ Disjoint B S) := by
+      rintro ⟨hAS, hBS⟩
+      refine hne (subset_antisymm (fun x hx => ?_) hAS)
+      rcases mem_union.mp (mem_powerset.mp hS hx) with h | h
+      · exact h
+      · exact absurd hx (disjoint_left.mp hBS h)
+    simp [g, hS']
+  · intro h; exact absurd (mem_powerset.mpr subset_union_left) h
+
+/-- Two distinct independent coins are both included with probability `p a * p b`. -/
+theorem indepExp_mem_and {U : Finset α} {a b : α} (ha : a ∈ U) (hb : b ∈ U) (hab : a ≠ b)
+    (p : α → ℝ) :
+    indepExp U p (fun S => if a ∈ S ∧ b ∈ S then 1 else 0) = p a * p b := by
+  have := indepExp_subset_disjoint p (U := U) (A := {a, b}) (B := ∅)
+    (insert_subset_iff.mpr ⟨ha, singleton_subset_iff.mpr hb⟩) (empty_subset _)
+    (disjoint_empty_right _)
+  simpa [insert_subset_iff, prod_pair hab] using this
 
 end DatingAlgo

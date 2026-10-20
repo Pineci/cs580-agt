@@ -69,7 +69,7 @@ open Finset
 
 namespace TwoDir
 
-open OneDirSeq (Instance likeProb LIof LJof)
+open TPeriod
 
 variable {I J : Type*} [Fintype I] [Fintype J] [DecidableEq I] [DecidableEq J]
 
@@ -402,14 +402,6 @@ theorem sum_rotate {T : ℕ} (f : Fin T → I → J → ℝ) :
   calc ∑ i, ∑ j, ∑ t, f t i j = ∑ i, ∑ t, ∑ j, f t i j :=
         Finset.sum_congr rfl fun i _ => Finset.sum_comm
     _ = ∑ t, ∑ i, ∑ j, f t i j := Finset.sum_comm
-
-omit [DecidableEq I] [DecidableEq J] in
-theorem likeProb_mem {inst : Instance I J}
-    (hp : ∀ i j, 0 ≤ inst.pIJ i j ∧ inst.pIJ i j ≤ 1 ∧ 0 ≤ inst.pJI j i ∧ inst.pJI j i ≤ 1) :
-    ∀ e ∈ (univ : Finset ((I × J) ⊕ (J × I))), 0 ≤ likeProb inst e ∧ likeProb inst e ≤ 1 := by
-  rintro (⟨i, j⟩ | ⟨j, i⟩) -
-  · exact ⟨(hp i j).1, (hp i j).2.1⟩
-  · exact ⟨(hp i j).2.2.1, (hp i j).2.2.2⟩
 
 /-- Every response rule that uses only the backlog never anticipates a like. -/
 theorem backlogResp_blind {T : ℕ} (fI : Fin T → I → Finset J → Finset J)
@@ -1094,9 +1086,7 @@ theorem dhtTau_ge (inst : Instance I J)
         (releasedJ s.sched j) B t) s.sched)]
   rw [objTau_split, objTau_split]
   simp only [policySol]
-  have he1 : 1 - Real.exp (-1) ≤ 1 := by
-    have := Real.exp_pos (-1)
-    linarith
+  have he1 := one_sub_exp_neg_one_le_one
   have hM : 0 ≤ ∑ t, ∑ i, ∑ j,
       (if j ∈ s.sched.mutI t i then inst.pIJ i j * inst.pJI j i else 0) :=
     Finset.sum_nonneg fun t _ => Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => by
@@ -1150,9 +1140,7 @@ theorem dhtTau_approx (inst : Instance I J)
     (1 - Real.exp (-1)) * expMatches inst σ rule ≤
       expMatches inst s.sched (fun S => dhtTauResp inst s.sched selI selJ (LIof S) (LJof S)) := by
   obtain ⟨-, -, hlow, hup⟩ := theorem_5_3_repair inst hp design s hs selI hselI selJ hselJ
-  have he0 : 0 ≤ 1 - Real.exp (-1) := by
-    have : Real.exp (-1) ≤ 1 := Real.exp_le_one_iff.mpr (by norm_num)
-    linarith
+  have he0 := one_sub_exp_neg_one_nonneg
   exact (mul_le_mul_of_nonneg_left (hup σ rule hσ hrule hblind) he0).trans hlow
 
 

@@ -6,7 +6,8 @@ import DatingAlgo.TwoPeriod
 For independent coin flips with mean `μ = ∑ p`,
 `E[min(|S|, K)] ≥ c_K · min(μ, K)` with `c_K = 1 - e^{-K} K^K / K!`
 (`poissonBinomial_min_ge`). With `dhInt_approx_of_card_gap` this gives R1:
-DH-int is a `c_K`-approximation (`dhInt_approx_cK`).
+DH-int is a `c_K`-approximation (`dhInt_approx_cK`), also for expected match quality
+(`dhInt_quality_approx_cK`, R2).
 
 The textbook proof compares `|S|` with a Poisson variable of the same mean in convex
 order. We keep everything finite. `E[min(Poi(μ), j)]` is a finite sum, so we never need
@@ -270,16 +271,33 @@ theorem poissonBinomial_min_ge (U : Finset α) (p : α → ℝ)
   (cK_mul_min_le_poiMin K (sum_nonneg fun i hi => (hp i hi).1)).trans
     (poiMin_le_indepExp U p hp K)
 
-/-- **R1 (vault note).** With a common display cap `K`, DH-int is a
-`c_K`-approximation (`c_3 ≈ 0.776`), improving the paper's `1 - 1/e`. -/
+/-- **R1 (vault note).** If every display cap is at least `K` (e.g. `K = min_ℓ K_ℓ`),
+DH-int is a `c_K`-approximation (`c_3 ≈ 0.776`), improving the paper's `1 - 1/e`.
+Each responder `ℓ` gets the constant `c_{K_ℓ} ≥ c_K` (`cK_mono`). -/
 theorem dhInt_approx_cK {U D : Type*} [Fintype U] [DecidableEq U]
-    (M : TwoPeriodModel U D) (K : ℕ) (hK : ∀ ℓ, M.K ℓ = K) {feasible : D → Prop}
+    (M : TwoPeriodModel U D) (K : ℕ) (hK : ∀ ℓ, K ≤ M.K ℓ) {feasible : D → Prop}
     {d : D} {y : U → U → ℝ} (hdh : M.IsDHIntSolution feasible d y)
     {d' : D} (hd' : feasible d') :
     cK K * M.value d' ≤ M.value d := by
   refine M.dhInt_approx_of_card_gap (cK_nonneg K) (cK_le_one K) ?_ hdh hd'
   intro ℓ V
-  rw [hK ℓ]
-  exact poissonBinomial_min_ge V _ (fun i _ => ⟨M.φ1_nonneg i ℓ, M.φ1_le_one i ℓ⟩) K
+  have hmin : 0 ≤ min (∑ i ∈ V, M.φ1 i ℓ) (M.K ℓ) :=
+    le_min (sum_nonneg fun i _ => M.φ1_nonneg i ℓ) (Nat.cast_nonneg _)
+  exact (mul_le_mul_of_nonneg_right (cK_mono (hK ℓ)) hmin).trans
+    (poissonBinomial_min_ge V _ (fun i _ => ⟨M.φ1_nonneg i ℓ, M.φ1_le_one i ℓ⟩) (M.K ℓ))
+
+/-- **R2 with the sharper constant (vault note).** Quality-weighted DH-int is a
+`c_K`-approximation for expected match quality when every display cap is at least `K`.
+This is R1 applied to the quality-weighted model; `dhInt_quality_approx` is the
+`1 - 1/e` version. -/
+theorem dhInt_quality_approx_cK {U D : Type*} [Fintype U] [DecidableEq U]
+    (M : TwoPeriodModel U D) (K : ℕ) (hK : ∀ ℓ, K ≤ M.K ℓ) (q : U → U → ℝ)
+    (hq : ∀ a b, 0 ≤ q a b) (immQ : D → ℝ) (himmQ : ∀ d, 0 ≤ immQ d) {feasible : D → Prop}
+    {d : D} {y : U → U → ℝ}
+    (hdh : (M.withQuality q hq immQ himmQ).IsDHIntSolution feasible d y)
+    {d' : D} (hd' : feasible d') :
+    cK K * (M.withQuality q hq immQ himmQ).value d' ≤
+      (M.withQuality q hq immQ himmQ).value d :=
+  dhInt_approx_cK (M.withQuality q hq immQ himmQ) K hK hdh hd'
 
 end DatingAlgo

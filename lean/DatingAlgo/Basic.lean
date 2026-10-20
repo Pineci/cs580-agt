@@ -27,6 +27,25 @@ theorem cK_zero : cK 0 = 0 := by simp [cK]
 
 theorem cK_one : cK 1 = 1 - Real.exp (-1) := by simp [cK]
 
+theorem one_sub_exp_neg_one_nonneg : 0 ≤ 1 - Real.exp (-1) := by
+  have := Real.exp_le_one_iff.mpr (by norm_num : (-1 : ℝ) ≤ 0)
+  linarith
+
+theorem one_sub_exp_neg_one_le_one : 1 - Real.exp (-1) ≤ 1 := by
+  linarith [Real.exp_pos (-1)]
+
+/-- The numeric check behind both counterexamples: `1 - 1/e > 3/5`, so `(1 - 1/e) c > 1`
+once `c ≥ 5/3`. -/
+theorem one_lt_one_sub_exp_neg_one_mul {c : ℝ} (hc : 5 / 3 ≤ c) :
+    1 < (1 - Real.exp (-1)) * c := by
+  have he := Real.exp_one_gt_d9
+  have hinv : (Real.exp 1)⁻¹ < 2 / 5 := by
+    rw [inv_lt_comm₀ (Real.exp_pos 1) (by norm_num)]
+    norm_num
+    linarith
+  rw [Real.exp_neg]
+  nlinarith
+
 variable {α : Type*} [DecidableEq α]
 
 /-- Expectation of `g` over a random subset of `U` that contains each `i ∈ U`

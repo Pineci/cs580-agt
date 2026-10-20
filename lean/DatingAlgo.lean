@@ -9,6 +9,7 @@ import DatingAlgo.Baselines
 import DatingAlgo.NonSubmodular
 import DatingAlgo.QualityBounds
 import DatingAlgo.QualityTopK
+import DatingAlgo.MultiPeriodModel
 import DatingAlgo.MultiPeriod
 import DatingAlgo.MultiPeriodDHT
 import DatingAlgo.PoissonGap

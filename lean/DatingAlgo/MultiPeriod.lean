@@ -1,12 +1,14 @@
-import DatingAlgo.IndepExp
+import DatingAlgo.MultiPeriodModel
 
 /-!
-# Theorem 5.4 fails as stated: a counterexample
+# Theorem 5.4's proof fails: a counterexample to its policy
 
-Rios & Torrico, Section 5. Theorem 5.4 claims a `(1 - 1/e)`-approximation against the
-best adaptive policy for the one-directional, sequential-only design. The policy
-solves LP (41), rounds it (Gandhi et al.), and schedules the result with DHT
-(Algorithm 3, Remark 5.5).
+Rios & Torrico, Section 5. Theorem 5.4 states that *some* semi-adaptive policy is a
+`(1 - 1/e)`-approximation against the best adaptive policy, for the one-directional,
+sequential-only design. Its proof (Remark 5.5, Appendix F) uses a specific policy: solve
+LP (41), round it (Gandhi et al.), and schedule the result with DHT (Algorithm 3). This
+file shows that this policy misses the bound, so the proof is wrong. Whether some other
+semi-adaptive policy reaches it is open; in this instance the alternative below does.
 
 LP (41) pools each user's display slots over all `T` periods (`∑ y ≤ K_j T`). It
 ignores two timing facts:
@@ -30,13 +32,17 @@ ignores two timing facts:
 - Even with *clairvoyant* responders, DHT earns at most 1 expected match.
 - The schedule "`i1 → j1`, `i2 → j2` in period 1", with responders answering whoever
   liked them, earns `2 - δ`.
-- `1 < (1 - 1/e)(2 - δ)`, so the guarantee fails.
+- `1 < (1 - 1/e)(2 - δ)`, so the proof's policy misses the guarantee.
 
 ## Modeling
 Likes are drawn up front: `LI` contains `(i, j)` if `i` would like `j` when shown,
 `LJ` contains `(j, i)` likewise, and all are independent. In this design the
 initiators' displays are a fixed schedule, and responders only show profiles that
 liked them in an *earlier* period.
+
+Rounding is not modeled. Part 1 shows LP (41)'s optimum in `x` is unique and integral, so
+any rounding that preserves marginals, as Gandhi et al.'s does, returns it. This step is
+argued here, not formalized.
 -/
 
 namespace DatingAlgo
@@ -45,15 +51,7 @@ open Finset
 
 namespace OneDirSeq
 
-/-- A one-directional, sequential-only instance with complete potentials. -/
-structure Instance (I J : Type*) where
-  T : ℕ
-  KI : I → ℕ
-  KJ : J → ℕ
-  /-- `pIJ i j`: probability that `i` likes `j` when shown. -/
-  pIJ : I → J → ℝ
-  /-- `pJI j i`: probability that `j` likes `i` when shown. -/
-  pJI : J → I → ℝ
+open TPeriod
 
 variable {I J : Type*} [Fintype I] [Fintype J] [DecidableEq I] [DecidableEq J]
 
@@ -76,20 +74,13 @@ abbrev Schedule (I J : Type*) (T : ℕ) := Fin T → I → Finset J
 def ScheduleFeasible (inst : Instance I J) (σ : Schedule I J inst.T) : Prop :=
   (∀ t i, (σ t i).card ≤ inst.KI i) ∧ (∀ i t t' j, j ∈ σ t i → j ∈ σ t' i → t = t')
 
-/-- A schedule DHT may produce from an integral solution `x` (Algorithm 3, steps 6–8),
-with arbitrary tie-breaking:
-- each initiator shows exactly its initiations `{j : x i j = 1}`, at most `K_i` per
-  period and each once;
-- slots are used as early as possible;
-- higher reciprocation probability `φ_{ji}` comes first. -/
+/-- A schedule DHT may produce from an integral solution `x` (Algorithm 3, Steps 6–8),
+with arbitrary tie-breaking: each initiator's displays satisfy `IsDHTInit` for its
+initiations `{j : x i j = 1}`, ordered by reciprocation probability `φ_{ji}`. -/
 def IsDHTSchedule (inst : Instance I J) (x : I → J → ℝ) (σ : Schedule I J inst.T) :
     Prop :=
-  (∀ i, (univ.biUnion fun t => σ t i) = univ.filter (fun j => x i j = 1)) ∧
-  (∀ t i, (σ t i).card ≤ inst.KI i) ∧
-  (∀ i t t' j, j ∈ σ t i → j ∈ σ t' i → t = t') ∧
-  (∀ i (t t' : Fin inst.T), t < t' → (σ t' i).Nonempty → (σ t i).card = inst.KI i) ∧
-  (∀ i (t t' : Fin inst.T) j j', t < t' → j ∈ σ t i → j' ∈ σ t' i →
-    inst.pJI j' i ≤ inst.pJI j i)
+  ∀ i, IsDHTInit (inst.KI i) (univ.filter fun j => x i j = 1) (fun j => inst.pJI j i)
+    (fun t => σ t i)
 
 /-- Profiles in `j`'s backlog at the start of period `t`: initiators who were shown `j`
 in an earlier period and liked `j`. -/
@@ -115,23 +106,9 @@ noncomputable def bestResponse (inst : Instance I J) (σ : Schedule I J inst.T)
   (univ.filter (RespFeasible inst σ LI)).sup' ⟨fun _ _ => ∅, by
     simp [RespFeasible, arrived]⟩ (fun ρ => (matchCount ρ LJ : ℝ))
 
-/-- Like outcomes are subsets of `(I × J) ⊕ (J × I)`. `inl (i, j)` means `i` likes `j`;
-`inr (j, i)` means `j` likes `i`. -/
-def likeProb (inst : Instance I J) : (I × J) ⊕ (J × I) → ℝ
-  | .inl (i, j) => inst.pIJ i j
-  | .inr (j, i) => inst.pJI j i
-
-/-- The `I`-side likes in an outcome. -/
-def LIof (S : Finset ((I × J) ⊕ (J × I))) : Finset (I × J) :=
-  univ.filter fun e => Sum.inl e ∈ S
-
-/-- The `J`-side likes in an outcome. -/
-def LJof (S : Finset ((I × J) ⊕ (J × I))) : Finset (J × I) :=
-  univ.filter fun e => Sum.inr e ∈ S
-
 end OneDirSeq
 
-open OneDirSeq
+open OneDirSeq TPeriod
 
 /-- The counterexample instance: `T = 2`, all caps 1, `j2` reciprocates with
 probability `1 - δ`. Responders are `0 = j1` and `1 = j2`. -/
@@ -141,26 +118,6 @@ noncomputable def thm54Instance (δ : ℝ) : Instance (Fin 2) (Fin 2) where
   KJ := fun _ => 1
   pIJ := fun _ _ => 1
   pJI := fun j _ => if j = 0 then 1 else 1 - δ
-
-/-- Two distinct independent coins are both included with probability `p a * p b`. -/
-theorem indepExp_mem_and {α : Type*} [DecidableEq α] {U : Finset α} {a b : α}
-    (ha : a ∈ U) (hb : b ∈ U) (hab : a ≠ b) (p : α → ℝ) :
-    indepExp U p (fun S => if a ∈ S ∧ b ∈ S then 1 else 0) = p a * p b := by
-  conv_lhs => rw [← Finset.insert_erase ha]
-  rw [indepExp_insert (Finset.notMem_erase a U)]
-  have h1 : indepExp (U.erase a) p (fun S => if a ∈ S ∧ b ∈ S then 1 else 0) = 0 := by
-    rw [indepExp_congr (h := fun _ => 0), indepExp_const]
-    intro S hS
-    have : a ∉ S := fun h => Finset.notMem_erase a U (hS h)
-    simp [this]
-  have h2 : indepExp (U.erase a) p
-      (fun S => if a ∈ insert a S ∧ b ∈ insert a S then 1 else 0) = p b := by
-    rw [← indepExp_mem (Finset.mem_erase.mpr ⟨hab.symm, hb⟩) p]
-    apply indepExp_congr
-    intro S _
-    simp [Finset.mem_insert, hab.symm]
-  rw [h1, h2]
-  ring
 
 /-- Part 1 of the counterexample: `x ≡ 1` is the unique LP (41) optimum in `x`. -/
 theorem thm54_part1 :
@@ -199,23 +156,20 @@ theorem thm54_part1 :
 /-- Like probabilities of the counterexample lie in `[0, 1]`. -/
 theorem thm54_likeProb_mem :
     ∀ e ∈ (univ : Finset ((Fin 2 × Fin 2) ⊕ (Fin 2 × Fin 2))),
-      0 ≤ likeProb (thm54Instance (1 / 100)) e ∧ likeProb (thm54Instance (1 / 100)) e ≤ 1 := by
-  rintro (⟨i, j⟩ | ⟨j, i⟩) -
-  · simp [likeProb, thm54Instance]
-  · simp only [likeProb, thm54Instance]
-    split_ifs <;> norm_num
+      0 ≤ likeProb (thm54Instance (1 / 100)) e ∧ likeProb (thm54Instance (1 / 100)) e ≤ 1 :=
+  likeProb_mem fun _ _ => by simp only [thm54Instance]; split_ifs <;> norm_num
 
 /-- In every DHT schedule for `x ≡ 1`, responder `1` is not shown in period 0. -/
 theorem thm54_dht_not_one (σ : Fin 2 → Fin 2 → Finset (Fin 2))
     (hσ : IsDHTSchedule (thm54Instance (1 / 100)) (fun _ _ => 1) σ) (i : Fin 2) :
     (1 : Fin 2) ∉ σ 0 i := by
-  obtain ⟨hU, hcard, -, -, hord⟩ := hσ
+  obtain ⟨hU, hcard, -, -, hord⟩ := hσ i
   have hU' : (univ.biUnion fun t : Fin 2 => σ t i) =
-      univ.filter (fun _ : Fin 2 => (1 : ℝ) = 1) := hU i
-  have hcard' : (σ 0 i).card ≤ 1 := hcard (0 : Fin 2) i
+      univ.filter (fun _ : Fin 2 => (1 : ℝ) = 1) := hU
+  have hcard' : (σ 0 i).card ≤ 1 := hcard (0 : Fin 2)
   have hord' : ∀ j j' : Fin 2, j ∈ σ 0 i → j' ∈ σ 1 i →
       (if j' = 0 then (1 : ℝ) else 1 - 1 / 100) ≤ (if j = 0 then 1 else 1 - 1 / 100) :=
-    fun j j' => hord i (0 : Fin 2) (1 : Fin 2) j j' (by decide)
+    fun j j' => hord (0 : Fin 2) (1 : Fin 2) j j' (by decide)
   intro h1
   have h0 : (0 : Fin 2) ∈ univ.biUnion fun t : Fin 2 => σ t i := by
     rw [hU']
@@ -345,17 +299,10 @@ theorem thm54_part3 :
     simp [LIof, LJof]
 
 /-- Part 4 of the counterexample: `1 < (1 - 1/e)(2 - 1/100)`. -/
-theorem thm54_numeric : 1 < (1 - Real.exp (-1)) * (2 - 1 / 100) := by
-  have he := Real.exp_one_gt_d9
-  have hpos := Real.exp_pos 1
-  have hinv : (Real.exp 1)⁻¹ < 2 / 5 := by
-    rw [inv_lt_comm₀ hpos (by norm_num)]
-    norm_num
-    linarith
-  rw [Real.exp_neg]
-  nlinarith
+theorem thm54_numeric : 1 < (1 - Real.exp (-1)) * (2 - 1 / 100) :=
+  one_lt_one_sub_exp_neg_one_mul (by norm_num)
 
-/-- **Theorem 5.4 fails (Rios & Torrico).** With `δ = 1/100`:
+/-- **The policy in Theorem 5.4's proof fails (Rios & Torrico).** With `δ = 1/100`:
 1. LP (41) has a unique optimum in `x`: every initiator initiates toward both
    responders (`x ≡ 1`).
 2. Every DHT schedule for `x ≡ 1` yields at most 1 expected match, even with
@@ -364,8 +311,9 @@ theorem thm54_numeric : 1 < (1 - Real.exp (-1)) * (2 - 1 / 100) := by
    `2 - δ`.
 4. `1 < (1 - 1/e)(2 - δ)`.
 
-Together, the policy of Theorem 5.4 earns less than `(1 - 1/e)` times a policy that the
-benchmark (the best adaptive policy) can only beat. -/
+Together, the policy of Theorem 5.4's proof (Remark 5.5) earns less than `(1 - 1/e)` times
+a policy that the benchmark (the best adaptive policy) can only beat. This does not refute
+the theorem's existence claim: the policy in part 3 is itself semi-adaptive. -/
 theorem theorem_5_4_counterexample :
     let δ : ℝ := 1 / 100
     let inst := thm54Instance δ

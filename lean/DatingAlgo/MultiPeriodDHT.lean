@@ -1,4 +1,4 @@
-import DatingAlgo.MultiPeriod
+import DatingAlgo.MultiPeriodModel
 
 /-!
 # Theorem 5.3 fails as stated: a counterexample
@@ -34,12 +34,15 @@ responses, though nobody can respond in period 1.
 - `1 < (1 - 1/e) · 1.9275`, so the guarantee fails: the ratio is at most `0.519`.
 
 ## Modeling
-- Likes are drawn up front and are independent. This file reuses the instance data and the
-  like encoding of `MultiPeriod.lean`.
+- Likes are drawn up front and are independent. The instance data, the like
+  encoding and `IsDHTInit` are in `MultiPeriodModel.lean`.
 - A match is a pair who have both seen and liked each other. That happens sequentially (one
   initiates, the other answers from the backlog later) or in a mutual view.
-- `IsDHTSchedule` lists properties that every run of Steps 6–12 has, whatever its
-  tie-breaking. The bound holds for every schedule with these properties.
+- `IsDHTSchedule` lists properties of the schedule that Steps 6–12 build, whatever the
+  tie-breaking. Every run has them when the solution has no mutual views (`w = 0`), and every
+  optimal solution here has none (part 1). With mutual views a run can break them: Step 12
+  can fill a user's slot before that user's Steps 6–8, delaying an initiation. The bound
+  holds for every schedule with these properties.
 - The bound covers every feasible response plan, so DHT's Step 14 needs no separate model.
 -/
 
@@ -47,106 +50,9 @@ namespace DatingAlgo
 
 open Finset
 
-/-- The probability that every element of `A` is in `S` and no element of `B` is:
-`∏_{a ∈ A} p a · ∏_{b ∈ B} (1 - p b)`, for disjoint `A, B ⊆ U`. -/
-theorem indepExp_subset_disjoint {α : Type*} [DecidableEq α] (p : α → ℝ) :
-    ∀ {U A B : Finset α}, A ⊆ U → B ⊆ U → Disjoint A B →
-      indepExp U p (fun S => if A ⊆ S ∧ Disjoint B S then 1 else 0) =
-        (∏ a ∈ A, p a) * ∏ b ∈ B, (1 - p b) := by
-  intro U
-  induction U using Finset.induction_on with
-  | empty =>
-    intro A B hA hB _
-    rw [Finset.subset_empty.mp hA, Finset.subset_empty.mp hB]
-    simp [indepExp]
-  | insert u U hu ih =>
-    intro A B hA hB hAB
-    rw [indepExp_insert hu]
-    by_cases huA : u ∈ A
-    · have huB : u ∉ B := Finset.disjoint_left.mp hAB huA
-      have h1 : indepExp U p (fun S => if A ⊆ S ∧ Disjoint B S then 1 else 0) = 0 := by
-        rw [indepExp_congr (h := fun _ => 0), indepExp_const]
-        intro S hS
-        have : ¬ A ⊆ S := fun h => hu (hS (h huA))
-        simp [this]
-      have h2 : indepExp U p
-          (fun S => if A ⊆ insert u S ∧ Disjoint B (insert u S) then 1 else 0) =
-          indepExp U p (fun S => if A.erase u ⊆ S ∧ Disjoint B S then 1 else 0) := by
-        apply indepExp_congr
-        intro S _
-        simp only [Finset.subset_insert_iff, Finset.disjoint_insert_right, huB, not_false_eq_true,
-          true_and]
-      have hA' : A.erase u ⊆ U := by
-        intro a ha
-        have := hA (Finset.mem_of_mem_erase ha)
-        rcases Finset.mem_insert.mp this with h | h
-        · exact absurd h (Finset.ne_of_mem_erase ha)
-        · exact h
-      have hB' : B ⊆ U := by
-        intro b hb
-        rcases Finset.mem_insert.mp (hB hb) with h | h
-        · exact absurd (h ▸ hb) huB
-        · exact h
-      rw [h1, h2, ih hA' hB' (Finset.disjoint_of_subset_left (Finset.erase_subset _ _) hAB),
-        ← Finset.mul_prod_erase A p huA]
-      ring
-    · by_cases huB : u ∈ B
-      · have h1 : indepExp U p (fun S => if A ⊆ S ∧ Disjoint B S then 1 else 0) =
-            indepExp U p (fun S => if A ⊆ S ∧ Disjoint (B.erase u) S then 1 else 0) := by
-          apply indepExp_congr
-          intro S hS
-          have huS : u ∉ S := fun h => hu (hS h)
-          have : Disjoint B S ↔ Disjoint (B.erase u) S := by
-            simp only [Finset.disjoint_left, Finset.mem_erase]
-            constructor
-            · exact fun h b hb => h hb.2
-            · intro h b hb hbS
-              by_cases hbu : b = u
-              · exact huS (hbu ▸ hbS)
-              · exact h ⟨hbu, hb⟩ hbS
-          simp only [this]
-        have h2 : indepExp U p
-            (fun S => if A ⊆ insert u S ∧ Disjoint B (insert u S) then 1 else 0) = 0 := by
-          rw [indepExp_congr (h := fun _ => 0), indepExp_const]
-          intro S _
-          simp [Finset.disjoint_insert_right, huB]
-        have hA' : A ⊆ U := by
-          intro a ha
-          rcases Finset.mem_insert.mp (hA ha) with h | h
-          · exact absurd (h ▸ ha) huA
-          · exact h
-        have hB' : B.erase u ⊆ U := by
-          intro b hb
-          have := hB (Finset.mem_of_mem_erase hb)
-          rcases Finset.mem_insert.mp this with h | h
-          · exact absurd h (Finset.ne_of_mem_erase hb)
-          · exact h
-        rw [h1, h2, ih hA' hB' (Finset.disjoint_of_subset_right (Finset.erase_subset _ _) hAB),
-          ← Finset.mul_prod_erase B (fun b => 1 - p b) huB]
-        ring
-      · have hA' : A ⊆ U := by
-          intro a ha
-          rcases Finset.mem_insert.mp (hA ha) with h | h
-          · exact absurd (h ▸ ha) huA
-          · exact h
-        have hB' : B ⊆ U := by
-          intro b hb
-          rcases Finset.mem_insert.mp (hB hb) with h | h
-          · exact absurd (h ▸ hb) huB
-          · exact h
-        have h2 : indepExp U p
-            (fun S => if A ⊆ insert u S ∧ Disjoint B (insert u S) then 1 else 0) =
-            indepExp U p (fun S => if A ⊆ S ∧ Disjoint B S then 1 else 0) := by
-          apply indepExp_congr
-          intro S _
-          simp only [Finset.subset_insert_iff_of_notMem huA, Finset.disjoint_insert_right, huB,
-            not_false_eq_true, true_and]
-        rw [h2, ih hA' hB' hAB]
-        ring
-
 namespace TwoDir
 
-open OneDirSeq (Instance likeProb LIof LJof)
+open TPeriod
 
 variable {I J : Type*} [Fintype I] [Fintype J] [DecidableEq I] [DecidableEq J]
 
@@ -277,18 +183,11 @@ def backlogResp {T : ℕ} (fI : Fin T → I → Finset J → Finset J)
   respI t i := fI t i (arrivedI σ LJ t i)
   respJ t j := fJ t j (arrivedJ σ LI t j)
 
-/-- Steps 6–8 of Algorithm 3 for one user. The user's initiation displays `d t`:
-- show exactly `X` over the horizon, at most `K` per period, each once;
-- use slots as early as possible;
-- come in decreasing order of `q`, the target's like probability for the user. -/
-def IsDHTInit {β : Type*} [DecidableEq β] {T : ℕ} (K : ℕ) (X : Finset β) (q : β → ℝ)
-    (d : Fin T → Finset β) : Prop :=
-  (univ.biUnion d = X) ∧ (∀ t, (d t).card ≤ K) ∧ (∀ t t' b, b ∈ d t → b ∈ d t' → t = t') ∧
-  (∀ t t' : Fin T, t < t' → (d t').Nonempty → (d t).card = K) ∧
-  (∀ (t t' : Fin T) b b', t < t' → b ∈ d t → b' ∈ d t' → q b' ≤ q b)
-
-/-- Properties of every schedule that Algorithm 3 (DHT), Steps 6–12, builds from a solution
-`s` of (19), whatever its tie-breaking:
+/-- Properties of the schedule that Algorithm 3 (DHT), Steps 6–12, builds from a solution `s`
+of (19), with any tie-breaking. Every run has them when `s` has no mutual views. With mutual
+views, Step 12 can take a user's slot before that user's Steps 6–8 run, which delays an
+initiation and breaks the "as early as possible" clause of `IsDHTInit`.
+The properties:
 - initiations follow Steps 6–8 for every user;
 - mutual views are pairs with `w = 1`, each at most once, within the period caps. -/
 structure IsDHTSchedule (inst : Instance I J) (s : Sol19 I J) (σ : Schedule I J inst.T) :
@@ -305,7 +204,7 @@ structure IsDHTSchedule (inst : Instance I J) (s : Sol19 I J) (σ : Schedule I J
 end TwoDir
 
 open TwoDir
-open OneDirSeq (Instance likeProb LIof LJof)
+open TPeriod
 
 /-- The counterexample instance: `T = 2`, all caps 1, `I = {i}`, `J = {j, a₁, a₂, a₃, a₄}` with
 `j = 0`. User `i` likes everyone for sure; `j` likes `i` with probability `99/100` and each
@@ -465,12 +364,10 @@ theorem thm53_match_le (σ : Schedule (Fin 1) (Fin 5) 2)
 
 theorem thm53_likeProb_mem :
     ∀ e ∈ (univ : Finset ((Fin 1 × Fin 5) ⊕ (Fin 5 × Fin 1))),
-      0 ≤ likeProb thm53Instance e ∧ likeProb thm53Instance e ≤ 1 := by
-  rintro (⟨i, l⟩ | ⟨l, i⟩) -
-  · simp [likeProb]
-  · have := thm53_pJI_mem l i
-    simp only [likeProb]
-    constructor <;> linarith [this.1, this.2]
+      0 ≤ likeProb thm53Instance e ∧ likeProb thm53Instance e ≤ 1 :=
+  likeProb_mem fun i l => by
+    have := thm53_pJI_mem l i
+    exact ⟨by simp, by simp, this.1, by linarith [this.2]⟩
 
 /-- Part 2: for every optimal solution of (19) and every DHT schedule for it, every feasible
 response rule yields at most 1 expected match. The rule may depend on the whole like outcome,
@@ -610,15 +507,8 @@ theorem thm53_part3 :
   norm_num
 
 /-- Part 4: `1 < (1 - 1/e) · 771/400`. -/
-theorem thm53_numeric : 1 < (1 - Real.exp (-1)) * (771 / 400) := by
-  have he := Real.exp_one_gt_d9
-  have hpos := Real.exp_pos 1
-  have hinv : (Real.exp 1)⁻¹ < 2 / 5 := by
-    rw [inv_lt_comm₀ hpos (by norm_num)]
-    norm_num
-    linarith
-  rw [Real.exp_neg]
-  nlinarith
+theorem thm53_numeric : 1 < (1 - Real.exp (-1)) * (771 / 400) :=
+  one_lt_one_sub_exp_neg_one_mul (by norm_num)
 
 theorem firstOf_subset {β : Type*} [LinearOrder β] (A : Finset β) : firstOf A ⊆ A :=
   Finset.filter_subset _ _

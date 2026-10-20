@@ -168,11 +168,7 @@ two-period problem (Problem 4.2), for every platform design. -/
 theorem dhInt_approx {feasible : D → Prop} {d : D} {y : U → U → ℝ}
     (hdh : M.IsDHIntSolution feasible d y) {d' : D} (hd' : feasible d') :
     (1 - Real.exp (-1)) * M.value d' ≤ M.value d := by
-  refine M.approx_of_gap ?_ ?_ ?_ hdh hd'
-  · have := Real.exp_le_one_iff.mpr (by norm_num : (-1 : ℝ) ≤ 0)
-    linarith
-  · have := Real.exp_pos (-1)
-    linarith
+  refine M.approx_of_gap one_sub_exp_neg_one_nonneg one_sub_exp_neg_one_le_one ?_ hdh hd'
   · intro d₀ ℓ y₀ hy hyK
     exact topK_correlation_gap (M.init d₀ ℓ) (fun ℓ' => M.φ1 ℓ' ℓ) (M.r2 ℓ) y₀
       (fun i _ => ⟨M.φ1_nonneg i ℓ, M.φ1_le_one i ℓ⟩) (fun i _ => M.r2_nonneg ℓ i) (M.K ℓ)
