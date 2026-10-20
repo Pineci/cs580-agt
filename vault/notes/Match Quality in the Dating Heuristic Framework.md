@@ -127,7 +127,7 @@ DH-int achieves at least $c_K=1-e^{-K}K^K/K!$ of the optimum, where $K=\min_\ell
     - $P_j(\mu)=\mathbb E\min(\mathrm{Poi}(\mu),j)=j-e^{-\mu}\sum_{i<j}(j-i)\mu^i/i!$ is a finite formula. Its derivative is $\Pr[\mathrm{Poi}(\mu)<j]$, which decreases in $\mu$, so $P_j$ is concave on $\mu\ge0$.
     - Induction over the coins shows $\mathbb E\min(X,j)\ge P_j(\mu)$ for every cap $j$ at once. A coin with probability $p$ turns $\mathbb E\min(X,j)$ into $(1-p)\,\mathbb E\min(X,j)+p\,(1+\mathbb E\min(X,j-1))$, and the matching step for $P_j$ is its tangent-line bound.
     - Finally, $P_K(K)=K c_K$, and concavity with $P_K(0)=0$ gives $P_K(\mu)\ge c_K\min(\mu,K)$.
-  - While formalizing we found that the paper's multi-period Theorems 5.3 and 5.4 appear false as stated (see [[Rios 2026 - The Dating Heuristic]]). The R-results here rest only on the two-period Theorem 4.3, which stands.
+  - While formalizing we found that the paper's multi-period Theorems 5.3 and 5.4 are false as stated; both counterexamples are machine-checked (see [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]]). The R-results here rest only on the two-period Theorem 4.3, which stands.
 - **R4 is a lower bound on the loss**, not the true worst case. More periods probably make it worse.
 - **R5 is unproven.** It still needs to handle correlation among a responder's own matches, mutual views, and integral period-1 decisions. A matching lower bound for $k=1$ is also open.
 - **Outside the theory**, as in the paper: history effects, $T>2$, and mutual views in the last period.

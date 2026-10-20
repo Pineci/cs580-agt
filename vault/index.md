@@ -27,4 +27,4 @@ Catalog of the vault. Every note in `notes/`, `sources/`, and `maps/` gets one l
 - [[Submodular Maximization]] — diminishing returns; greedy/local-search/continuous-greedy guarantees under matroid constraints
 - [[History-Dependent Like Probabilities]] — like probability as a function of a user's matches, backlog, and time on the app; five simulated forms
 - [[Match Quality in the Dating Heuristic Framework]] — project synthesis: quality objectives (additive, top-k), sharper $c_K$ for DH-int, weighted DH-int keeps it, top-1 needs a new algorithm (preliminary)
-- [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] — Theorems 5.3 and 5.4 of Rios & Torrico appear false: the T-period relaxations ignore timing (ratios 0.52 and 0.50; the 5.4 one machine-checked)
+- [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] — Theorems 5.3 and 5.4 of Rios & Torrico are false: the T-period relaxations ignore timing (ratios 0.52 and 0.50, both machine-checked); for T ≥ 3 DHT's schedule loses up to 1/(T-1); a per-period relaxation repairs 5.3

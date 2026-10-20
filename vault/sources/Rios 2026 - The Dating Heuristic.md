@@ -141,9 +141,11 @@ status: seed
 
 ## Limitations and gaps
 
-> [!warning] Theorems 5.3 and 5.4 appear to be false as stated (project analysis, 2026-10-20)
-> The $T$-period relaxations (19) and (41) pool each user's slots over all periods. They ignore that nobody can respond in period 1 and that last-period likes can never be answered.
-> - Counterexamples give ratios $0.52$ and $0.50$, below $1-1/e$. The 5.4 one is machine-checked in Lean.
+> [!warning] Theorems 5.3 and 5.4 are false as stated (project analysis, 2026-10-20)
+> The $T$-period relaxations (19) and (41) pool each user's slots over all periods. They ignore that nobody can respond in period 1 and that last-period likes can never be answered. For $T\ge3$, DHT's schedule also ignores when likes arrive.
+> - Counterexamples give ratios $0.52$ (Theorem 5.3) and $0.50$ (Theorem 5.4), below $1-1/e$. Both are machine-checked in Lean.
+> - For $T \ge 3$, a family of instances drives DHT's ratio toward $1/(T-1)$ (brute force).
+> - A per-period relaxation, with DHT showing initiations in the periods the solution chose, restores $1-1/e$ (proof sketch).
 > - The two-period Theorem 4.3 is unaffected; it is machine-checked too.
 >
 > Details: [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]].
