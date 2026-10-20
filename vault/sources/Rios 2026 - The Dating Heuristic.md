@@ -159,6 +159,7 @@ status: seed
   - There, a central clearinghouse outputs one stable matching from rankings plus a few queries, and quality is measured as welfare.
   - Here, a platform probes pairs over time. Each display works like a noisy binary query answered with a like or dislike. The objective is mutual likes, with no stability requirement.
   - A model that elicits preferences through displays and likes but targets welfare or stability could bridge the two.
+- **Project direction (set 2026-10-19):** extend this framework from match count to match quality. Analysis so far: [[Match Quality in the Dating Heuristic Framework]].
 
 ## Follow-up reading
 - Rios, Saban & Zheng (2023, MSOM), "Improving match rates in dating markets through assortment optimization": the original DH, history-effect estimates, and a field experiment.

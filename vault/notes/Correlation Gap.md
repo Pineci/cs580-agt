@@ -34,3 +34,4 @@ Take a monotone submodular set function $f$ and fixed marginal probabilities for
 ## Related
 - [[Submodular Maximization]]
 - [[Dating Heuristic]]
+- [[Match Quality in the Dating Heuristic Framework]]: for weighted top-$K$ functions (the rank functions of $K$-uniform matroids), the gap improves from $1-1/e$ to $1-e^{-K}K^K/K!$. The project uses this to sharpen DH-int's guarantee. *(Yan 2011; not from an ingested source, citation to verify.)*

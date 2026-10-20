@@ -65,3 +65,4 @@ From Table 1 of [[Rios 2026 - The Dating Heuristic]]:
 - [[History-Dependent Like Probabilities]]
 - [[Correlation Gap]]
 - [[Submodular Maximization]]
+- [[Match Quality in the Dating Heuristic Framework]]: the project's analysis of DH-int when match *quality*, not just count, matters. It includes a sharper, tight constant $1-e^{-K}K^K/K!$ for DH-int itself.

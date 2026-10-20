@@ -26,3 +26,4 @@ Catalog of the vault. Every note in `notes/`, `sources/`, and `maps/` gets one l
 - [[Correlation Gap]] — independent vs. correlated distributions with the same marginals lose at most $1-1/e$ for monotone submodular functions
 - [[Submodular Maximization]] — diminishing returns; greedy/local-search/continuous-greedy guarantees under matroid constraints
 - [[History-Dependent Like Probabilities]] — like probability as a function of a user's matches, backlog, and time on the app; five simulated forms
+- [[Match Quality in the Dating Heuristic Framework]] — project synthesis: quality objectives (additive, top-k), sharper $c_K$ for DH-int, weighted DH-int keeps it, top-1 needs a new algorithm (preliminary)

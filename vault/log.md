@@ -27,3 +27,9 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - ~ [[Stable Matching]] (added contrast link to Two-Sided Assortment Optimization)
 - ~ [[Query-Enhanced Algorithms]] (added link: displays and likes as elicitation)
 - ~ [[Filos-Ratsikas 2026 - The Distortion of Stable Matching]] (added cross-reference to Rios 2026)
+
+## [2026-10-19] query | Match Quality in the Dating Heuristic Framework
+- + [[Match Quality in the Dating Heuristic Framework]] (research-direction framework and preliminary results)
+- ~ [[Dating Heuristic]] (linked the synthesis)
+- ~ [[Correlation Gap]] (linked the synthesis; noted the uniform-matroid constant)
+- ~ [[Rios 2026 - The Dating Heuristic]] (recorded the project direction)
