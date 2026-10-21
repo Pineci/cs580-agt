@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-20
 tags: [social-choice/distortion, elicitation]
 aliases: [value queries, value query, cardinal queries, query-enhanced distortion, threshold step function, Stable-TSF, HassePath]
 sources: ["[[Filos-Ratsikas 2026 - The Distortion of Stable Matching]]"]
@@ -42,4 +42,5 @@ From [[Filos-Ratsikas 2026 - The Distortion of Stable Matching]]:
 - [[Stable Matching]]
 - [[Deferred Acceptance]]
 - [[Rotation Poset]]
+- [[Match Quality with Queried Values]]: the threshold step function applied to quality-weighted DH-int (the project's warm-up for unknown match quality).
 - [[Two-Sided Assortment Optimization]]: showing someone a profile and observing a like or dislike is another kind of elicitation. Each display answers a noisy binary question rather than returning an exact value. *(This is my reading, not a claim made by either source.)*

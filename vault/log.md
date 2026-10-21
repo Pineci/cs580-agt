@@ -64,3 +64,8 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - ~ [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] (Theorem 5.4 is existential: only its proof is refuted, the claim is open; rounding step is prose; Lean's DHT predicate assumes no mutual-view interference)
 - ~ [[Rios 2026 - The Dating Heuristic]] (warning: Theorem 5.4's proof is wrong, not the theorem)
 - ~ [[Match Quality in the Dating Heuristic Framework]] (R1 now for unequal caps, R2 with $c_K$; what is not machine-checked in R1, R3, R4)
+
+## [2026-10-20] query | Match Quality with Queried Values
+- + [[Match Quality with Queried Values]] (phase 2 of the match-quality direction: distortion-style warm-up; Bayesian model results B1 and B2; sketch of a tractable query strategy; brute force in `data/scripts/bayes_query_check.py`)
+- ~ [[Match Quality in the Dating Heuristic Framework]] (linked the new note from the phase 2 preview)
+- ~ [[Query-Enhanced Algorithms]] (linked the warm-up)

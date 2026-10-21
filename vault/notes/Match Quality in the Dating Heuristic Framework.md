@@ -107,6 +107,10 @@ DH-int achieves at least $c_K=1-e^{-K}K^K/K!$ of the optimum, where $K=\min_\ell
 - **Additive case reduces to known quality.** Suppose the platform has unbiased estimates $\hat q$, and true quality is independent of like outcomes given those estimates. By linearity, $Q$ is then the known-quality problem with $\hat q$, and R2 applies.
 - **Top-1 doesn't reduce.** The maximum isn't linear, so uncertainty in $q$ matters.
 - **Worst case needs a model.** Without one linking observations to $q$, no guarantee is possible. Candidates include post-match feedback treated as queries, in the spirit of [[Query-Enhanced Algorithms]] and [[Distortion]].
+- **Worked out (2026-10-20)** in [[Match Quality with Queried Values]]. The model chosen: a Bayesian prior on each $q$, with an LLM agent's query revealing it. Results so far:
+  - value-indexed DH-int keeps $c_K$ when responders can screen their backlogs;
+  - $c_K$ also holds with queries before period 1, given the best query strategy;
+  - a distortion-style warm-up gives $c_K/\lambda$.
 
 ## Evidence
 - [[Rios 2026 - The Dating Heuristic]]: the model, DH-int, and the proof chain (MIP upper bound, the distribution problem, the correlation gap) that R1 and R2 modify.
