@@ -97,3 +97,6 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - + [[Kanoria 2021 - Facilitating the Search for Partners on Matching Platforms]] (url, SSRN version; no raw file)
 - ~ [[Congestion in Matching Markets]] (costly screening, effective cost c/p)
 - ~ [[Two-Sided Assortment Optimization]] (who should initiate when users are strategic)
+
+## [2026-10-21] query | Strategic Users in the Dating Heuristic Framework
+- + [[Strategic Users in the Dating Heuristic Framework]] (strategic likes and agent reports: Theorems 1–2, Lemmas 1–2, Propositions 1–5; brute force in `data/scripts/strategic_check.py`)
