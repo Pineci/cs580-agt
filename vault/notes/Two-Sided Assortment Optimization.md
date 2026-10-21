@@ -1,10 +1,10 @@
 ---
 type: concept
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-21
 tags: [matching/assortment, dating/platforms]
 aliases: [curated dating, curated dating platform, curated dating platforms, profile recommendation, dating platform design, backlog, sequential match, non-sequential match, one-directional, two-directional]
-sources: ["[[Rios 2026 - The Dating Heuristic]]"]
+sources: ["[[Rios 2026 - The Dating Heuristic]]", "[[Kanoria 2021 - Facilitating the Search for Partners on Matching Platforms]]"]
 origin: claude
 status: seed
 ---
@@ -43,6 +43,11 @@ On a two-sided platform, deciding which options (profiles, suppliers, customers)
   - One-directional designs lose relatively little: about 9% for DH-int.
   - Women initiating beat men initiating for every algorithm tested.
 - **Related problem:** stochastic matching in the query-commit model. Chen et al. (2009) show greedy gets 1/4; see also Jeloudar et al. (2021).
+
+### Who should initiate, when users are strategic (2026-10-21)
+- **Non-strategic users.** In [[Rios 2026 - The Dating Heuristic]], a one-directional design can only lose matches, about 9% fewer than two-directional.
+- **Strategic users.** In [[Kanoria 2021 - Facilitating the Search for Partners on Matching Platforms]], screening is costly and users act strategically. There, blocking the long side from proposing creates a better equilibrium, and with quality tiers, hiding quality as well gives a Pareto improvement as $c\to0$.
+- **Open target.** A one-directional DH-int might beat a two-directional one once likes are costly or budgeted. See [[Strategic Users in the Dating Heuristic Framework]] and [[Congestion in Matching Markets]].
 
 ## Related
 - [[Dating Heuristic]]

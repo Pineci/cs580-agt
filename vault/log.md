@@ -77,3 +77,23 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - + [[Top-k Match Quality]] (T1: credit-DH gets $\rho c_k$ for top-k with known qualities; T2: Bayesian priors; queries before period 1; T3: budgeted screening; weighted DH-int is $\Theta(k/K)$; brute force in `data/scripts/topk_check.py` and `data/scripts/topk_screening_check.py`)
 - ~ [[Match Quality in the Dating Heuristic Framework]] (R5 marked as worked out)
 - ~ [[Match Quality with Queried Values]] (top-1 gap points to the new note)
+
+## [2026-10-21] ingest | Coles 2013 - Preference Signaling in Matching Markets
+- + [[Coles 2013 - Preference Signaling in Matching Markets]] (url, NBER WP 16185; no raw file)
+- + [[Preference Signaling]]
+- + [[Congestion in Matching Markets]]
+
+## [2026-10-21] ingest | Lee 2015 - Propose with a Rose
+- + [[Lee 2015 - Propose with a Rose]] (url, published version; no raw file)
+- ~ [[Preference Signaling]] (field evidence)
+- ~ [[Rios 2026 - The Dating Heuristic]] (conflict callout: the cited +0.2 signaling effect is not what Lee & Niederle measure; 2014 is the online-first year)
+- ~ [[History-Dependent Like Probabilities]] (what the rose experiment measures; strategic history effects)
+
+## [2026-10-21] ingest | Arnosti 2021 - Managing Congestion in Matching Markets
+- + [[Arnosti 2021 - Managing Congestion in Matching Markets]] (url, NSF PAR; no raw file)
+- ~ [[Congestion in Matching Markets]] (two regimes, application limits)
+
+## [2026-10-21] ingest | Kanoria 2021 - Facilitating the Search for Partners on Matching Platforms
+- + [[Kanoria 2021 - Facilitating the Search for Partners on Matching Platforms]] (url, SSRN version; no raw file)
+- ~ [[Congestion in Matching Markets]] (costly screening, effective cost c/p)
+- ~ [[Two-Sided Assortment Optimization]] (who should initiate when users are strategic)

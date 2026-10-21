@@ -1,10 +1,10 @@
 ---
 type: concept
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-21
 tags: [dating/behavior, dating/platforms]
 aliases: [history effect, history effects, history-dependent preferences, like probability, like probabilities]
-sources: ["[[Rios 2026 - The Dating Heuristic]]"]
+sources: ["[[Rios 2026 - The Dating Heuristic]]", "[[Lee 2015 - Propose with a Rose]]"]
 origin: claude
 status: seed
 ---
@@ -26,6 +26,8 @@ The probability that a dating-app user likes a profile they're shown is modeled 
   - **threshold:** stop liking after more than 5 matches, capturing limited time and attention;
   - **disengagement:** $\gamma t$ with $\gamma=-0.2$;
   - **signaling:** $+0.2$ when the user knows the profile is from their backlog, i.e. already likes them. Compare Lee & Niederle (2014), "propose with a rose".
+    - Their experiment ([[Lee 2015 - Propose with a Rose]]) measures something different: the extra effect of a *scarce* signal on top of a known like. It is about $+3.3$ points of acceptance, concentrated where attainability is in doubt.
+    - Strategic users produce history effects of their own. Under a top-$k$ objective, thresholds rise with matches already held: see S7 of [[Strategic Users in the Dating Heuristic Framework]].
 - **Consequence for algorithms.**
   - History dependence makes next period's objective nonlinear in this period's decisions.
   - One-lookahead heuristics like the [[Dating Heuristic]] therefore substitute current probabilities for next-period ones. This is optimistic when probabilities fall with history.

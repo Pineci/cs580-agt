@@ -9,7 +9,7 @@ citekey: "rios2026dating"
 url: "https://arxiv.org/abs/2308.02584"
 raw: "[[rios2026dating.pdf]]"
 created: 2026-10-19
-updated: 2026-10-20
+updated: 2026-10-21
 tags: [dating/platforms, matching/assortment, optimization/submodular]
 aliases: ["The Dating Heuristic: A Provably Strong Matching Algorithm for Dating Platforms"]
 origin: claude
@@ -119,6 +119,11 @@ status: seed
   - threshold: stop liking after more than 5 matches;
   - disengagement: $-0.2\,t$;
   - signaling: $+0.2$ when the user knows the profile is from their backlog (cf. Lee & Niederle 2014).
+    > [!warning] Conflict: what the citation supports
+    > [[Lee 2015 - Propose with a Rose]] (2014 is its online-first year) does not measure this.
+    > - In that experiment every proposal is already a known like.
+    > - What it measures is the *extra* effect of a scarce rose: about $+3.3$ points of acceptance, a logit coefficient of $0.443$.
+    > - So the $+0.2$ is Rios & Torrico's own modeling choice, not an estimate from that paper.
 - **Results, two-directional with linear history (Table 4):**
 
   | Algorithm | Matches |
@@ -184,7 +189,7 @@ status: seed
   - Immorlica, Lucier, Manshadi & Wei (2022)
   - Celdir, Cho & Hwang (2024): popularity bias in dating
   - Halaburda, Piskorski & Yildirim (2018)
-- Lee & Niederle (2014): signaling in online dating
+- Lee & Niederle (2014): signaling in online dating. Ingested as [[Lee 2015 - Propose with a Rose]].
 - Agrawal, Ding, Saberi & Ye (2010): correlation gap
 - Stochastic matching / query-commit: Chen, Immorlica, Karlin, Mahdian & Rudra (2009); Jeloudar, Lo, Pollner & Saberi (2021)
 
