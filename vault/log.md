@@ -69,3 +69,6 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - + [[Match Quality with Queried Values]] (phase 2 of the match-quality direction: distortion-style warm-up; Bayesian model results B1 and B2; sketch of a tractable query strategy; brute force in `data/scripts/bayes_query_check.py`)
 - ~ [[Match Quality in the Dating Heuristic Framework]] (linked the new note from the phase 2 preview)
 - ~ [[Query-Enhanced Algorithms]] (linked the warm-up)
+
+## [2026-10-20] update | Budgeted backlog screening (B3)
+- ~ [[Match Quality with Queried Values]] (B3: screening-aware DH-int gets $c_K\rho\ge c_K/2$ when responders can screen only part of the backlog; example where a budget-blind program fails; brute force in `data/scripts/screening_budget_check.py`)

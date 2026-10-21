@@ -4,7 +4,7 @@ question: "Can quality-weighted DH-int keep its additive-quality guarantee when 
 created: 2026-10-20
 updated: 2026-10-20
 tags: [dating/platforms, matching/quality, elicitation, research/project]
-aliases: [queried match quality, Bayesian query model, backlog screening, value-indexed DH-int, unknown match quality]
+aliases: [queried match quality, Bayesian query model, backlog screening, value-indexed DH-int, unknown match quality, budgeted screening, screening-aware DH-int]
 sources: ["[[Rios 2026 - The Dating Heuristic]]", "[[Filos-Ratsikas 2026 - The Distortion of Stable Matching]]"]
 origin: claude
 status: seed
@@ -14,7 +14,7 @@ status: seed
 > [!question] Can quality-weighted DH-int keep its additive-quality guarantee when the platform does not know match qualities and must query them, for example through an LLM agent for each user?
 
 > [!note] Preliminary
-> These are informal proofs from 2026-10-20 and are not in Lean. B1, B2 and the examples were checked by brute force (see Evidence). This is phase 2 of [[Match Quality in the Dating Heuristic Framework]]: unknown quality, additive objective. The project chose the Bayesian model as its main model, with the distortion-style model as a warm-up.
+> These are informal proofs from 2026-10-20 and are not in Lean. B1–B3 and the examples were checked by brute force (see Evidence). This is phase 2 of [[Match Quality in the Dating Heuristic Framework]]: unknown quality, additive objective. The project chose the Bayesian model as its main model, with the distortion-style model as a warm-up.
 
 ## Answer
 
@@ -26,7 +26,8 @@ status: seed
 - **Bayesian model (main model).**
   - **B1.** If responders can screen their backlogs between periods, a *value-indexed* DH-int keeps $c_K$. The program has to see each pair's value distribution, not just its mean: mean-weighted DH-int can be arbitrarily bad.
   - **B2.** With budgeted queries before period 1, $c_K$ still holds if the platform picks the query strategy that maximizes the expected optimum of the value-indexed program. That step is a stochastic dynamic program, much harder than DH-int's MIP. So B2 shows that all the loss beyond $c_K$ comes from choosing what to query.
-  - **Open:** a tractable query strategy for period 1 (sketch below), and backlogs larger than the screening budget.
+  - **B3.** When a responder can screen only $b_\ell$ members of its backlog, *screening-aware* DH-int gets $c_K\rho\ge c_K/2$. Its program accounts for the budget, and each responder marks backlog members at random, then screens them in random order. A program that ignores the budget can be arbitrarily bad.
+  - **Open:** a tractable query strategy for period 1 (sketch below), and whether B3's factor $\rho$ is needed.
 
 The setting is the two-period model of [[Rios 2026 - The Dating Heuristic]], with its assumptions: empty initial backlog, history-independent like probabilities, no mutual views in period 2. As in R1, $c_K=1-e^{-K}K^K/K!$, where $K$ is at most every display cap.
 
@@ -122,6 +123,61 @@ The only new point is that R1's argument never needed fixed weights: independent
 - *Restricted strategies.* The argument works for any family of allowed query strategies, provided the algorithm and OPT share it. Examples: only initiators query, or each agent queries only its own values.
 - *Caveat.* Computing $\sigma^*$ is a dynamic program over query histories. Rios & Torrico assume their MIP is solved exactly; this step is much harder than that.
 
+#### B3. Budgeted screening: $c_K\rho$, with $\rho\ge1/2$
+**Setting.**
+- As in B1, except that responder $\ell$ can screen at most $b_\ell$ backlog members between periods, possibly fewer than its backlog holds. OPT has the same budgets.
+- A screen reveals the member's pair weight.
+- If the sender's own value comes free (its agent answers at most $K$ queries), split each sender by that value as separate items. Nothing below changes, since each sender still contributes at most one item.
+
+**Single responder.**
+- *Notation.* Let $\pi_i=\phi^1_{i\ell}x_{i\ell}$ be the probability that sender $i$ is in the backlog. Let $W_i=\phi^2_{\ell i}w_{\ell i}$ be its random weight, with mean $\mu_i$.
+- *Program.* $G_\ell(x)$ uses three kinds of variables:
+  - $z_i$: $i$ arrives and is screened;
+  - $y_{iv}$: $i$ is screened, has weight $v$, and is shown;
+  - $u_i$: $i$ arrives, is not screened, and is shown.
+
+  $$G_\ell(x)=\max\sum_{i,v}v\,y_{iv}+\sum_i\mu_iu_i\quad\text{s.t. }y_{iv}\le z_i\Pr[W_i=v],\ \ z_i+u_i\le\pi_i,\ \ \sum_iz_i\le b_\ell,\ \ \sum_{i,v}y_{iv}+\sum_iu_i\le K_\ell.$$
+- *Every policy satisfies these constraints in expectation.* The key one is $y_{iv}\le z_i\Pr[W_i=v]$. It holds because the decision to screen $i$ is made before $W_i$ is seen, and $W_i$ is independent of everything else the platform sees.
+- *Policy ("mark, then screen in random order").*
+  1. Mark each backlog member $i$ independently with probability $z_i/\pi_i$, using the program's $z$.
+  2. Screen the marked members in uniformly random order until the budget is spent.
+  3. Show the $K_\ell$ best, ranking screened members by $W$ and the rest by $\mu$.
+
+**Lemma B3.** The policy earns at least $c_{K_\ell}\,\rho\,G_\ell(x)$, where $\rho=\min_i\mathbb E\big[\min(1,b_\ell/(1+|M_{-i}|))\big]$ and $M_{-i}$ is the set of other marked members. $\rho\ge1/2$ always, and $\rho\ge b/(b+1)$ for $b_\ell\le2$.
+1. **Layer cake.** The shown value is $\int_0^\infty\min(N_\theta,K)\,d\theta$, where $N_\theta$ counts the candidates whose weight is at least $\theta$.
+   - Let $\mu_\theta=\sum_i[z_i\Pr(W_i\ge\theta)+(\pi_i-z_i)\mathbb 1(\mu_i\ge\theta)]$. At the program's $z$, $\int\min(\mu_\theta,K)\,d\theta=G_\ell(x)$, because the fractional program fills the highest weights first.
+   - So it suffices to show $\mathbb E\min(N_\theta,K)\ge\rho\,c_K\min(\mu_\theta,K)$.
+   - Drop marked members that were not screened from the candidates. This only lowers the policy's value.
+2. **Comparison with no budget.** Let $N'_\theta$ count as if every marked member were screened: marked members with $W\ge\theta$ plus unmarked members with $\mu\ge\theta$.
+   - Its indicators are independent across senders, one per sender, with total mean $\mu_\theta$. So R1's lemma gives $\mathbb E\min(N'_\theta,K)\ge c_K\min(\mu_\theta,K)$.
+   - What remains is $\mathbb E\min(N_\theta,K)\ge\rho\,\mathbb E\min(N'_\theta,K)$.
+3. **Count in a fixed order.** Give each member an independent uniform priority $U$. Order the members with marked ones first, by $U$, then unmarked ones. Then $\min(N,K)$ is the number of good candidates with fewer than $K$ good candidates before them, and likewise for $N'$.
+   - *Unmarked good member.* Whenever it counts in $N'$ it also counts in $N$, because screened-and-good members are a subset of marked-and-good ones.
+   - *Marked good member $i$ with priority $u$.* It counts in $N'$ if $E_2$ holds: fewer than $K$ marked-good members come before $u$. It counts in $N$ if $E_1$ also holds: fewer than $b$ marked members come before $u$, so $i$ is screened.
+4. **Harris.** For fixed $u$, $E_1$ and $E_2$ are both decreasing events in the other members' independent coordinates. Each member's state is ordered unmarked < marked-bad < marked-good, together with whether its priority is below $u$. So $\Pr[E_1\cap E_2]\ge\Pr[E_1]\Pr[E_2]$.
+   - Putting marked members first matters. With mixed orders, an unmarked-good member and a marked-bad member compete for different resources: one takes a display slot, the other a screen. Then $E_1$ and $E_2$ can be negatively correlated.
+5. **Chebyshev.** $\Pr[E_1(u)]$ and $\Pr[E_2(u)]$ both decrease in $u$. So $\int_0^1\Pr[E_1]\Pr[E_2]\,du\ge\int_0^1\Pr[E_1]\,du\cdot\int_0^1\Pr[E_2]\,du$.
+   - The first factor is the probability that $i$ is among the first $b$ marked members, $\mathbb E[\min(1,b/(1+|M_{-i}|))]\ge\rho$.
+   - The second factor is $i$'s count in $N'$.
+6. **Bounding $\rho$.** We have $\mathbb E|M_{-i}|\le\sum_jz_j\le b$.
+   - By Markov's inequality, $E_1(u)$ fails with probability at most $u$, which gives $\rho\ge\int_0^1(1-u)\,du=1/2$.
+   - For $b\le2$, $\min(1,b/(1+d))$ lies above the line through its values at $d=b$ and $d=b+1$ at every integer $d\ge0$. That line decreases in $d$, so $\rho\ge b/(b+1)$.
+
+**Theorem B3 (two periods).** Screening-aware DH-int earns at least $c_K\rho\,\mathrm{OPT}\ge(c_K/2)\,\mathrm{OPT}$, where $\rho$ is the smallest over responders.
+- *Algorithm.* Use program (16), with mutual views at $\beta_e\mathbb E[w_e]$ and period-2 part $\sum_\ell G_\ell(x)$. Since $\pi_i=\phi^1x$ enters linearly, this is still a MIP of DH-int's shape. In period 2, run the policy above.
+- *Proof.* This is B1's chain.
+  - Every policy satisfies $G_\ell$'s constraints, so OPT is at most the program's optimum.
+  - Lemma B3 bounds each responder from below.
+- *Consistency with B1.* If every budget covers the whole backlog, the program sets $z=\pi$, $\rho=1$, and this is B1.
+- *Queries before period 1.* B2's conditioning argument goes through unchanged with $c_K\rho$ in place of $c_K$.
+
+**Example: the program must see the budget.**
+- $n$ initiators each have one slot, and every like is certain.
+- *Pooled:* every initiator initiates toward $r$, with $K=b=1$. $r$'s value for each is $n$ with probability $1/n$, and 0 otherwise.
+- *Split:* each initiator initiates toward its own responder, for a sure value of $1/2$.
+- B1's program assumes $r$ screens everyone. It scores pooled at $n>n/2$, so it pools. But one screen earns only $2-1/n$, so it gets about $4/n$ of OPT: 0.611 at $n=6$ and 0.380 at $n=10$.
+- $G_r$ scores pooled at $2-1/n$, so screening-aware DH-int splits.
+
 #### Toward a tractable query strategy (sketch, not proved)
 **Obstacle: the value of information is not submodular.**
 - Take one slot. The choice is between a sure alternative worth 3 and a pair with $w=q_1+q_2$, where each $q$ is 0 or 2 with probability 1/2.
@@ -159,6 +215,14 @@ The only new point is that R1's argument never needed fixed weights: independent
     - Random search doesn't approach $c_K$, but R1's tight example shows the bound is tight.
   - *B2:* OPT and the best $\mathbb E\,\Phi$ strategy were computed by dynamic programming over query histories. $\mathrm{ALG}\ge c_K\,\mathrm{OPT}$ held on 1,200 instances, with worst ratio $0.93$.
   - *Examples:* the needle, mean-weighted DH-int, and non-submodular value-of-information numbers above all come from the script.
+- **Brute force for B3, 2026-10-20.** `data/scripts/screening_budget_check.py` solves $G_\ell$ with scipy. It computes the policy exactly and the optimal adaptive screening policy by dynamic programming, over three seeds. Every check passed.
+  - *Single responder:* 9,000 random instances with 2–6 senders and binding $b$ and $K$, plus hill-climbing.
+    - OPT $\le G$ and $\mathrm{ALG}\ge c_K\rho\,G$ always held.
+    - The worst ALG/$(c_KG)$ was $1.09$. The worst ALG/OPT was $0.83$.
+    - $\rho$ went as low as $0.501$ in individual instances.
+  - *$\rho\ge b/(b+1)$* held exactly on 60,000 random Poisson-binomials, for $b=1..4$.
+  - *Two-period lift:* 600 random one-directional markets. The worst ALG/OPT was $0.93$.
+  - *Budget-blind example:* the numbers above come from the script.
 - *Not from an ingested source; to verify or ingest:*
   - Weitzman (1979), Pandora's box;
   - Singla (2018), "The Price of Information in Combinatorial Optimization";
@@ -166,11 +230,18 @@ The only new point is that R1's argument never needed fixed weights: independent
   - Chekuri, Vondrák & Zenklusen (2014), contention resolution schemes.
 
 ## Gaps
-- **Nothing here is in Lean.** B1 should be a small extension of `PoissonGap.lean` to random weights; B2 is a conditioning argument.
+- **Nothing here is in Lean.**
+  - B1 should be a small extension of `PoissonGap.lean` to random weights.
+  - B2 is a conditioning argument.
+  - B3 adds Harris's inequality for product measures, which Mathlib may not have in this form.
 - **Tractable queries before period 1.** This is only a sketch.
   - The rounding constant $\gamma$ is unverified.
   - It covers one-directional, sequential-only designs. With two directions, independent rounding can show a pair both ways, and mutual views couple two users' capacity.
   - It is also open whether simple rules, such as screening the $b$ best by prior, lose only a constant.
-- **Binding screening budgets.** When a backlog is larger than the screening budget, the responder faces a budgeted probing problem. This is open.
+- **B3's factor $\rho$.**
+  - *Is it needed?* No tested instance came near $c_K\rho$. But instances with at most 6 senders cannot reach the Poisson worst case behind $c_K$ even without a budget, so this does not show that $\rho$ is unnecessary. A test with many small senders (Monte Carlo) would.
+  - *Is $\rho\ge b/(b+1)$ for every $b$?* It is proved for $b\le2$ and holds numerically for Poisson-binomials. A general proof needs their concentration, since arbitrary distributions can go lower for $b\ge3$.
+  - *Smarter screening orders* (for example, by each member's value of screening) are not analyzed.
+  - *The two-period check* covered only one-directional markets.
 - **Warm-up.** The query count depends on $p_\ell$, and there are no lower bounds on the number of queries.
 - **Top-1 with queries.** Not started. B1 relies on the additive objective splitting across responders, so top-1 inherits R4's obstruction. Pandora's box is the natural tool when one user inspects candidates at a cost.
