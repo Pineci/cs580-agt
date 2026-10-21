@@ -118,6 +118,7 @@ Every constraint holds, and the objective equals $U_k$. So OPT is at most the pr
 Take $K=2$ and $k=1$. Credit-DH's program picks the top-1 optimum, a perfect matching plus the admirers, so credit-DH is optimal. Weighted DH-int earns $0.676$ of OPT, which tends to $2/3$.
 
 ## Evidence
+- [[From DH-int to Credit-DH]]: a walkthrough that puts DH-int, weighted DH-int and credit-DH side by side, for readers new to the project.
 - [[Match Quality in the Dating Heuristic Framework]]: the objectives; R1 (constant and lemma); R2; R4 (instance and upper bound); R5 (the conjecture worked out here).
 - [[Match Quality with Queried Values]]: Lemma A (sandwich), B2 (conditioning), B3 (marked-first ordering, the bound on $\rho$, screening variables).
 - [[Rios 2026 - The Dating Heuristic]]: the model and program (16). [[Correlation Gap]]: the role of independence.

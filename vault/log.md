@@ -100,3 +100,8 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-10-21] query | Strategic Users in the Dating Heuristic Framework
 - + [[Strategic Users in the Dating Heuristic Framework]] (strategic likes and agent reports: Theorems 1–2, Lemmas 1–2, Propositions 1–5; brute force in `data/scripts/strategic_check.py`)
+
+## [2026-10-21] query | From DH-int to Credit-DH
+- + [[From DH-int to Credit-DH]] (walkthrough: model, notation, the three programs side by side, why credit-DH works for top-k, unknown-value counterparts; no new results)
+- ~ [[Dating Heuristic]] (related link)
+- ~ [[Top-k Match Quality]] (evidence link)

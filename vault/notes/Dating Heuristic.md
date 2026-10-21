@@ -1,7 +1,7 @@
 ---
 type: concept
 created: 2026-10-19
-updated: 2026-10-20
+updated: 2026-10-21
 tags: [dating/platforms, matching/assortment, algorithms]
 aliases: [DH, DH-int, DHT, Integral Dating Heuristic, T-periods DH-int, one-lookahead policy, one-lookahead policies]
 sources: ["[[Rios 2026 - The Dating Heuristic]]"]
@@ -67,3 +67,4 @@ From Table 1 of [[Rios 2026 - The Dating Heuristic]]:
 - [[Correlation Gap]]
 - [[Submodular Maximization]]
 - [[Match Quality in the Dating Heuristic Framework]]: the project's analysis of DH-int when match *quality*, not just count, matters. It includes a sharper, tight constant $1-e^{-K}K^K/K!$ for DH-int itself.
+- [[From DH-int to Credit-DH]]: DH-int, its quality-weighted version and the project's credit-DH, written out side by side.
