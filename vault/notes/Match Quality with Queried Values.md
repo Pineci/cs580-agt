@@ -2,7 +2,7 @@
 type: synthesis
 question: "Can quality-weighted DH-int keep its additive-quality guarantee when the platform does not know match qualities and must query them, for example through an LLM agent for each user?"
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 tags: [dating/platforms, matching/quality, elicitation, research/project]
 aliases: [queried match quality, Bayesian query model, backlog screening, value-indexed DH-int, unknown match quality, budgeted screening, screening-aware DH-int]
 sources: ["[[Rios 2026 - The Dating Heuristic]]", "[[Filos-Ratsikas 2026 - The Distortion of Stable Matching]]"]
@@ -244,4 +244,4 @@ The only new point is that R1's argument never needed fixed weights: independent
   - *Smarter screening orders* (for example, by each member's value of screening) are not analyzed.
   - *The two-period check* covered only one-directional markets.
 - **Warm-up.** The query count depends on $p_\ell$, and there are no lower bounds on the number of queries.
-- **Top-1 with queries.** Not started. B1 relies on the additive objective splitting across responders, so top-1 inherits R4's obstruction. Pandora's box is the natural tool when one user inspects candidates at a cost.
+- **Top-1 with queries.** Worked out in [[Top-k Match Quality]]: free rankings, Bayesian priors, queries before period 1 and budgeted screening all carry over to credit-DH. Pandora's-box models, where one user inspects candidates at a cost, are still unexplored.

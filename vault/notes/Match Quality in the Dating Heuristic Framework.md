@@ -2,7 +2,7 @@
 type: synthesis
 question: "How should match quality be modeled in the Rios & Torrico dating-platform framework, and does DH-int guarantee expected quality?"
 created: 2026-10-19
-updated: 2026-10-20
+updated: 2026-10-21
 tags: [dating/platforms, matching/quality, research/project]
 aliases: [match quality, quality-weighted DH-int, top-k match quality, price of counting]
 sources: ["[[Rios 2026 - The Dating Heuristic]]", "[[Filos-Ratsikas 2026 - The Distortion of Stable Matching]]"]
@@ -93,6 +93,11 @@ DH-int achieves at least $c_K=1-e^{-K}K^K/K!$ of the optimum, where $K=\min_\ell
   - DH-int's linear program can't see these diminishing returns.
 
 ### R5. Proposed approach for k=1 (conjecture)
+> [!note] Worked out (2026-10-21)
+> [[Top-k Match Quality]] proves a version of this informally. The algorithm is credit-DH: this LP, plus random period-2 responses.
+> - It gets $\rho\,c_k\ge c_k/2$, rather than the $c_Kc_k$ guessed below.
+> - The same note extends it to queried qualities.
+
 - **Upper-bound LP.**
   - Add credit variables $z_{\ell\ell'}\le\Pr(\ell,\ell'\text{ match})$, which is linear in the plan.
   - Add $\sum_{\ell'}z_{\ell\ell'}\le k$ for each user, and maximize $\sum q z$.
@@ -134,7 +139,7 @@ DH-int achieves at least $c_K=1-e^{-K}K^K/K!$ of the optimum, where $K=\min_\ell
     - Finally, $P_K(K)=K c_K$, and concavity with $P_K(0)=0$ gives $P_K(\mu)\ge c_K\min(\mu,K)$.
   - While formalizing we found that the paper's multi-period Theorem 5.3 is false as stated and Theorem 5.4's proof is wrong; both counterexamples are machine-checked (see [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]]). The R-results here rest only on the two-period Theorem 4.3, which stands.
 - **R4 is a lower bound on the loss**, not the true worst case. More periods probably make it worse.
-- **R5 is unproven.** It still needs to handle correlation among a responder's own matches, mutual views, and integral period-1 decisions. A matching lower bound for $k=1$ is also open.
+- **R5** is now proved informally in [[Top-k Match Quality]], with constant $\rho\,c_k$. A matching lower bound for $k=1$ is still open.
 - **Outside the theory**, as in the paper: history effects, $T>2$, and mutual views in the last period.
 - **Phase 2 (unknown quality)** needs a modeling decision about what the platform observes.
 - **Simulation still to do.** Planned: paper-calibrated instances (Table 2 logit) with synthetic $q$, comparing count-DH-int, DH-int$_q$ and a top-1-aware heuristic.

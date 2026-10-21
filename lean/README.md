@@ -90,7 +90,7 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
 | R2: quality-weighted DH-int keeps $c_K$ (so also $1-1/e$) | `PoissonGap.lean` (`dhInt_quality_approx_cK`); `TwoPeriod.lean` (`dhInt_quality_approx`, the $1-1/e$ version) | proved |
 | R3: no quality guarantee for DH-int as written; trade-off; mixing | `QualityBounds.lean` | arithmetic core only: the inequalities are proved for the numbers involved, but the instances and DH-int's behavior on them are not modeled |
 | R4: additive optimum loses $(K+1)/2$ in best-match quality ($k=1$) | `QualityTopK.lean` | proved on the instance, for every $K$: every additive optimum has best-match total $2K$, while another feasible set gets $2K+2K(K-1)q_o$. That quality-weighted DH-int picks an additive optimum there is argued in prose |
-| R5: top-1 algorithm | — | open mathematically |
+| R5: top-$k$ algorithm (credit-DH, $\rho\,c_k$) | — | informal proof in the vault note "Top-k Match Quality"; not formalized |
 
 ## Layout
 

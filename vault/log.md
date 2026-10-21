@@ -72,3 +72,8 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-10-20] update | Budgeted backlog screening (B3)
 - ~ [[Match Quality with Queried Values]] (B3: screening-aware DH-int gets $c_K\rho\ge c_K/2$ when responders can screen only part of the backlog; example where a budget-blind program fails; brute force in `data/scripts/screening_budget_check.py`)
+
+## [2026-10-21] query | Top-k Match Quality
+- + [[Top-k Match Quality]] (T1: credit-DH gets $\rho c_k$ for top-k with known qualities; T2: Bayesian priors; queries before period 1; T3: budgeted screening; weighted DH-int is $\Theta(k/K)$; brute force in `data/scripts/topk_check.py` and `data/scripts/topk_screening_check.py`)
+- ~ [[Match Quality in the Dating Heuristic Framework]] (R5 marked as worked out)
+- ~ [[Match Quality with Queried Values]] (top-1 gap points to the new note)
