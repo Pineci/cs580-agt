@@ -105,3 +105,7 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - + [[From DH-int to Credit-DH]] (walkthrough: model, notation, the three programs side by side, why credit-DH works for top-k, unknown-value counterparts; no new results)
 - ~ [[Dating Heuristic]] (related link)
 - ~ [[Top-k Match Quality]] (evidence link)
+
+## [2026-10-22] query | Truthful Swiping with an LLM Oracle
+- + [[Truthful Swiping with an LLM Oracle]] (truthful oracle, sincere-threshold swiping, full-information benchmark: Theorems 1–4, Propositions 4–5; brute force in `data/scripts/truthful_swipe_check.py`)
+- ~ [[Strategic Users in the Dating Heuristic Framework]] (follow-up link in Gaps)

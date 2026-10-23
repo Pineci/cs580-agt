@@ -2,7 +2,7 @@
 type: synthesis
 question: "When users and their LLM agents act strategically, does a dating-heuristic platform make likes track match quality, and do agents report values truthfully?"
 created: 2026-10-21
-updated: 2026-10-21
+updated: 2026-10-22
 tags: [dating/platforms, matching/quality, game-theory/incentives, research/project]
 aliases: [strategic likes, sincere liking, consent-only policies, like budgets, cheap-talk reports, strategic agents]
 sources: ["[[Rios 2026 - The Dating Heuristic]]", "[[Coles 2013 - Preference Signaling in Matching Markets]]", "[[Lee 2015 - Propose with a Rose]]", "[[Arnosti 2021 - Managing Congestion in Matching Markets]]", "[[Kanoria 2021 - Facilitating the Search for Partners on Matching Platforms]]"]
@@ -276,3 +276,4 @@ So a strategy that hides a valuable like does strictly better.
   - incentive-compatible ways to use agents' reports;
   - more than two periods;
   - strategic top-k users.
+- **Follow-up.** [[Truthful Swiping with an LLM Oracle]] adds a truthful oracle: it characterizes when sincere swiping is dominant (top-k: at most k acceptable profiles seen), shows DH is not truthful for top-k, and gives screened DH.
