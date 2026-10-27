@@ -5,7 +5,7 @@ import DatingAlgo.ProdExp
 
 Theorem 3(b)–(d) of the vault note "Truthful Swiping with an LLM Oracle", for size caps
 (additive, top-`k` and general subadditive users). The matroid case of Theorem 3(b),
-with constant `(1 - 1/e)^2`, is not formalized.
+with constant `(1 - 1/e)^2`, is in `MatroidSDH.lean`.
 
 **Model.** Two sides `I`, `J`; every pair `e = (i, j)` may match. Each pair has an
 independent random *value combination* `c : C` with law `π e`. Under `c`, `i` values `j`

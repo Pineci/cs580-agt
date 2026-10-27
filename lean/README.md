@@ -49,7 +49,7 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 539 theorems, all fully proved. The count includes lemmas Lean generates
+Current count: 777 theorems, all fully proved. The count includes lemmas Lean generates
 for definitions and structures, such as the fields of `Feasible19`.
 
 ### Rios & Torrico's results
@@ -99,19 +99,38 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
 | --- | --- | --- |
 | Theorem 1(a): if the acceptable profiles seen are cost-separable, sincere swiping is best against every set $R$ of profiles that would match | `TruthfulSwiping.lean` (`sincere_best`) | proved, per realization. Only subadditivity and $v(\{x\}) = q_x$ are assumed |
 | Theorem 1(b): otherwise some $R$ makes another choice strictly better | `TruthfulSwiping.lean` (`sincere_not_best`) | proved |
-| Theorem 1 corollaries: additive always; top-$k$ iff at most $k$ acceptable | `TruthfulSwiping.lean` (`costSeparable_sum`, `costSeparable_topK_iff`) | proved; the matroid corollary is not formalized |
-| Lemma 1′ for SDH: whatever a user does, its matches are $D \cap R$ with $R$ independent of its swipes | `TruthfulSwiping.lean` (`matchesOf_update`) | proved for SDH's two-period game; not for general swipe-local policies |
+| Theorem 1 corollaries: additive always; top-$k$ iff at most $k$ acceptable | `TruthfulSwiping.lean` (`costSeparable_sum`, `costSeparable_topK_iff`) | proved |
+| Theorem 1, matroid corollary: acceptable profiles are cost-separable iff independent | `MatroidSwiping.lean` (`costSeparable_wRank_iff`; `wRank` is weighted matroid rank on Mathlib's `Matroid`) | proved, for $c > 0$ and non-negative values |
+| Lemma 1′ for SDH: whatever a user does, its matches are $D \cap R$ with $R$ independent of its swipes | `TruthfulSwiping.lean` (`matchesOf_update`) | proved for SDH's two-period game |
+| Lemma 1′ for every swipe-local policy: what a user sees, and $R$, do not depend on its strategy | `SwipeLocal.lean` (`seen_update`, `wouldMatch_update`, `matchSet_update`) | proved, for any period-1 displays and any period-2 rule that picks from the backlog, with mutual views |
+| Theorem 5: DSIC under every swipe-local policy when the acceptable profiles seen are cost-separable; 5(b) DH-int, weighted DH-int and credit-DH are universally DSIC for additive users | `SwipeLocal.lean` (`swipeLocal_dsic`, `swipeLocal_dsic_additive`, `swipeLocal_dsic_topK`) | proved, against every behavior of the others |
 | Theorems 3(a), 5(a): SDH is DSIC | `TruthfulSwiping.lean` (`sdh_dsic`, `sdh_dsic_topK`) | proved: against every behavior of the others, including strategies that react to what they see, for every realization of values and coins. For top-$k$ it needs only at most $k$ planned partners |
 | Theorem 5(d): a sincere user's utility is at least 0 | `TruthfulSwiping.lean` (`sdh_sincere_nonneg`) | proved |
-| Theorem 5(e), its key step: a planned pair with two sincere ends matches | `TruthfulSwiping.lean` (`sdh_arc_matches`) | proved; the welfare sum over pairs is not formalized |
+| Theorems 3(a), 5(a) for matroid users | `MatroidSwiping.lean` (`sdh_dsic_matroid`) | proved, for a loopless matroid and independent planned partners |
+| Theorem 5(e): if the users outside `Dev` are sincere, welfare is at least the net weight of the planned pairs with neither end in `Dev` | `SDHRobust.lean` (`sdh_robust`); key step `sdh_arc_matches` in `TruthfulSwiping.lean` | proved, for values additive on planned partners |
+| Lemma R: a match set with every degree at most $2K$ can be oriented with at most $K$ initiations and $K$ responses per user, and SDH's game then matches exactly that set | `Orientation.lean` (`exists_balanced`, `lemmaR`, `lemmaR_realize`, `matchesOf_card_le`) | proved. The proof splits off two edges at a vertex and inducts, instead of the note's Euler tours |
+| Impossibility 1: the 10/5 example (no dominant strategy) and the Bayes–Nash failure | `SwipeRegret.lean` (`impossibility1_values`, `impossibility1_no_dominant`, `like_gain_le`, `impossibility1_bn_example`) | proved |
+| Theorem 2(a): on the note's instance, any mechanism in which `a`'s expected utility is at least 0 earns at most $((1+\varepsilon)k/b + \delta)\,\mathrm{OPT_{FI}}$ for large $H$ | `PriceOfIR.lean` (`thm2a_welfare_le`, `thm2a`) | proved. The mechanism enters only through the distribution of `a`'s match count and $\mathbb E\,u_a \ge 0$, which every equilibrium gives |
+| Theorem 2(b): $\mathrm{OPT_{FI}} \le (b/k)\,\mathrm{OPT_{IR}}$ for top-$k$ | `PriceOfIR.lean` (`welfare_topK_le`, `optFI_topK_le`, `optFI_topK_le_ceil`) | proved, **sharpened** from the note's $\lceil b/k\rceil$ to $b/k$, via König's edge-coloring theorem (`EdgeColoring.lean`) |
+| Theorem 2(c), (d): subadditive $\mathrm{OPT_{FI}} \le b\,\mathrm{OPT_{IR}}$ (cap 1); additive $\mathrm{OPT_{FI}} = \mathrm{OPT_{IR}}$ | `PriceOfIR.lean` (`optFI_subadditive_le`, `optFI_additive`) | proved |
+| SDH against full information: $c_k^2 (k/b)$ for top-$k$, $c_1^2/b$ for subadditive | `PriceOfIR.lean` (`sdh_vs_optFI_topK`, `sdh_vs_optFI_subadditive`) | proved |
+| König's edge-coloring theorem; a degree-$\le k$ subgraph keeps a $k/b$ share of any weight | `EdgeColoring.lean` (`exists_matching_cover_max`, `exists_edgeColoring`, `exists_degCap_subset`) | proved from Hall's theorem in Mathlib |
 | Theorem 3(b), first step: the LP bounds $\mathrm{OPT_{IR}}$, and has an optimal plan | `ScreenedDH.lean` (`exists_lpValue_eq_optIR`, `optIR_le_lpValue`, `exists_isLPOptimal`) | proved |
-| Theorem 3(b): SDH $\ge c_K^2\,\mathrm{LP} \ge c_K^2\,\mathrm{OPT_{IR}}$ for size caps, $K$ at most every cap | `ScreenedDH.lean` (`lpValue_le_sdhValue`, `sdh_welfare`) | proved, for every feasible plan and every query probabilities with $x_{e,c} \le \tau_e \pi_{e,c}$. The matroid case, $(1-1/e)^2$, is not formalized |
+| Theorem 3(b): SDH $\ge c_K^2\,\mathrm{LP} \ge c_K^2\,\mathrm{OPT_{IR}}$ for size caps, $K$ at most every cap | `ScreenedDH.lean` (`lpValue_le_sdhValue`, `sdh_welfare`) | proved, for every feasible plan and every query probabilities with $x_{e,c} \le \tau_e \pi_{e,c}$ |
+| Theorem 3(b) for matroid users: SDH $\ge (1-1/e)^2\,\mathrm{LP} \ge (1-1/e)^2\,\mathrm{OPT_{IR}}$ | `MatroidSDH.lean` (`matroid_correlation_gap`, `prodExp_matroid_gap`, `lpValue_le_sdhValueM`, `sdh_welfare_matroid`) | proved. The plan constrains each user's pair totals to the matroid polytope, defined as the convex hull of indicator vectors of independent sets. The correlation gap is proved without derivatives, by adding `N` independent rounds and letting `N → ∞` |
+| Theorem 3(c) for matroid users: a user's planned total is at most its rank | `MatroidSDH.lean` (`sum_le_of_mem_matroidPolytope`) | proved; with the per-pair bound `sdhTau_le` this gives $O(\mathrm{rank}/\hat p)$ calls |
 | The $c_K$ gap for independent random weights (layer cake + R1's lemma) | `ProdExp.lean` (`prodExp_randomWeight_gap`, `prodExp_columns_gap`) | proved |
 | Welfare on IR sets is the sum of net weights | `ScreenedDH.lean` (`welfare_eq_sum_wt`) | proved |
 | Theorem 3(c): $\tau_e \le x_e/\hat p_e$, calls per user $\le b'_\ell/\hat p$, a queried pair costs $\le 1 + \sqrt{\phi_I \phi_J}$ calls | `ScreenedDH.lean` (`sdhTau_le`, `sum_callsI_le`, `sum_callsJ_le`, `callsI_add_callsJ`) | proved for **corrected** statements: the plan splits a tied bar level proportionally, and $\hat p_e$ is the mass strictly above the bar if positive, else at the bar. The note's version (ties filled in any order) is false |
 | Bar shape is without loss of generality | `ScreenedDH.lean` (`exists_barShaped`, `exists_optimal_barShaped`) | proved |
 | Theorem 3(d): scaling the plan by $\lambda$ scales calls by $\lambda$ and keeps $c_K^2 \lambda\,\mathrm{OPT_{IR}}$ | `ScreenedDH.lean` (`sdh_budget`, `sum_callsI_budget`) | proved |
-| Lemma R, Theorems 2 and 4, Propositions 4–6, continuous values | — | not formalized |
+| Theorem 4: any policy earns at most $p(2\bar q/b + 2)(1 + o(1))\,\mathrm{OPT_{FI}}$ | `QueryLowerBound.lean` (`indepExp_revealed_true`, `thm4_policy`, `maxBMatch_ge`, `thm4`, `thm4_asymp`) | proved, with an explicit threshold; $np \to \infty$ with $b \le np$ suffices (the note assumed $np \ge C(K + \log n)$). The benchmark uses Chebyshev and König instead of Chernoff bounds and LP integrality |
+| Proposition 4: regret identity $c(\lvert M\rvert - k)^+$, ε-Bayes–Nash, not DSIC; welfare identity; $\mathbb E(\lvert M\rvert-k)^+ \le k e^{-k}k^k/k!$ | `SwipeRegret.lean` (`topK_regret_le`, `topK_regret_attained`, `topK_regret_expect`, `topK_regret_worst`, `topK_util_eq_net`, `excess_le`) | proved. The inequality $U_k^{\rm net} \ge \rho c_k\,\mathrm{OPT_0}$ in 4(b) cites R5 (`Top-k Match Quality`), which is not formalized |
+| Proposition 5: budgets never bind under SDH; per-period matches $\le \min(K, L)$; period-2 best response under a budget | `SDHRobust.lean` (`sdh_budget_feasible`), `SwipeLocal.lean` (`matchSet_card_le_budget`), `SwipeRegret.lean` (`budget_resp_le`, `budget_resp_attained`) | proved; 5(d) is not analyzed in the note |
+| Proposition 6: zero-query DSIC for top-$k$ iff at most $k$ profiles that can match; then $\mathbb E W \le 2p(1+o(1))\,\mathrm{OPT_{IR}}$ | `SwipeRegret.lean` (`zeroQuery_topK_dsic_iff`), `QueryLowerBound.lean` (`prop6b_policy`, `prop6b_asymp`) | proved |
+| T5 examples: ex post but not DSIC; SDH is manipulable through oracle reports | `SwipeRegret.lean` (`expost_not_dsic`), `SDHRobust.lean` (`report_manipulation`) | proved |
+| Worked example: LP $= 3.25$, $\tau = (1,1,0)$, SDH $= 2.625$, $\mathrm{OPT_{IR}} = 2.875$, 2 calls for Ann | `WorkedExample.lean` | proved, on the `ScreenedMarket` definitions |
+| Continuous values: the example table; $F_e$ concave; a fully used combination forces $\tau_e = 1$ | `WorkedExample.lean` (`continuous_example`, `pairValue_concave`, `sdhTau_eq_one_of_full`) | proved. Theorem 3(b) for continuous priors is **not** formalized: the framework has finitely many value combinations per pair |
 
 ## Layout
 
@@ -137,6 +156,16 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
 | `DatingAlgo/ProdExp.lean` | `prodExp`: expectations over independent finite random variables; pushforwards, regrouping into columns; the $c_K$ gap for random weights |
 | `DatingAlgo/TruthfulSwiping.lean` | cost-separability, Theorem 1, SDH's two-period game and its DSIC property |
 | `DatingAlgo/ScreenedDH.lean` | SDH's market, LP, screening and selection; Theorem 3(b)–(d) |
+| `DatingAlgo/SwipeLocal.lean` | general swipe-local two-period policies: Lemma 1′, Theorem 5(a, b), the counting step of Proposition 5(b) |
+| `DatingAlgo/SwipeRegret.lean` | Proposition 4 (regret and welfare identities), Impossibility 1, Proposition 6(a), Proposition 5(c), the ex-post example of T5 |
+| `DatingAlgo/MatroidSwiping.lean` | weighted matroid rank; the matroid corollary of Theorem 1; SDH is DSIC for matroid users |
+| `DatingAlgo/Orientation.lean` | Lemma R: balanced orientations of multigraphs, realizability in SDH's game |
+| `DatingAlgo/SDHRobust.lean` | Theorem 5(e), Proposition 5(a), SDH's manipulability through oracle reports |
+| `DatingAlgo/EdgeColoring.lean` | Hall's step, König's edge-coloring theorem, degree-capped subgraphs |
+| `DatingAlgo/PriceOfIR.lean` | Theorem 2 and SDH against full information |
+| `DatingAlgo/QueryLowerBound.lean` | adaptive reveal trees, the revealing lemma, the $G(n,n,p)$ benchmark, Theorem 4, Proposition 6(b) |
+| `DatingAlgo/WorkedExample.lean` | the worked example; the continuous-values remark |
+| `DatingAlgo/MatroidSDH.lean` | matroid polytope, matroid correlation gap, Theorem 3(b) for matroid users |
 | `DatingAlgo/Targets.lean` | open targets (none at the moment) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
 
@@ -172,6 +201,22 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
     responses are arbitrary functions of what they are shown.
   - The analysis of Theorem 3(b) thins the found pairs with an extra coin per pair
     (`thinLaw`) so that candidates have exactly the plan's probabilities.
+- **Truthful swiping beyond SDH** (`SwipeLocal.lean`, `SwipeRegret.lean`, `PriceOfIR.lean`,
+  `QueryLowerBound.lean`):
+  - A swipe-local policy is fixed period-1 displays plus a period-2 rule choosing from each
+    responder's backlog, for one realization of values, oracle answers and coins.
+  - Single-user results (Theorem 1, Proposition 4, Impossibility 1, Proposition 6(a)) are
+    stated for every set $R$ of profiles that would match, which is how "whatever the
+    others do" enters. Proposition 6(a) lets any subset of the profiles that can match
+    turn out to like back.
+  - Theorem 2(a) abstracts the mechanism to a distribution of the top-$k$ user's number
+    of matches with non-negative expected utility; that is all the proof uses.
+  - Theorem 4 describes a policy by the pairs it reveals, adaptively, by query or display
+    (`RevealTree`), with matches among the revealed acceptable pairs. Users swipe
+    sincerely, as in $\mathrm{OPT_{FI}}$; the class contains every real policy, so the upper
+    bound covers them all.
+  - Proposition 6(b) takes the period-1 pairs that can match as fixed before values are
+    drawn, at most $2n$ of them, which is what Proposition 6(a) gives.
 - **The repaired Theorem 5.3** (`MultiPeriodRepair.lean`) makes these modeling choices:
   - $\mathrm{Rel}_\tau$'s binary variables are encoded as a `Schedule`, and a design is any predicate on
     schedules.

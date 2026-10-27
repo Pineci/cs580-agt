@@ -18,4 +18,14 @@ import DatingAlgo.MultiPeriodRepair
 import DatingAlgo.ProdExp
 import DatingAlgo.TruthfulSwiping
 import DatingAlgo.ScreenedDH
+import DatingAlgo.SwipeLocal
+import DatingAlgo.SwipeRegret
+import DatingAlgo.MatroidSwiping
+import DatingAlgo.Orientation
+import DatingAlgo.SDHRobust
+import DatingAlgo.EdgeColoring
+import DatingAlgo.PriceOfIR
+import DatingAlgo.QueryLowerBound
+import DatingAlgo.WorkedExample
+import DatingAlgo.MatroidSDH
 import DatingAlgo.Targets
