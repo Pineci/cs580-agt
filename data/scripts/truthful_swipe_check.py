@@ -24,30 +24,39 @@ C. Theorem 2 (price of individual rationality). Per realization, the best match 
 D. Theorem 3 (screened DH). On random small markets with random two-point priors:
    LP >= OPT_IR; SDH (query edge e with prob tau_e, then max-weight b'-matching on the
    acceptable queried edges) earns >= c_{b'}^2 LP; tau_e <= x_e / phat_e. Exact
-   expectations by enumeration. Also simulates SDH's two-period play: per-period caps hold,
-   every shown pair matches under sincere play, and no deviation of a target user beats
-   sincere swiping against random strategies of the others.
+   expectations by enumeration. Also simulates SDH's two-period play: per-period caps hold
+   and every shown pair matches under sincere play. Theorem 5 (DSIC): for every target user
+   and every action of each counterpart on the target's pairs (which covers every strategy
+   of the others), no deviation beats sincere swiping and sincere utility is >= 0. Deviators
+   playing arbitrary likes never lower welfare below the planned pairs with two sincere ends.
 E. Theorem 4 (query lower bound) on G(m, m, p): the best b-matching nearly saturates,
    and SDH's welfare as a function of the query rate (scaled LP, and querying more than
    the LP asks).
-F. Explicit numbers: the 10/5 example (no dominant swipe rule) and the Bayes-Nash failure.
+F. Explicit numbers: the 10/5 example (no dominant swipe rule), the Bayes-Nash failure,
+   an ex post but not DSIC display, a value report that manipulates SDH, and the note's
+   worked example of SDH.
 
-Findings (seeds 1, 2 and 3; every assertion held):
+Findings (seeds 1, 2 and 3, rerun 2026-10-26 after the DSIC check was added; every
+assertion held):
 - A: 30,000 random (user, seen set, cost) cases; characterization and both corollaries
   exact; top-k regret formula exact.
 - B: 3,000 random graphs, every one orientable.
 - C: on random top-k markets the per-realization bound held with room (worst
-  OPT_IR/OPT_FI 0.569 against 1/2, 0.423 against 1/4); random markets rarely reward
+  OPT_IR/OPT_FI 0.569 against 1/2, 0.5 against 1/4); random markets rarely reward
   exploiting sincere users. The explicit example gives 0.5003 (K = 1, k = 1), 0.2502
   (K = 2, k = 1), 0.5003 (K = 2, k = 2) against k/b, so the bound is tight. XOS: best
   matching >= best / b held, with equality on some instances.
-- D: 450 markets (additive and top-k users, b in {1, 2, 4}); worst SDH/LP 0.751 (b' = 1,
-  bound 0.40), 0.934 (b' = 2, bound 0.53), 1.0 (b' = 4); worst SDH/OPT_FI 0.946
-  (additive), 0.745 (top-k). Simulation: caps held, every shown pair matched under
-  sincere play, no profitable deviation in 22,938 deviation trials.
+- D: 450 markets (additive and top-k users, b in {1, 2, 4}); worst SDH/LP 0.771 (b' = 1,
+  bound 0.40), 0.924 (b' = 2, bound 0.53), 1.0 (b' = 4); worst SDH/OPT_FI 0.915
+  (additive), 0.77 (top-k). Simulation: caps held, every shown pair matched under
+  sincere play; DSIC: no profitable deviation in 59,528 (counterpart actions, deviation)
+  checks, sincere utility never negative; robustness held in 3,000 trials.
 - E: b-matching saturation 1.000 for m = 300, p = 0.1. At the LP's query rate SDH earns
-  0.49-0.57 (b = 1), 0.64-0.68 (b = 2), 0.79-0.81 (b = 4) of OPT_FI; below that rate it
-  scales about linearly; querying 3x the LP rate gives 0.91-0.93, 0.99, 0.998.
+  0.51-0.59 (b = 1), 0.64-0.67 (b = 2), 0.78-0.81 (b = 4) of OPT_FI; below that rate it
+  scales about linearly; querying 3x the LP rate gives 0.91-0.93, 0.99, 1.0.
+- F: ex post gap: sincere gets 2 (best 2) when x2 passes, 1 (best 2) when x2 likes;
+  report manipulation: true utility 1 when truthful, 2 when the value for x is inflated;
+  worked example: LP 3.25, tau (1, 1, 0), SDH 2.625, OPT_IR 2.875, Ann's calls 2.
 """
 import argparse
 import itertools
@@ -353,9 +362,9 @@ def query_charge(mk, tau):
 
 
 def simulate_play(mk, rng, tau, real, P, trials):
-    """Two-period play of SDH. Returns number of deviation trials checked."""
+    """Two-period play of SDH. Returns (deviations checked, robustness trials)."""
     K = max(1, mk.b[0] // 2)
-    checked = 0
+    checked = robust = 0
     masks, _ = mk.feasible(mk.bp)
     for _ in range(trials):
         r = real[rng.choices(range(len(real)), weights=P)[0]]
@@ -411,26 +420,45 @@ def simulate_play(mk, rng, tau, real, P, trials):
             seen2 = [(rr, s) for s, rr in orient if rr == target]
             if not seen1 and not seen2:
                 continue
-            others1 = {key: rng.random() < 0.7 for key in sincere1}
-            others2 = {key: rng.random() < 0.7 for key in sincere2}
-            base1, base2 = dict(others1), dict(others2)
-            for key in seen1:
-                base1[key] = sincere1[key]
-            for key in seen2:
-                base2[key] = sincere2[key]
-            u_sinc = utility(target, play(base1, base2)[target])
+            # DSIC: the others' actions reach the target only through the counterpart's
+            # action on each shared pair, so enumerating those bits covers every strategy
+            # of the others, adaptive ones included. Actions on other pairs stay random.
+            theirs = [(rr, s) for s, rr in seen1] + [(s, rr) for rr, s in seen2]
             mine = seen1 + seen2
-            for bits in range(1 << len(mine)):
-                d1, d2 = dict(others1), dict(others2)
-                for i, key in enumerate(mine):
-                    (d1 if key in seen1 else d2)[key] = bool(bits >> i & 1)
-                assert utility(target, play(d1, d2)[target]) <= u_sinc + TOL
-                checked += 1
-    return checked
+            for pattern in range(1 << len(theirs)):
+                others1 = {key: rng.random() < 0.7 for key in sincere1}
+                others2 = {key: rng.random() < 0.7 for key in sincere2}
+                for i, key in enumerate(theirs):
+                    (others2 if key in sincere2 else others1)[key] = bool(pattern >> i & 1)
+                base1, base2 = dict(others1), dict(others2)
+                for key in seen1:
+                    base1[key] = sincere1[key]
+                for key in seen2:
+                    base2[key] = sincere2[key]
+                u_sinc = utility(target, play(base1, base2)[target])
+                assert u_sinc >= -TOL, "sincere play must be individually rational"
+                for bits in range(1 << len(mine)):
+                    d1, d2 = dict(others1), dict(others2)
+                    for i, key in enumerate(mine):
+                        (d1 if key in seen1 else d2)[key] = bool(bits >> i & 1)
+                    assert utility(target, play(d1, d2)[target]) <= u_sinc + TOL
+                    checked += 1
+        # Robustness: deviators play arbitrary likes, everyone else is sincere. Welfare is
+        # at least the planned pairs whose two ends are both sincere.
+        dev = {l for l in range(mk.n) if rng.random() < 0.3}
+        d1 = {key: (rng.random() < 0.5) if key[0] in dev else sincere1[key] for key in sincere1}
+        d2 = {key: (rng.random() < 0.5) if key[0] in dev else sincere2[key] for key in sincere2}
+        md = play(d1, d2)
+        welfare = sum(utility(l, md[l]) for l in range(mk.n))
+        safe = sum(val[(s, rr)] - mk.c[s] + val[(rr, s)] - mk.c[rr]
+                   for s, rr in orient if s not in dev and rr not in dev)
+        assert welfare >= safe - TOL, "a deviator hurt a pair it is not in"
+        robust += 1
+    return checked, robust
 
 
 def check_markets(rng, n_markets):
-    out = {"lp_alg": [], "fi_add": [], "fi_topk": [], "ir_fi": [], "deviations": 0}
+    out = {"lp_alg": [], "fi_add": [], "fi_topk": [], "ir_fi": [], "deviations": 0, "robust": 0}
     for it in range(n_markets):
         kind = rng.choice(["add", "topk"])
         b = rng.choice([1, 2, 4])
@@ -466,7 +494,10 @@ def check_markets(rng, n_markets):
             assert charge[l] <= sum(xe[t] / phat[t] for t in mk.inc[l] if xe[t] > 1e-12) + 1e-7
             assert charge[l] <= mk.bp[l] / ph + 1e-7
         if it % 3 == 0:
-            out["deviations"] += simulate_play(mk, rng, tau, real, P, 20)
+            # own generator, so the simulation does not shift the market sample
+            dev, rob = simulate_play(mk, random.Random(rng.getrandbits(32)), tau, real, P, 20)
+            out["deviations"] += dev
+            out["robust"] += rob
     return out
 
 
@@ -562,6 +593,53 @@ def ten_five():
     return rows, best
 
 
+def ex_post_gap():
+    """Ex post IC but not DSIC. A top-1 user (cost 1) is shown x1 (value 3) and x2
+    (value 2); the platform knows x2 would pass. Returns (sincere, best deviation) when x2
+    passes as sincerity says, and when x2 likes anyway."""
+    def u(likes, back):
+        matched = [q for q, l, bk in zip([3, 2], likes, back) if l and bk]
+        return (max(matched) if matched else 0) - len(matched)
+    out = {}
+    for back in [(1, 0), (1, 1)]:
+        best = max(u(likes, back) for likes in itertools.product([0, 1], repeat=2))
+        out[back] = (u((1, 1), back), best)
+    assert out[(1, 0)][0] == out[(1, 0)][1] and out[(1, 1)][0] < out[(1, 1)][1]
+    return out
+
+
+def report_manipulation():
+    """SDH is not DSIC in value reports. Top-1 user l (cost 1) values x at 3 and y at 2; x
+    values l at 1.1 and y values l at 3 (costs 1). SDH picks the heavier pair. Returns l's
+    true utility when it reports its value for x truthfully (3) and inflated (5)."""
+    true_q = {"x": 3.0, "y": 2.0}
+    out = {}
+    for rep in [3.0, 5.0]:
+        wx, wy = (rep - 1) + (1.1 - 1), (true_q["y"] - 1) + (3 - 1)
+        pick = "x" if wx > wy else "y"
+        out[rep] = true_q[pick] - 1
+    assert out[5.0] > out[3.0]
+    return out
+
+
+def worked_example():
+    """The note's worked example: top-1 Ann (cost 1) values Bo, Cy, Dee at 4, 2.5, 2, each
+    with prob 1/2 (else 0); they value Ann at 2 for sure (cost 1); b' = 1. Returns LP,
+    tau, SDH, OPT_IR and Ann's expected calls."""
+    w = [4.0, 2.5, 2.0]
+    res = linprog([-x for x in w], A_ub=[[1, 1, 1]], b_ub=[1], bounds=[(0, 0.5)] * 3,
+                  method="highs")
+    tau = [x / 0.5 for x in res.x]
+    sdh = oir = 0.0
+    for acc in itertools.product([0, 1], repeat=3):
+        oir += 0.125 * max([we for we, a in zip(w, acc) if a] + [0])
+        for qd in itertools.product([0, 1], repeat=3):
+            p = 0.125 * np.prod([t if q else 1 - t for t, q in zip(tau, qd)])
+            sdh += p * max([we for we, a, q in zip(w, acc, qd) if a and q] + [0])
+    assert abs(-res.fun - 3.25) < 1e-9 and abs(sdh - 2.625) < 1e-9 and abs(oir - 2.875) < 1e-9
+    return -res.fun, [float(round(t, 3)) + 0.0 for t in tau], float(sdh), oir, float(sum(tau))
+
+
 def bne_failure(c=1.0, eps=0.05, pi=0.3, v_other=5.0):
     """Top-1 user sees x with value c + eps; with prob pi another match worth v_other
     forms anyway. Expected gain from liking x (x likes back for sure)."""
@@ -594,7 +672,8 @@ def main():
         print(f"C top-k markets with ceil(b/k)={ceil_bk}: worst OPT_IR/OPT_FI expected",
               round(min(t[0] for t in rows), 3), " per realization",
               round(min(t[1] for t in rows), 3), f" bound {1 / ceil_bk:.3f}")
-    print("D simulated deviations checked:", out["deviations"])
+    print("D DSIC deviations checked (every action of the counterparts):", out["deviations"],
+          " robustness trials:", out["robust"])
     for K, k in [(1, 1), (2, 1), (2, 2)]:
         r, pred = ir_example(K, k)
         print(f"C IR example K={K} k={k}: ratio {r:.4f} vs k/b {pred:.4f}")
@@ -605,6 +684,9 @@ def main():
     rows, best = ten_five()
     print("F 10/5 example:", rows, "best:", best)
     print("F BNE failure gain (negative = sincere like is a mistake):", round(bne_failure(), 4))
+    print("F ex post but not DSIC, (sincere, best) by x2's action:", ex_post_gap())
+    print("F value-report manipulation, true utility by report:", report_manipulation())
+    print("F worked example (LP, tau, SDH, OPT_IR, Ann's calls):", worked_example())
 
 
 if __name__ == "__main__":

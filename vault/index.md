@@ -1,7 +1,7 @@
 ---
 type: map
 created: 2026-01-01
-updated: 2026-10-22
+updated: 2026-10-26
 origin: claude
 ---
 # Index
@@ -35,7 +35,7 @@ Catalog of the vault. Every note in `notes/`, `sources/`, and `maps/` gets one l
 - [[Top-k Match Quality]] — top-k/top-1 quality: credit-DH gets $\rho c_k \ge c_k/2$ with known qualities (weighted DH-int only $\Theta(k/K)$); carries over to free rankings, Bayesian priors, queries before period 1, and budgeted screening ($c_k/6$) (preliminary)
 - [[From DH-int to Credit-DH]] — walkthrough for newcomers: the model, notation, and the DH-int, weighted DH-int and credit-DH programs side by side, with why credit-DH gets $\rho c_k$ for top-k
 - [[Strategic Users in the Dating Heuristic Framework]] — strategic likes and LLM-agent reports: consent-only policies make sincere liking ex-post dominant and DH-int keeps $c_K$; free matches make likes empty; budgets shade; cheap-talk reports are manipulable (preliminary)
-- [[Truthful Swiping with an LLM Oracle]] — sincere swiping is dominant iff each user sees a cost-separable set (top-k: at most k acceptable); price of IR ~k/b vs full information; screened DH gets c_{b'}^2 with Θ(b'/p) queries, which is necessary (preliminary)
+- [[Truthful Swiping with an LLM Oracle]] — sincere swiping is dominant iff each user sees a cost-separable set (top-k: at most k acceptable); price of IR ~k/b vs full information; screened DH gets c_{b'}^2 with Θ(b'/p) queries, which is necessary; all swipe results are DSIC, and zero-query DSIC costs a factor ~p for top-1; worked example and glossary (preliminary)
 - [[Preference Signaling]] — scarce, free signals of special interest (roses): credible because rationed; theory and dating-site evidence
 - [[Congestion in Matching Markets]] — wasted applications and screening; limits, costs, restricting who initiates, signals and curation as levers
 - [[Counterexamples to the Multi-Period Dating Heuristic Guarantees]] — Theorem 5.3 of Rios & Torrico is false and Theorem 5.4's proof is wrong: the T-period relaxations ignore timing (ratios 0.52 and 0.50, both machine-checked); for T ≥ 3 DHT's schedule loses up to 1/(T-1); a per-period relaxation repairs 5.3 (machine-checked)

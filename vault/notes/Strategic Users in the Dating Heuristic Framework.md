@@ -2,7 +2,7 @@
 type: synthesis
 question: "When users and their LLM agents act strategically, does a dating-heuristic platform make likes track match quality, and do agents report values truthfully?"
 created: 2026-10-21
-updated: 2026-10-22
+updated: 2026-10-26
 tags: [dating/platforms, matching/quality, game-theory/incentives, research/project]
 aliases: [strategic likes, sincere liking, consent-only policies, like budgets, cheap-talk reports, strategic agents]
 sources: ["[[Rios 2026 - The Dating Heuristic]]", "[[Coles 2013 - Preference Signaling in Matching Markets]]", "[[Lee 2015 - Propose with a Rose]]", "[[Arnosti 2021 - Managing Congestion in Matching Markets]]", "[[Kanoria 2021 - Facilitating the Search for Partners on Matching Platforms]]"]
@@ -22,7 +22,7 @@ status: seed
 - **Likes as consent.**
   - Call a policy *consent-only* if each responder's period-2 display depends only on its own backlog and on independent coins.
   - DH-int, value-indexed DH-int and credit-DH are all consent-only.
-  - Under such a policy, liking exactly when your value exceeds your match cost is weakly dominant *ex post*: it is at least as good on every realization, whatever others do (Theorem 1).
+  - Under such a policy, liking exactly when your value exceeds your match cost is weakly dominant (DSIC): it is at least as good in every realization of values and coins, whatever others do (Theorem 1).
   - Like probabilities then equal $\Pr[q>c]$. A binary signal can't track quality any more closely than that.
 - **No extra loss from incentives.** With additive utilities, weight DH-int by the expected welfare of a consented match. It then keeps $c_K$ against the best policy facing sincere users.
 - **Costless matches make likes empty.** The threshold is 0, so everyone likes everyone. Likes are sincere but say nothing, and a match certifies nothing about quality.
@@ -164,7 +164,7 @@ These are written-out proofs, not machine-checked.
 - $B_s$, and so $S_s$, depends only on others' period-1 likes and $\omega_s$.
 - Period-2 actions are last. $\square$
 
-**Theorem 1 (sincere liking is ex-post dominant).** Under a consent-only policy with additive utilities, take any realization of values and coins and any strategies of the others. Then no strategy gives user $s$ more utility than liking exactly when $q_{s\ell'}>c_s$.
+**Theorem 1 (sincere liking is dominant).** Under a consent-only policy with additive utilities, take any realization of values and coins and any strategies of the others. Then no strategy gives user $s$ more utility than liking exactly when $q_{s\ell'}>c_s$.
 
 *Proof.* By Lemma 1, $u_s=\sum_{\ell'}a_{s\ell'}Z_{s\ell'}(q_{s\ell'}-c_s)$. Each term is at most $Z_{s\ell'}(q_{s\ell'}-c_s)^+$, and sincere liking attains that bound term by term. The $Z$'s are the same under every strategy of $s$. $\square$
 
@@ -183,7 +183,7 @@ These are written-out proofs, not machine-checked.
 - So $\mathbb E[\mathbb 1[e\in M](q_{\ell\ell'}-c_\ell)]=\mathbb E[\mathbb 1[e\in M]A_{\ell\ell'}]$, because $e\in M$ forces $b_{\ell\ell'}=1$. $\square$
 
 **Theorem 2 (equilibrium welfare).** Take additive utilities. Weight DH-int by the expected welfare of a consented match: mutual views by $\beta_e(A_{\ell\ell'}+A_{\ell'\ell})$ and responses by $\phi_{rs}(A_{sr}+A_{rs})$, with $\phi=\Pr[q>c]$.
-- (i) Sincere play is an ex-post equilibrium in weakly dominant strategies.
+- (i) Sincere play is an equilibrium in weakly dominant strategies (DSIC). This was called "ex post" before 2026-10-26; see [[Truthful Swiping with an LLM Oracle#T5. Dominant strategies (DSIC), not just ex post|T5 of the truthful-swiping note]].
 - (ii) Its welfare is at least $c_K\sup_\pi W(\pi;\text{sincere})$. The supremum is over all adaptive policies that observe likes.
 
 *Proof.*

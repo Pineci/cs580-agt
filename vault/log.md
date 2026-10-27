@@ -109,3 +109,13 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 ## [2026-10-22] query | Truthful Swiping with an LLM Oracle
 - + [[Truthful Swiping with an LLM Oracle]] (truthful oracle, sincere-threshold swiping, full-information benchmark: Theorems 1–4, Propositions 4–5; brute force in `data/scripts/truthful_swipe_check.py`)
 - ~ [[Strategic Users in the Dating Heuristic Framework]] (follow-up link in Gaps)
+
+## [2026-10-26] query | Truthful Swiping with an LLM Oracle (DSIC and glossary)
+- ~ [[Truthful Swiping with an LLM Oracle]] ("ex-post dominant" corrected to dominant/DSIC; new T5 (Theorem 5, Proposition 6, ex post vs DSIC, report manipulation); worked example; plain-language readings; glossary; Evidence rerun with exhaustive DSIC checks)
+- ~ [[Strategic Users in the Dating Heuristic Framework]] (same terminology fix in Summary, Theorem 1, Theorem 2(i))
+
+## [2026-10-26] query | Truthful Swiping with an LLM Oracle (continuous values)
+- ~ [[Truthful Swiping with an LLM Oracle]] (T3: value combination $s$ defined as a vector, $w_s$ → $w_{e,s}$; new "Continuous values" remark: one bar per pair, welfare unchanged, the query trade-off with a uniform example; Gaps: query-aware plan)
+
+## [2026-10-26] query | Truthful Swiping with an LLM Oracle (Lean verification of SDH)
+- ~ [[Truthful Swiping with an LLM Oracle]] (Theorem 1, SDH's DSIC and IR, Theorem 3(b)–(d) for size caps machine-checked in `lean/`; Theorem 3(c) corrected: bar-shaped plans split a tied bar proportionally, and $\hat p_e$ is defined precisely; Gaps, Evidence and Glossary updated)
