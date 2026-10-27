@@ -14,7 +14,7 @@ status: seed
 > [!question] With a truthful, accurate LLM oracle for match values, can a dating-heuristic platform make sincere swiping a dominant strategy, earn close to full-information welfare, and use few oracle queries, for additive, top-k and general utilities?
 
 > [!note] Preliminary
-> Written 2026-10-22. Revised 2026-10-26: the terminology for dominant strategies is fixed, and the note adds Section T5 (DSIC), a worked example and a glossary. Theorem 1, SDH's truthfulness (Theorems 3(a), 5(a, d)) and Theorem 3(b)–(d) for size caps are machine-checked in Lean (see Evidence); formalizing them corrected Theorem 3(c). The other results are informal proofs, brute-forced on small markets. This continues [[Strategic Users in the Dating Heuristic Framework]], with the choices made for this phase:
+> Written 2026-10-22. Revised 2026-10-26: the terminology for dominant strategies is fixed, and the note adds Section T5 (DSIC), a worked example and a glossary. Every result is machine-checked in Lean except the continuous-values extension of Theorem 3(b) (see Evidence). Formalizing corrected Theorem 3(c), sharpened Theorem 2(b) from $1/\lceil b/k\rceil$ to $k/b$, and weakened the hypotheses of Theorem 4 and Proposition 6(b) to $np\to\infty$. This continues [[Strategic Users in the Dating Heuristic Framework]], with the choices made for this phase:
 > - a truthful swipe is the *sincere threshold*: swipe right iff the match is worth it on its own;
 > - match costs first, then swipe budgets;
 > - welfare is compared with *full information*, the best policy that knows every value;
@@ -39,7 +39,7 @@ status: seed
   - With values just above cost, sincere swiping isn't even a Bayes–Nash equilibrium.
 - **Impossibility 2: the price of individual rationality (Theorem 2).**
   - **Bound.** For top-$k$, no mechanism whose equilibrium is sincere swiping (dominant, ex post or Bayes–Nash; auditing with the oracle included) earns more than about $k/b$ of the full-information optimum. Here $b$ is the most matches the design allows a user ($2K$ in two-directional designs).
-  - **Tight.** The best outcome that gives no user more than $k$ matches already earns $1/\lceil b/k\rceil$.
+  - **Tight.** The best outcome that gives no user more than $k$ matches already earns $k/b$, so the price is exactly about $k/b$. (The 2026-10-22 version proved only $1/\lceil b/k\rceil$; formalizing sharpened it.)
   - **Subadditive utilities.** The price is at most $b$, and top-1 makes that tight for the class.
   - **Additive.** No price.
   - **Why.** The full-information benchmark exploits sincere users. It gives them matches they would accept one at a time but not all together. No mechanism that users play voluntarily can do that.
@@ -55,7 +55,7 @@ status: seed
   | Utility class | SDH guarantee | Upper bound for any truthful mechanism | Oracle calls per user |
   | --- | --- | --- | --- |
   | additive | $c_b^2\,\mathrm{OPT_{FI}}$ | $\mathrm{OPT_{FI}}$ | $O(b/\hat p)$ |
-  | top-$k$ | $c_{k}^2\,\mathrm{OPT_{IR}}\ge \frac{c_k^2}{\lceil b/k\rceil}\mathrm{OPT_{FI}}$ | $\approx\frac kb\,\mathrm{OPT_{FI}}$ | $O(k/\hat p)$ |
+  | top-$k$ | $c_{k}^2\,\mathrm{OPT_{IR}}\ge c_k^2\,\frac kb\,\mathrm{OPT_{FI}}$ | $\approx\frac kb\,\mathrm{OPT_{FI}}$ | $O(k/\hat p)$ |
   | matroid rank | $(1-1/e)^2\,\mathrm{OPT_{IR}}$ | $\mathrm{OPT_{IR}}$ | $O(\text{rank}/\hat p)$ |
   | subadditive | $\frac{c_1^2}{b}\mathrm{OPT_{FI}}\approx\frac{0.40}{b}\mathrm{OPT_{FI}}$ | $\approx\frac1b\,\mathrm{OPT_{FI}}$ | $O(1/\hat p)$ |
 
@@ -160,12 +160,12 @@ Hence $\mathrm{OPT_{FI}}=\mathbb E\max\{\sum_\ell u_\ell(M_\ell):M\subseteq G(q)
   - Then liking $x$ gains at most $(q_{\ell x}-c_\ell)-\pi c_\ell$ in expectation.
   - That is negative when $q_{\ell x}<c_\ell(1+\pi)$.
   - So if the prior has mass just above cost, sincere swiping is not a best response.
-  - *Example:* $c=1$, value $1.05$, $\pi=0.3$: the gain is $-0.265$.
+  - *Example:* $c=1$, value $1.05$, $\pi=0.3$, and $x$ always likes back. The expected gain is exactly $0.7\cdot0.05-0.3\cdot1=-0.265$; the general bound gives $-0.25$.
 
 ### T2. The price of individual rationality
 **Theorem 2.** Let $b=\max_\ell b_\ell$.
 - **(a) Bound for truthful mechanisms.** For top-$k$ users and any $\varepsilon>0$, some instance has the following property. Every mechanism in which sincere swiping is an equilibrium (dominant, ex post or Bayes–Nash) earns at most $(1+\varepsilon)\frac kb+o(1)$ of $\mathrm{OPT_{FI}}$.
-- **(b) Matching guarantee.** $\mathrm{OPT_{IR}}\ge\mathrm{OPT_{FI}}/\lceil b/k\rceil$, where $\mathrm{OPT_{IR}}$ caps each user at $\min(k,b)$ matches. That cap is exactly the set of top-$k$ outcomes users keep in full.
+- **(b) Matching guarantee.** $\mathrm{OPT_{IR}}\ge\frac kb\,\mathrm{OPT_{FI}}$ for $k\le b$, where $\mathrm{OPT_{IR}}$ caps each user at $\min(k,b)$ matches. That cap is exactly the set of top-$k$ outcomes users keep in full. Since $k/b\ge1/\lceil b/k\rceil$, this also gives the first version's $\mathrm{OPT_{FI}}/\lceil b/k\rceil$, and it matches (a).
 - **(c) Subadditive utilities.** The best matching is at least $\mathrm{OPT_{FI}}/b$, and (a) with $k=1$ shows this is tight for the class.
 - **(d) Additive utilities.** No price: $\mathrm{OPT_{IR}}=\mathrm{OPT_{FI}}$.
 
@@ -181,8 +181,8 @@ Hence $\mathrm{OPT_{FI}}=\mathbb E\max\{\sum_\ell u_\ell(M_\ell):M\subseteq G(q)
   - The argument only uses $\mathbb E\,u_a\ge0$. So it also covers a platform that *audits* swipes with the oracle and punishes insincere ones: punishment can push users toward accepting more, but never below zero utility.
 - **(b)** Fix a realization and an optimal $M$.
   - Since $\mathrm{top}_k\le$ sum and every term $q-c$ is positive, $W(M)\le\sum_{e\in M}w_e$.
-  - The graph is bipartite with degrees at most $b$, so by König's theorem $M$ splits into $b$ matchings.
-  - Grouping them into $\lceil b/k\rceil$ groups of at most $k$ matchings, the best group $M'$ carries at least a $1/\lceil b/k\rceil$ share of $\sum_M w$.
+  - The graph is bipartite with degrees at most $b$, so by König's edge-coloring theorem $M$ splits into $b$ matchings, colored $0,\dots,b-1$.
+  - Take the $b$ windows of $k$ cyclically consecutive colors. Each edge lies in exactly $k$ windows, so the windows' weights sum to $k\sum_M w$, and the best window $M'$ carries at least a $k/b$ share. (Grouping the matchings into $\lceil b/k\rceil$ blocks, as the first version did, only gives $1/\lceil b/k\rceil$.)
   - On $M'$ every user has at most $k$ matches, so $W(M')=\sum_{M'}w_e$.
 - **(c)** Subadditivity gives $W(M)\le\sum_{e\in M}w_e$, and a single partner is always cost-separable. Use $b$ matchings in place of the groups.
 - **(d)** Every match in $G$ raises both users' utility. $\square$
@@ -256,7 +256,7 @@ On such sets every user's utility is additive, so welfare is $\sum w_e$.
 
 **What it gives against full information.** Combine Theorem 3 with Theorem 2.
 - **Additive:** $c_b^2\,\mathrm{OPT_{FI}}$, which is $0.53$ for $K=1$ and $0.65$ for $K=2$ (two-directional), tending to 1.
-- **Top-$k$:** $c_k^2/\lceil b/k\rceil$ of $\mathrm{OPT_{FI}}$, against an upper bound of about $k/b$.
+- **Top-$k$:** $c_k^2\,k/b$ of $\mathrm{OPT_{FI}}$, against an upper bound of about $k/b$.
 - **Subadditive:** $c_1^2/b\approx0.40/b$, against $1/b$.
 
 **Remarks.**
@@ -334,7 +334,7 @@ The four steps of SDH:
 - Each $I$-user accepts each $J$-user independently with probability $p$ (value 2, cost 1).
 - $J$-users accept everyone (value 2, cost 1).
 
-Suppose $np\ge C(K+\log n)$ for a large constant $C$. Then any policy, truthful or not, that averages $\bar q$ oracle calls per user earns at most
+Suppose $np\to\infty$ with $b\le np$. (The first version assumed $np\ge C(K+\log n)$, which implies both; the Lean proof needs only these.) Users swipe sincerely, as in $\mathrm{OPT_{FI}}$'s definition. Then any policy, truthful or not, that averages $\bar q$ oracle calls per user earns at most
 $$p\,(2\bar q/b+2)\,(1+o(1))\cdot\mathrm{OPT_{FI}}.$$
 So a constant fraction needs $\Omega(b/p)$ calls per user, and zero queries gets at most about $2p$.
 
@@ -347,9 +347,11 @@ So a constant fraction needs $\Omega(b/p)$ calls per user, and zero queries gets
   - Each user sees at most $b$ profiles, so at most $2nb$ pairs are displayed.
   - So $\mathbb E[\text{matches}]\le p(2n\bar q+2nb)$, each worth 2.
 - **Benchmark.**
-  - Set $y_e=b/D_{\max}$ on the edges of $G$, where $D_{\max}$ is the largest degree. This is a fractional $b$-matching of size $b|E|/D_{\max}$.
-  - By Chernoff bounds this is $(1-o(1))bn$ with high probability.
-  - Bipartite $b$-matching polytopes are integral, so $\mathrm{OPT_{FI}}\ge(1-o(1))\,2bn$. $\square$
+  - Pick a threshold $D\ge b$ a little above the mean degree $\mu=(n-1)p$, say $D\approx(1+\delta)np$. Keep the edges of $G$ whose two ends both have degree at most $D$; call them $G'$.
+  - $G'$ has every degree at most $D$, so by König's edge-coloring theorem it splits into $D$ matchings, and $b$ cyclically consecutive colors give a $b$-matching with at least $\frac bD|G'|$ edges (as in Theorem 2(b)).
+  - An edge is kept unless one of its ends has more than $D$ edges. By Chebyshev's inequality that has probability at most $(n-1)p(1-p)/(D-\mu)^2$ per end, so $\mathbb E|G'|\ge n^2p\,\big(1-2(n-1)p(1-p)/(D-\mu)^2\big)$.
+  - So $\mathrm{OPT_{FI}}\ge2\frac bD\,\mathbb E|G'|=(1-o(1))\,2bn$ as $np\to\infty$. $\square$
+  - The first version used Chernoff bounds on the largest degree and the integrality of bipartite $b$-matching polytopes. The argument above avoids both and needs no $\log n$.
 
 SDH on this instance uses $b/p$ calls per $I$-user and $b$ per $J$-user, within a constant of the bound. The bound mirrors the $\Omega(1/p)$-per-vertex lower bound of stochastic matching.
 
@@ -424,7 +426,7 @@ A platform that flips coins adds one more quantifier. *Universally* truthful mea
   - Such a policy gets the additive guarantee, $c_K$ against the best policy with the same caps (Theorem 2 of [[Strategic Users in the Dating Heuristic Framework]]), because top-$k$ is additive on at most $k$ profiles.
 - **(b) Cost.** Take $n$ users per side and top-1 utilities.
   - Every pair is acceptable with probability $p$: each value is 2 with probability $\sqrt p$ and 0 otherwise, and every cost is 1.
-  - Suppose $np\ge C\log n$.
+  - Suppose $np\to\infty$ (the first version assumed $np\ge C\log n$).
   - Then every zero-query DSIC policy earns at most $2p(1+o(1))\,\mathrm{OPT_{IR}}$. SDH earns at least $c_1^2\,\mathrm{OPT_{IR}}\approx0.40\,\mathrm{OPT_{IR}}$ with $O(1/p)$ calls per user.
   - Without DSIC, the counting of Theorem 4 allows up to $2pb$. DSIC cuts the effective display to $k=1$.
 
@@ -434,7 +436,7 @@ A platform that flips coins adds one more quantifier. *Universally* truthful mea
   - Every match starts as a period-1 initiation or a mutual view, chosen before either value of the pair is known, so it succeeds with probability at most $p$.
   - Each user sees at most one profile that can match, so there are at most $2n$ such attempts.
   - Hence $\mathbb E[\text{matches}]\le2np$, each worth $w=2$.
-- **(b) Benchmark.** $G(n,n,p)$ has a matching of size $(1-o(1))n$ with high probability, so $\mathrm{OPT_{IR}}\ge(1-o(1))\,2n$. $\square$
+- **(b) Benchmark.** Theorem 4's benchmark with $b=1$: $G(n,n,p)$ has a matching of expected size $(1-o(1))n$, so $\mathrm{OPT_{IR}}\ge(1-o(1))\,2n$. $\square$
 
 **What DSIC does not cover: the oracle's answers.**
 - The oracle is assumed truthful, so users have nothing to report and swipes are their only actions.
@@ -472,12 +474,19 @@ A platform that flips coins adds one more quantifier. *Universally* truthful mea
   - *Theorem 4:* on $G(300,300,0.1)$, $b$-matchings saturate. At the plan's query rate SDH earns $0.51$–$0.59$ ($b=1$), $0.64$–$0.67$ ($b=2$) and $0.78$–$0.81$ ($b=4$) of $\mathrm{OPT_{FI}}$, scaling roughly linearly below that rate.
   - *Impossibility 1:* the 10/5 table and the $-0.265$ Bayes–Nash example.
   - *Worked example:* $\mathrm{LP}=3.25$, $\tau=(1,1,0)$, SDH $=2.625$, $\mathrm{OPT_{IR}}=2.875$, and 2 calls for Ann.
-  - *Not checked:* Proposition 6(b) is a counting argument and has no script check.
-- **Lean, 2026-10-26.** `lean/check.sh`: the whole project builds, every theorem is fully proved, and only the standard axioms are used. The SDH results are in `lean/DatingAlgo/TruthfulSwiping.lean`, `ScreenedDH.lean` and `ProdExp.lean`; `lean/README.md` maps each to the note.
+  - *Not checked by script:* Proposition 6(b) is a counting argument (it is proved in Lean).
+- **Lean, 2026-10-26.** `lean/check.sh`: the whole project builds (777 theorems), every theorem is fully proved, and only the standard axioms are used. `lean/README.md` maps each result to its Lean name and lists the modeling choices. The SDH results are in `lean/DatingAlgo/TruthfulSwiping.lean`, `ScreenedDH.lean` and `ProdExp.lean`; the rest are in `SwipeLocal.lean`, `SwipeRegret.lean`, `MatroidSwiping.lean`, `Orientation.lean`, `SDHRobust.lean`, `EdgeColoring.lean`, `PriceOfIR.lean`, `QueryLowerBound.lean`, `WorkedExample.lean` and `MatroidSDH.lean`.
   - *Theorem 1* (`sincere_best`, `sincere_not_best`, `costSeparable_topK_iff`): for every set $R$ of profiles that would match, assuming only subadditivity and $v(\{x\})=q_x$.
   - *Theorems 3(a), 5(a)* (`sdh_dsic`): SDH's two-period game, against every behavior of the others, including strategies that react to what they see, for every realization of values and coins. The proof also shows that for top-$k$ users DSIC needs only that a user has at most $k$ planned partners (`sdh_dsic_topK`).
   - *Theorem 3(b)* (`sdh_welfare`): $\mathrm{SDH}\ge c_K^2\,\mathrm{OPT_{IR}}$ with $K$ at most every cap, through the LP bound, thinning and the two-stage selection. The layer-cake step is a new lemma, the $c_K$ gap for independent random weights.
   - *Theorem 3(c), (d)* (`sdhTau_le`, `sum_callsI_le`, `exists_barShaped`, `sdh_budget`), in the corrected form above.
+  - *Lemma 1′ and Theorem 5 for every swipe-local policy* (`matchSet_update`, `swipeLocal_dsic`, `swipeLocal_dsic_additive`): any period-1 displays and any period-2 rule that picks from the backlog, with mutual views. So DH-int, weighted DH-int and credit-DH are universally DSIC for additive users.
+  - *Matroid users* (`costSeparable_wRank_iff`, `sdh_dsic_matroid`, `sdh_welfare_matroid`): Theorem 1's matroid corollary, SDH's DSIC, and $\mathrm{SDH}\ge(1-1/e)^2\,\mathrm{OPT_{IR}}$, with the plan in each user's matroid polytope. This includes a new proof of the $1-1/e$ correlation gap for matroid rank.
+  - *Lemma R* (`lemmaR`, `lemmaR_realize`): by splitting off two edges at a vertex rather than Euler tours.
+  - *Theorem 5(e)* (`sdh_robust`) and *Impossibility 1* (`impossibility1_no_dominant`, `like_gain_le`).
+  - *Theorem 2* (`thm2a`, `optFI_topK_le`, `optFI_subadditive_le`, `optFI_additive`), with (b) sharpened to $k/b$ through König's edge-coloring theorem (`EdgeColoring.lean`, from Hall's theorem). In (a) the mechanism enters only through the distribution of the top-$k$ user's match count, with expected utility at least 0.
+  - *Theorem 4 and Proposition 6(b)* (`thm4_asymp`, `prop6b_asymp`): policies are adaptive trees that reveal one pair at a time by query or display; the explicit bound holds for every threshold $D$, and the asymptotic forms come with an explicit $m_0$.
+  - *Propositions 4–6* (`topK_regret_le`, `topK_regret_attained`, `topK_util_eq_net`, `excess_le`, `sdh_budget_feasible`, `budget_resp_attained`, `zeroQuery_topK_dsic_iff`), the T5 examples (`expost_not_dsic`, `report_manipulation`), the worked example and the continuous-values table.
 - **Literature** *(not in vault: web search, 2026-10-22).*
   - Stochastic matching with few queries: Assadi, Khanna & Li (EC 2016), $\Omega(1/p)$ queries per vertex for any constant factor.
   - Derakhshan & Saneian, "Query Efficient Weighted Stochastic Matching" (ICALP 2025): $0.68$ weighted ($0.73$ bipartite), non-adaptive, $O(1/p)$ per vertex.
@@ -486,14 +495,10 @@ A platform that flips coins adds one more quantifier. *Universally* truthful mea
   - None of these is ingested; they are candidates.
 
 ## Gaps
-- **Proofs.** In Lean (see Evidence): Theorem 1, SDH's truthfulness and individual rationality, and Theorem 3(b)–(d) for size caps. Not in Lean:
-  - Lemma R;
-  - Theorems 2 and 4;
-  - Propositions 4–6;
-  - the matroid cases of Theorems 1 and 3(b);
-  - Theorem 5(e)'s welfare sum;
-  - Lemma 1′ for general swipe-local policies (it is proved for SDH's game);
-  - continuous values.
+- **Proofs.** Every numbered result is in Lean (see Evidence). Not in Lean:
+  - Theorem 3(b) for continuous priors: the Lean framework has finitely many value combinations per pair. The continuous example, the concavity of $F_e$ and $\tau_e=1$ for fully used pairs are checked.
+  - The inequality $U_k^{\rm net}\ge\rho c_k\,\mathrm{OPT_0}$ in Proposition 4(b), which cites R5 of [[Top-k Match Quality]] (not formalized there either).
+  - Proposition 5(d), which the note does not analyze.
 - **Constants.** $c_{b'}^2$ is loose. Plugging in the stochastic-matching algorithms above should improve $b'=1$. Whether $(1-\varepsilon)\mathrm{OPT_{IR}}$ is reachable with $O_\varepsilon(b'/p)$ queries per user is open.
 - **Query-aware plan.** With continuous values the plan queries every pair it uses (T3, Continuous values). Making $\tau_e$ a plan variable with a call budget looks like it keeps Theorem 3(b), but it is not worked out or checked.
 - **General submodular utilities against $\mathrm{OPT_{IR}}$.** Cost-separable families are not matroids, and only the matching bound ($1/b$) is known.
@@ -599,13 +604,13 @@ A platform that flips coins adds one more quantifier. *Universally* truthful mea
 - **$b$-matching.** A set of pairs in which each user $\ell$ appears at most $b_\ell$ times. A matching is the case $b=1$.
 - **Weighted matroid intersection.** Find a maximum-weight set that is independent in two matroids at once. It runs in polynomial time and is used when users have matroid constraints.
 - **Orientation, Euler tour (Lemma R).** Orienting a match means deciding who initiates it. An Euler tour walks every edge once, so orienting edges along it splits each user's matches evenly between initiations and responses.
-- **König's edge-colouring theorem.** A bipartite graph with maximum degree $b$ splits into $b$ matchings. Theorem 2(b) uses it.
+- **König's edge-colouring theorem.** A bipartite graph with maximum degree $b$ splits into $b$ matchings. Theorems 2(b) and 4 use it. The Lean proof gets it from Hall's marriage theorem: some matching covers every vertex of maximum degree, so remove it and repeat.
 - **Contention resolution, two-stage selection.** When a plan promises a user more candidates than it can keep, keep a subset so that each candidate survives with good probability. SDH's proof does this on one side, then on the other.
 - **Thinning.** For the analysis only, discard extra candidates at random so that their probabilities are exactly the plan's.
 - **Layer cake.** Write a value as an integral over thresholds $\theta$ of the number of items worth at least $\theta$.
 - **R1's lemma.** If $N$ is a sum of independent indicators with mean at most $k$, then $\mathbb E\min(N,k)\ge c_k\,\mathbb E N$. It is machine-checked in `lean/DatingAlgo/PoissonGap.lean` ([[Match Quality in the Dating Heuristic Framework]]).
 - **Correlation gap.** For monotone submodular $f$, sampling independently loses at most a factor $1-1/e$ against any correlated distribution with the same marginals ([[Correlation Gap]]).
-- **Chernoff bound.** A sum of independent indicators stays close to its mean with high probability.
+- **Chebyshev's inequality.** A random variable exceeds its mean by $t$ with probability at most its variance over $t^2$. Theorem 4's benchmark uses it on users' degrees.
 - **Hoeffding's convex ordering.** Among sums of independent indicators with a given mean, the binomial, and in the limit the Poisson, is the most spread out. So convex quantities like $\mathbb E(N-k)^+$ are largest there.
 - **Stochastic matching.** Find a large matching in a random graph by querying edges. *Adaptive* algorithms choose each query after seeing earlier answers; *non-adaptive* ones choose all queries up front.
 - **$G(n,n,p)$.** A random bipartite graph with $n$ vertices per side, where each pair is an edge with probability $p$, independently.

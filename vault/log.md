@@ -119,3 +119,6 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-10-26] query | Truthful Swiping with an LLM Oracle (Lean verification of SDH)
 - ~ [[Truthful Swiping with an LLM Oracle]] (Theorem 1, SDH's DSIC and IR, Theorem 3(b)–(d) for size caps machine-checked in `lean/`; Theorem 3(c) corrected: bar-shaped plans split a tied bar proportionally, and $\hat p_e$ is defined precisely; Gaps, Evidence and Glossary updated)
+
+## [2026-10-26] query | Truthful Swiping with an LLM Oracle (Lean verification of the remaining results)
+- ~ [[Truthful Swiping with an LLM Oracle]] (every result now machine-checked in `lean/` except Theorem 3(b) for continuous priors; Theorem 2(b) sharpened to $k/b$ via König's edge-coloring theorem; Theorem 4 and Proposition 6(b) need only $np\to\infty$, with a Chebyshev-and-König benchmark; Bayes–Nash example clarified; Preliminary, Evidence, Gaps and Glossary updated)
