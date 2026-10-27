@@ -1,9 +1,10 @@
 # Lean proofs
 
 Machine-checked versions of Rios & Torrico's dating-heuristic results and of the
-project's own match-quality results, in Lean 4 with Mathlib.
-- The math is in the vault notes `vault/sources/Rios 2026 - The Dating Heuristic.md` and
-  `vault/notes/Match Quality in the Dating Heuristic Framework.md`.
+project's own match-quality and truthful-swiping results, in Lean 4 with Mathlib.
+- The math is in the vault notes `vault/sources/Rios 2026 - The Dating Heuristic.md`,
+  `vault/notes/Match Quality in the Dating Heuristic Framework.md` and
+  `vault/notes/Truthful Swiping with an LLM Oracle.md`.
 - `lean/check.sh` reports the current status.
 
 ## Setup
@@ -48,7 +49,7 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 419 theorems, all fully proved. The count includes lemmas Lean generates
+Current count: 539 theorems, all fully proved. The count includes lemmas Lean generates
 for definitions and structures, such as the fields of `Feasible19`.
 
 ### Rios & Torrico's results
@@ -92,6 +93,26 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
 | R4: additive optimum loses $(K+1)/2$ in best-match quality ($k=1$) | `QualityTopK.lean` | proved on the instance, for every $K$: every additive optimum has best-match total $2K$, while another feasible set gets $2K+2K(K-1)q_o$. That quality-weighted DH-int picks an additive optimum there is argued in prose |
 | R5: top-$k$ algorithm (credit-DH, $\rho\,c_k$) | — | informal proof in the vault note "Top-k Match Quality"; not formalized |
 
+### Truthful swiping and screened DH (vault note "Truthful Swiping with an LLM Oracle")
+
+| Result | File | Status |
+| --- | --- | --- |
+| Theorem 1(a): if the acceptable profiles seen are cost-separable, sincere swiping is best against every set $R$ of profiles that would match | `TruthfulSwiping.lean` (`sincere_best`) | proved, per realization. Only subadditivity and $v(\{x\}) = q_x$ are assumed |
+| Theorem 1(b): otherwise some $R$ makes another choice strictly better | `TruthfulSwiping.lean` (`sincere_not_best`) | proved |
+| Theorem 1 corollaries: additive always; top-$k$ iff at most $k$ acceptable | `TruthfulSwiping.lean` (`costSeparable_sum`, `costSeparable_topK_iff`) | proved; the matroid corollary is not formalized |
+| Lemma 1′ for SDH: whatever a user does, its matches are $D \cap R$ with $R$ independent of its swipes | `TruthfulSwiping.lean` (`matchesOf_update`) | proved for SDH's two-period game; not for general swipe-local policies |
+| Theorems 3(a), 5(a): SDH is DSIC | `TruthfulSwiping.lean` (`sdh_dsic`, `sdh_dsic_topK`) | proved: against every behavior of the others, including strategies that react to what they see, for every realization of values and coins. For top-$k$ it needs only at most $k$ planned partners |
+| Theorem 5(d): a sincere user's utility is at least 0 | `TruthfulSwiping.lean` (`sdh_sincere_nonneg`) | proved |
+| Theorem 5(e), its key step: a planned pair with two sincere ends matches | `TruthfulSwiping.lean` (`sdh_arc_matches`) | proved; the welfare sum over pairs is not formalized |
+| Theorem 3(b), first step: the LP bounds $\mathrm{OPT_{IR}}$, and has an optimal plan | `ScreenedDH.lean` (`exists_lpValue_eq_optIR`, `optIR_le_lpValue`, `exists_isLPOptimal`) | proved |
+| Theorem 3(b): SDH $\ge c_K^2\,\mathrm{LP} \ge c_K^2\,\mathrm{OPT_{IR}}$ for size caps, $K$ at most every cap | `ScreenedDH.lean` (`lpValue_le_sdhValue`, `sdh_welfare`) | proved, for every feasible plan and every query probabilities with $x_{e,c} \le \tau_e \pi_{e,c}$. The matroid case, $(1-1/e)^2$, is not formalized |
+| The $c_K$ gap for independent random weights (layer cake + R1's lemma) | `ProdExp.lean` (`prodExp_randomWeight_gap`, `prodExp_columns_gap`) | proved |
+| Welfare on IR sets is the sum of net weights | `ScreenedDH.lean` (`welfare_eq_sum_wt`) | proved |
+| Theorem 3(c): $\tau_e \le x_e/\hat p_e$, calls per user $\le b'_\ell/\hat p$, a queried pair costs $\le 1 + \sqrt{\phi_I \phi_J}$ calls | `ScreenedDH.lean` (`sdhTau_le`, `sum_callsI_le`, `sum_callsJ_le`, `callsI_add_callsJ`) | proved for **corrected** statements: the plan splits a tied bar level proportionally, and $\hat p_e$ is the mass strictly above the bar if positive, else at the bar. The note's version (ties filled in any order) is false |
+| Bar shape is without loss of generality | `ScreenedDH.lean` (`exists_barShaped`, `exists_optimal_barShaped`) | proved |
+| Theorem 3(d): scaling the plan by $\lambda$ scales calls by $\lambda$ and keeps $c_K^2 \lambda\,\mathrm{OPT_{IR}}$ | `ScreenedDH.lean` (`sdh_budget`, `sum_callsI_budget`) | proved |
+| Lemma R, Theorems 2 and 4, Propositions 4–6, continuous values | — | not formalized |
+
 ## Layout
 
 | File | Contents |
@@ -113,6 +134,9 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
 | `DatingAlgo/GreedyGap.lean` | one user over $T$ periods: greedy backlog responses are optimal on every sample path; their correlation gap; the splitting lemma |
 | `DatingAlgo/MultiPeriodRepair.lean` | per-period relaxation $\mathrm{Rel}_\tau$, DHT-τ, and the repaired Theorem 5.3 |
 | `DatingAlgo/PoissonGap.lean` | R1 and its key lemma, via the finite formula for $\mathbb E\min(\mathrm{Poi}(\mu),j)$ and its concavity; R2 with $c_K$ |
+| `DatingAlgo/ProdExp.lean` | `prodExp`: expectations over independent finite random variables; pushforwards, regrouping into columns; the $c_K$ gap for random weights |
+| `DatingAlgo/TruthfulSwiping.lean` | cost-separability, Theorem 1, SDH's two-period game and its DSIC property |
+| `DatingAlgo/ScreenedDH.lean` | SDH's market, LP, screening and selection; Theorem 3(b)–(d) |
 | `DatingAlgo/Targets.lean` | open targets (none at the moment) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
 
@@ -136,6 +160,18 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
   - With mutual views a run can break them: Step 12 can fill a user's slot before that
     user's Steps 6–8, delaying an initiation.
   - `thm53DHTSched_isDHT` shows the predicate is satisfiable.
+- **Screened DH** (`ScreenedDH.lean`, `TruthfulSwiping.lean`):
+  - Pairs are `I × J`. Each pair has an independent random value combination from a finite
+    type `C`; the two directions within a pair may have any joint law.
+  - Users' utilities enter only through the net weights: `welfare_eq_sum_wt` shows that on
+    capped sets the sum of utilities is the sum of net weights when each user's value is
+    additive on sets within its cap (additive users, top-$k$ users with cap at most $k$,
+    any user with cap 1).
+  - The DSIC game fixes one realization of values and of SDH's coins (the planned,
+    oriented matches), so the result holds for every realization. The others' period-2
+    responses are arbitrary functions of what they are shown.
+  - The analysis of Theorem 3(b) thins the found pairs with an extra coin per pair
+    (`thinLaw`) so that candidates have exactly the plan's probabilities.
 - **The repaired Theorem 5.3** (`MultiPeriodRepair.lean`) makes these modeling choices:
   - $\mathrm{Rel}_\tau$'s binary variables are encoded as a `Schedule`, and a design is any predicate on
     schedules.

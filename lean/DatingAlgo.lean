@@ -15,4 +15,7 @@ import DatingAlgo.MultiPeriodDHT
 import DatingAlgo.PoissonGap
 import DatingAlgo.GreedyGap
 import DatingAlgo.MultiPeriodRepair
+import DatingAlgo.ProdExp
+import DatingAlgo.TruthfulSwiping
+import DatingAlgo.ScreenedDH
 import DatingAlgo.Targets
