@@ -16,6 +16,9 @@ status: seed
 > [!note] Preliminary
 > Written 2026-10-30. This extends [[Truthful Swiping with an LLM Oracle]] (SDH, Theorem 3) and [[Max-Min Match Quality and Egalitarian Matching]] (MM-SDH, Theorem MM) with a per-user call budget. The numbers on the speed-dating data are in the truthful-swiping note (T3, query budgets). Every part of Theorem Q is machine-checked in Lean, for discrete priors and for priors with finite means (see Evidence); the exceptions are listed there.
 
+> [!tip] Step-by-step guide
+> [[Q-SDH Proof Guide.html]] walks through this note slowly: every symbol, a worked one-pair example, Theorem Q (a)–(f) with Lean names, how each proof works, a proof map, and all 14 assumptions with what each one costs. Obsidian doesn't display HTML, so the link opens it in your web browser.
+
 ## Answer
 
 **Summary.** Yes, with one change to SDH: the query probabilities become variables of the plan.

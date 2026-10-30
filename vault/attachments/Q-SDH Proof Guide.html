@@ -1,0 +1,529 @@
+<!doctype html>
+<!-- Standalone copy of the Q-SDH proof guide (companion to the vault note
+     "Query Budgets in Screened DH"). Open it in a web browser; fonts, MathJax
+     and mermaid load from the web. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Q-SDH Proof Guide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+<style>
+/* Layout: a long technical document, one reading column with a sticky contents rail on wide screens. */
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --ink: #17202b;
+  --muted: #546072;
+  --rule: #d8dee6;
+  --accent: #1d5c88;
+  --accent-soft: #e5eef6;
+  --lean: #57408a;
+  --lean-soft: #efeaf8;
+  --caution: #845700;
+  --caution-soft: #fbf2df;
+  --diagram-bg: #ffffff; /* the diagram renders in mermaid's light theme, so it keeps a light card in both themes */
+  --f-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-ui: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10141a; --surface: #161c24; --ink: #e3e8ef; --muted: #9ba7b6; --rule: #2a333f;
+    --accent: #8fc1e6; --accent-soft: #182836; --lean: #c5adf0; --lean-soft: #251f36;
+    --caution: #e9bb62; --caution-soft: #2c2415; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10141a; --surface: #161c24; --ink: #e3e8ef; --muted: #9ba7b6; --rule: #2a333f;
+  --accent: #8fc1e6; --accent-soft: #182836; --lean: #c5adf0; --lean-soft: #251f36;
+  --caution: #e9bb62; --caution-soft: #2c2415; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; max-width: 1120px; margin: 0 auto; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-family: var(--f-ui); font-size: 13.5px; line-height: 1.45; }
+nav.toc h2 { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+nav.toc a { color: var(--muted); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); text-decoration: underline; }
+main { min-width: 0; max-width: 46rem; }
+header.top { display: grid; gap: 12px; margin-bottom: 36px; }
+.eyebrow { font-family: var(--f-ui); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--f-ui); font-weight: 600; font-size: 2.1rem; line-height: 1.15; margin: 0; text-wrap: balance; }
+.lede { font-size: 1.12rem; color: var(--muted); margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--f-ui); font-size: 12.5px; border: 1px solid var(--rule); background: var(--surface); border-radius: 999px; padding: 3px 10px; color: var(--ink); }
+.chip strong { font-weight: 600; }
+section { margin-top: 48px; }
+h2 { font-family: var(--f-ui); font-weight: 600; font-size: 1.4rem; line-height: 1.25; margin: 0 0 14px; text-wrap: balance; scroll-margin-top: 24px; }
+h2 .num { color: var(--accent); margin-right: 8px; font-variant-numeric: tabular-nums; }
+h3 { font-family: var(--f-ui); font-weight: 600; font-size: 1.08rem; margin: 28px 0 8px; text-wrap: balance; }
+p { margin: 0 0 14px; }
+ul, ol { margin: 0 0 14px; padding-left: 1.3em; }
+li { margin-bottom: 6px; }
+a { color: var(--accent); }
+code, .lean { font-family: var(--f-mono); font-size: .86em; }
+.lean { color: var(--lean); background: var(--lean-soft); padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+.box { border: 1px solid var(--rule); background: var(--surface); padding: 14px 18px; margin: 18px 0; border-radius: 4px; }
+.box > :last-child { margin-bottom: 0; }
+.box .label { font-family: var(--f-ui); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; }
+.box.plain { background: var(--accent-soft); border-color: transparent; }
+.box.plain .label { color: var(--accent); }
+.box.caution { background: var(--caution-soft); border-color: transparent; }
+.box.caution .label { color: var(--caution); }
+.thm { border: 1px solid var(--rule); background: var(--surface); padding: 16px 18px; margin: 18px 0; border-radius: 4px; }
+.thm .head { font-family: var(--f-ui); font-weight: 600; font-size: .98rem; margin-bottom: 6px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.thm .head .tag { color: var(--accent); }
+.thm .where { font-family: var(--f-ui); font-size: 13px; color: var(--muted); margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.thm > p:last-of-type { margin-bottom: 0; }
+.tablewrap { overflow-x: auto; margin: 16px 0 20px; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--f-ui); font-size: 12.5px; letter-spacing: .03em; color: var(--muted); font-weight: 600; background: var(--bg); }
+tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.steps { counter-reset: step; list-style: none; padding-left: 0; }
+.steps > li { counter-increment: step; position: relative; padding-left: 2.2em; margin-bottom: 10px; }
+.steps > li::before { content: counter(step); position: absolute; left: 0; top: .1em; font-family: var(--f-ui); font-size: 13px; font-weight: 600; color: var(--accent); width: 1.6em; height: 1.6em; border: 1px solid var(--accent); border-radius: 50%; display: grid; place-items: center; }
+.formula { overflow-x: auto; margin: 10px 0 16px; }
+.mermaidwrap { overflow-x: auto; margin: 16px 0; padding: 12px; background: var(--diagram-bg); border: 1px solid var(--rule); border-radius: 4px; }
+.small { font-size: .9rem; color: var(--muted); }
+dl.assume { display: grid; gap: 14px; margin: 16px 0; }
+dl.assume > div { border-top: 1px solid var(--rule); padding-top: 12px; }
+dl.assume dt { font-family: var(--f-ui); font-weight: 600; margin-bottom: 4px; }
+dl.assume dd { margin: 0; }
+dl.assume .why, dl.assume .cost { display: block; margin-top: 4px; }
+dl.assume .why b, dl.assume .cost b { font-family: var(--f-ui); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--rule); font-family: var(--f-ui); font-size: 13px; color: var(--muted); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  nav.toc { position: static; border: 1px solid var(--rule); background: var(--surface); padding: 14px 16px; border-radius: 4px; }
+  nav.toc ol { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  body { font-size: 16.5px; }
+  h1 { font-size: 1.7rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: true });</script>
+</head>
+<body>
+
+<div class="shell">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#short">1 · The short version</a></li>
+    <li><a href="#market">2 · The market and its symbols</a></li>
+    <li><a href="#calls">3 · Calls and budgets</a></li>
+    <li><a href="#plan">4 · The plan (Q-LP)</a></li>
+    <li><a href="#example">5 · One pair, three plans</a></li>
+    <li><a href="#mechanism">6 · The mechanism (Q-SDH)</a></li>
+    <li><a href="#theorem">7 · Theorem Q</a></li>
+    <li><a href="#proofs">8 · How the proofs work</a></li>
+    <li><a href="#map">9 · Proof map</a></li>
+    <li><a href="#assumptions">10 · Assumptions</a></li>
+    <li><a href="#lean">11 · What is in Lean</a></li>
+    <li><a href="#open">12 · Not covered</a></li>
+    <li><a href="#constants">13 · The constant \(c_K\)</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+  <div class="eyebrow">CS 580 · dating heuristic project · checked 2026-10-30</div>
+  <h1>Query-budgeted screened DH</h1>
+  <p class="lede">What was proved about running screened DH when the platform can only afford a limited number of oracle calls per user: every variable, every assumption, the theorems, and how each proof works.</p>
+  <div class="chips">
+    <span class="chip"><strong>74</strong> new theorems</span>
+    <span class="chip">project: <strong>973</strong> theorems, <strong>0</strong> open</span>
+    <span class="chip">discrete and continuous priors</span>
+    <span class="chip">vault note: Query Budgets in Screened DH</span>
+  </div>
+</header>
+
+<section id="short">
+<h2><span class="num">1</span>The short version</h2>
+<p><strong>The problem.</strong> Screened DH (SDH) asks an LLM oracle about pairs before showing them. Its plan says how often to use each pair, and it then queries each pair as often as that plan needs. It never asks what the queries cost. On the speed-dating data it ends up querying 96–100% of all pairs. A real platform has a budget of oracle calls per user.</p>
+<p><strong>The fix.</strong> Make the query probability of each pair a variable of the plan, next to how often the pair is used, and add one constraint per user: expected calls at most the budget. Running SDH on such a plan is <em>Q-SDH</em>.</p>
+<p><strong>What is proved</strong>, for discrete priors and for any priors with finite means (continuous included):</p>
+<ul>
+  <li><strong>(a) Truthful.</strong> Swiping right exactly when a match is worth its cost stays a dominant strategy.</li>
+  <li><strong>(b) Within budget.</strong> Each user's expected number of oracle calls is at most its budget.</li>
+  <li><strong>(c) Every user is protected.</strong> Each user gets at least \(1/4\) of what the plan promised it with random-order selection, and \(c_K^2\) with balanced selection rules.</li>
+  <li><strong>(d) Total welfare.</strong> SDH's own selection (the best capped set of the pairs it found) earns at least \(c_K^2\) of the plan's total value.</li>
+  <li><strong>(e) The plan is an upper bound.</strong> No budgeted policy, even one that picks its queries adaptively after seeing earlier answers, gives users more than the best plan can.</li>
+  <li><strong>(f) Any reasonable objective.</strong> For max-min, or any objective that is monotone and scales with the utilities, Q-SDH gets at least \(1/4\) (or \(c_K^2\)) of the best budgeted policy's value.</li>
+</ul>
+<div class="box plain"><span class="label">In plain words</span>
+<p>Pay for the queries you plan, plan with the queries you can afford, and you lose at most a constant factor against anyone with the same budget, for the worst-off user as much as for the total.</p>
+</div>
+</section>
+
+<section id="market">
+<h2><span class="num">2</span>The market and its symbols</h2>
+<p>Two sides: initiators \(I\) and responders \(J\). Every initiator–responder pair \(e = (i,j)\) can match. Each pair has a random <em>value pair</em> that the oracle can reveal.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Symbol</th><th>Meaning</th><th>Lean name</th></tr></thead>
+<tbody>
+<tr><td>\(I,\ J\)</td><td>initiators and responders (finite sets)</td><td><code class="lean">I</code>, <code class="lean">J</code></td></tr>
+<tr><td>\(e=(i,j)\)</td><td>a pair</td><td><code class="lean">e : I × J</code></td></tr>
+<tr><td>\(s=(q_{ij},q_{ji})\)</td><td>the pair's values: how much \(i\) values \(j\), and how much \(j\) values \(i\)</td><td><code class="lean">ω e : ℝ × ℝ</code></td></tr>
+<tr><td>\(\mu_e\)</td><td>the prior law of \(s\). Any probability law on \(\mathbb{R}^2\) with finite means: discrete, continuous or mixed. The two values in a pair may be correlated.</td><td><code class="lean">M.μ e</code></td></tr>
+<tr><td>\(\omega\)</td><td>the values of all pairs at once; pairs are independent, so \(\omega\) has the product law \(\prod_e \mu_e\)</td><td><code class="lean">Measure.pi M.μ</code></td></tr>
+<tr><td>\(c_i,\ c_j\)</td><td>what a match costs \(i\) and \(j\) (time, attention)</td><td><code class="lean">costI</code>, <code class="lean">costJ</code></td></tr>
+<tr><td>\(w_I(s)=q_{ij}-c_i\)<br>\(w_J(s)=q_{ji}-c_j\)</td><td>net values: what the match is worth to each side after its cost</td><td><code class="lean">wI</code>, <code class="lean">wJ</code></td></tr>
+<tr><td>\(w(s)=w_I+w_J\)</td><td>the pair's net weight (its contribution to total welfare)</td><td></td></tr>
+<tr><td>\(A_e\)</td><td>values at which \(e\) is <em>acceptable</em>: both net values positive, so both would swipe right</td><td><code class="lean">Acc</code></td></tr>
+<tr><td>\(K_i,\ K_j\)</td><td>caps: the most matches a user keeps</td><td><code class="lean">capI</code>, <code class="lean">capJ</code></td></tr>
+<tr><td>\(K\)</td><td>any whole number at most every cap; it sets the constant \(c_K\)</td><td><code class="lean">K</code></td></tr>
+<tr><td>\(u_\ell\)</td><td>user \(\ell\)'s utility: the sum of its net values over its matches</td><td></td></tr>
+</tbody></table></div>
+<p><strong>Discrete version.</strong> In <code class="lean">BudgetedSDH.lean</code> a pair has a value <em>combination</em> \(c\) from a finite set \(C\) with probability \(\pi_{e,c}\), as in the truthful-swiping note. Everything below has a discrete twin with integrals replaced by sums.</p>
+</section>
+
+<section id="calls">
+<h2><span class="num">3</span>Calls and budgets</h2>
+<p>A query of pair \(e\) asks the oracle for one side's value at a time, in a fixed order: first the side <em>less</em> likely to accept, and the other side only if the first says yes. A "no" from the first side settles the pair, so starting with the likelier "no" saves calls.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Symbol</th><th>Meaning</th><th>Lean name</th></tr></thead>
+<tbody>
+<tr><td>\(\phi^I_e=\Pr[q_{ij}\gt c_i]\)</td><td>chance that \(i\) accepts \(j\); \(\phi^J_e\) likewise</td><td><code class="lean">phiI</code>, <code class="lean">phiJ</code></td></tr>
+<tr><td>\(a^I_e\)</td><td>expected calls charged to \(i\) per query of \(e\): \(1\) if \(i\) is asked first (\(\phi^I_e\le\phi^J_e\)), otherwise \(\phi^J_e\) (asked only after \(j\) said yes)</td><td>inside <code class="lean">callsI</code></td></tr>
+<tr><td>\(a^J_e\)</td><td>the same for \(j\): \(\phi^I_e\) or \(1\)</td><td>inside <code class="lean">callsJ</code></td></tr>
+<tr><td>\(\tau_e\)</td><td>probability that the platform queries \(e\)</td><td><code class="lean">τ e</code></td></tr>
+<tr><td>\(\tau_e a^\ell_e\)</td><td>expected calls charged to \(\ell\) by pair \(e\)</td><td><code class="lean">callsI τ e</code></td></tr>
+<tr><td>\(Q_\ell\)</td><td>user \(\ell\)'s budget on <em>expected</em> calls</td><td><code class="lean">QI</code>, <code class="lean">QJ</code></td></tr>
+</tbody></table></div>
+<div class="formula">\[ \text{budget:}\qquad \sum_{e\ni\ell}\tau_e\,a^\ell_e\ \le\ Q_\ell\quad\text{for every user }\ell. \]</div>
+<p>The realized charge of one query is <code class="lean">chargeI e s</code>: \(1\) if \(i\) goes first, otherwise \(1\) exactly when \(j\) said yes at values \(s\). Its average over \(\mu_e\) is \(a^I_e\) (<code class="lean">integral_chargeI</code>).</p>
+</section>
+
+<section id="plan">
+<h2><span class="num">4</span>The plan (Q-LP)</h2>
+<p>The platform chooses two things per pair before anything is shown:</p>
+<ul>
+  <li>\(\tau_e\in[0,1]\): how often to <em>pay to look</em> at \(e\);</li>
+  <li>\(y_e(s)\in[0,\tau_e]\): how often to <em>use</em> \(e\) when its values turn out to be \(s\). A measurable function of \(s\).</li>
+</ul>
+<p>The constraints, each with its reason:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Constraint</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>\(0\le y_e(s)\le\tau_e\le 1\)</td><td>you can't use a pair more often than you look at it</td></tr>
+<tr><td>\(y_e(s)=0\) when \(s\notin A_e\)</td><td>never plan to use a pair someone would reject</td></tr>
+<tr><td>\(\sum_{j}\int y_{ij}\,d\mu_{ij}\le K_i\) (and for each \(j\))</td><td>expected matches within the cap</td></tr>
+<tr><td>\(\sum_{e\ni\ell}\tau_e a^\ell_e\le Q_\ell\)</td><td>expected calls within the budget</td></tr>
+</tbody></table></div>
+<p>In Lean this is <code class="lean">ContFeasible QI QJ y τ</code> (continuous) and <code class="lean">QFeasible QI QJ x τ</code> (discrete, where the plan is \(x_{e,c}=y_e(c)\,\pi_{e,c}\) and the first row reads \(x_{e,c}\le\tau_e\pi_{e,c}\)).</p>
+<h3>Quantities derived from a plan</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Symbol</th><th>Meaning</th><th>Lean name</th></tr></thead>
+<tbody>
+<tr><td>\(X_e=\int y_e\,d\mu_e\)</td><td>probability that the plan uses \(e\)</td><td><code class="lean">candP</code></td></tr>
+<tr><td>\(G^I_e=\int w_I\,y_e\,d\mu_e\)</td><td>\(i\)'s expected gain from \(e\) under the plan; \(G^J_e\) likewise</td><td><code class="lean">gainIP</code>, <code class="lean">gainJP</code></td></tr>
+<tr><td>\(\mathrm{lp}_i(y)=\sum_j G^I_{ij}\)</td><td>\(i\)'s <em>planned surplus</em>: what the plan promises \(i\); \(\mathrm{lp}_j\) likewise</td><td><code class="lean">lpSurplusI</code>, <code class="lean">lpSurplusJ</code></td></tr>
+<tr><td>\(\sum_\ell \mathrm{lp}_\ell(y)=\sum_e\int w\,y_e\,d\mu_e\)</td><td>the plan's total value (the LP value)</td><td></td></tr>
+<tr><td>\(\mathrm{lp}(y)\)</td><td>all planned surpluses as one vector indexed by users</td><td><code class="lean">lpVec</code></td></tr>
+</tbody></table></div>
+<h3>How this differs from SDH's plan</h3>
+<p>SDH chooses only \(y\) (its \(x\)) and then sets \(\tau_e\) to the smallest value that supports it, \(\tau_e=\max_s y_e(s)\). The truthful-swiping note's Theorem 3(d) handles a budget by shrinking the whole plan by a factor \(\lambda\). Both are special cases of the Q-LP, so the best Q-LP plan is never worse than either (<code class="lean">qfeasible_scaled</code>).</p>
+<div class="box plain"><span class="label">Why the new freedom helps</span>
+<p>With \(\tau_e\) free, the plan can look at a pair <em>less often</em> and accept <em>more</em> of its outcomes when it does. SDH's plan, by contrast, looks at every pair whose best outcome could beat the price of the two users' slots, and keeps only the best outcomes. Section 5 shows the trade-off on one pair.</p>
+</div>
+</section>
+
+<section id="example">
+<h2><span class="num">5</span>One pair, three plans</h2>
+<p>Ann (an initiator) and Bo (a responder), both with match cost \(1\). Ann's value for Bo is uniform on \([0,4]\); Bo values Ann at exactly \(2\). So \(s=(q,2)\), \(w_I=q-1\), \(w_J=1\), and the pair is acceptable when \(q\gt1\), which happens with probability \(3/4\). Ann accepts with probability \(3/4\) and Bo always does, so Ann is asked first: \(a^{\text{Ann}}=1\), \(a^{\text{Bo}}=3/4\).</p>
+<p>Three plans that all use the pair with the same probability \(X=1/4\):</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Plan</th><th>\(\tau\)</th><th>\(y(s)\)</th><th class="num">\(X\)</th><th class="num">\(G^I\)</th><th class="num">\(G^J\)</th><th class="num">value</th><th class="num">Ann's calls</th><th class="num">Bo's calls</th></tr></thead>
+<tbody>
+<tr><td>A: always look, keep only great outcomes</td><td>\(1\)</td><td>\(\mathbf 1[q\gt3]\)</td><td class="num">1/4</td><td class="num">5/8</td><td class="num">1/4</td><td class="num">7/8</td><td class="num">1</td><td class="num">3/4</td></tr>
+<tr><td>B: look half the time, keep good ones</td><td>\(1/2\)</td><td>\(\tfrac12\mathbf 1[q\gt2]\)</td><td class="num">1/4</td><td class="num">1/2</td><td class="num">1/4</td><td class="num">3/4</td><td class="num">1/2</td><td class="num">3/8</td></tr>
+<tr><td>C: look a third of the time, keep anything acceptable</td><td>\(1/3\)</td><td>\(\tfrac13\mathbf 1[q\gt1]\)</td><td class="num">1/4</td><td class="num">3/8</td><td class="num">1/4</td><td class="num">5/8</td><td class="num">1/3</td><td class="num">1/4</td></tr>
+</tbody></table></div>
+<p>For example, plan B: \(X=\tfrac12\Pr[q\gt2]=\tfrac12\cdot\tfrac12=\tfrac14\) and \(G^I=\tfrac12\int_2^4\frac{q-1}{4}\,dq=\tfrac12\). SDH's own rule picks plan A, the most valuable, and pays a full call. If Ann's budget is \(1/2\), plan A is infeasible and the Q-LP picks B.</p>
+<div class="box"><span class="label">The same pair in the surrogate market (used in section 8)</span>
+<p>For the proofs, a plan is summarized by three numbers per pair: \(X\), \(G^I\), \(G^J\). The <em>surrogate</em> pair always exists, is used with probability \(X\), and is worth \(\bar w_I=G^I/X\) to Ann and \(\bar w_J=G^J/X\) to Bo: the expected net values <em>given that the pair is used</em>. For plan A that is \(\bar w_I=5/2\), \(\bar w_J=1\); for plan C, \(\bar w_I=3/2\), \(\bar w_J=1\).</p>
+</div>
+</section>
+
+<section id="mechanism">
+<h2><span class="num">6</span>The mechanism (Q-SDH)</h2>
+<ol class="steps">
+  <li><strong>Plan.</strong> Pick a feasible \((\tau,y)\).</li>
+  <li><strong>Screen.</strong> Query each pair independently with probability \(\tau_e\), asking the less likely side first.</li>
+  <li><strong>Thin.</strong> Keep a found acceptable pair with values \(s\) with probability \(y_e(s)/\tau_e\). Such a pair is a <em>candidate</em>. Given its values, a pair is a candidate with probability \(\tau_e\cdot y_e(s)/\tau_e=y_e(s)\), independently of every other pair.</li>
+  <li><strong>Select</strong>, in one of two ways:
+    <ul>
+      <li><em>Two stages with rules</em> (for per-user guarantees, as in MM-SDH). Each responder \(j\) keeps a random set of its candidates of size at most \(K_j\), drawn by its rule \(\psi_1(j)\). Each initiator \(i\) then keeps a random set of what was passed to it, of size at most \(K_i\), drawn by \(\psi_2(i)\).</li>
+      <li><em>SDH's own selection</em> (for total welfare): the best capped set of all found acceptable pairs, by true net weight. Thinning is then only a device of the proof.</li>
+    </ul>
+  </li>
+  <li><strong>Show</strong> the selected pairs as SDH does: initiations in period 1, answers in period 2.</li>
+</ol>
+<h3>Selection rules</h3>
+<p>A <em>rule</em> for a user with cap \(K\) maps the user's candidate set \(A\) to a random subset \(T\subseteq A\) with \(|T|\le K\) (<code class="lean">IsRule</code>). Rules see only <em>which</em> pairs are candidates, never their values. That keeps the mechanism swipe-local, and it is what makes the continuous case reduce to the discrete one.</p>
+<p>A rule is <strong>\(\gamma\)-balanced</strong> for candidate probabilities \(p\) if, whenever each element is a candidate independently with probability \(p_e\), the rule keeps each \(e\) with probability at least \(\gamma\,p_e\) (<code class="lean">IsBalanced</code>). Balance is a promise to <em>every</em> element, which is what a per-user guarantee needs.</p>
+<ul>
+  <li><strong>Random order</strong> keeps a uniformly random \(\min(K,|A|)\) of the candidates (<code class="lean">uniformRule</code>). It is \(1/2\)-balanced whenever the expected number of candidates is at most \(K\), which the caps guarantee.</li>
+  <li><strong>\(c_K\)-balanced rules exist</strong> (<code class="lean">exists_balanced_rule</code>, by Sion's minimax theorem). They are not explicit, and they depend on the plan's candidate probabilities but never on values or swipes.</li>
+</ul>
+</section>
+
+<section id="theorem">
+<h2><span class="num">7</span>Theorem Q</h2>
+<p>Fix a feasible plan \((\tau,y)\). Lean names are given as discrete version, then continuous version.</p>
+
+<div class="thm"><div class="head"><span class="tag">Q(a)</span> Truthful</div>
+<p>Each user is shown a capped set of acceptable partners chosen from oracle answers and coins, so sincere swiping (swipe right iff the match is worth its cost) is a dominant strategy against any behavior of the others.</p>
+<div class="where">Lean: <code class="lean">sdh_dsic</code> (already proved for every planned set of acceptable pairs; nothing new needed)</div></div>
+
+<div class="thm"><div class="head"><span class="tag">Q(b)</span> Calls within budget</div>
+\[ \mathbb E[\text{calls charged to }\ell]=\sum_{e\ni\ell}\tau_e\,a^\ell_e\ \le\ Q_\ell . \]
+<div class="where">Lean: <code class="lean">qsdh_callsI</code> <code class="lean">qsdh_callsJ</code> · <code class="lean">contCallsI_eq</code> <code class="lean">contCallsJ_eq</code></div></div>
+
+<div class="thm"><div class="head"><span class="tag">Q(c)</span> Every user keeps a share of its promise</div>
+<p>If every stage-1 rule is \(\gamma_1\)-balanced and every stage-2 rule is \(\gamma_2\)-balanced,</p>
+\[ \mathbb E[u_\ell]\ \ge\ \gamma_1\gamma_2\,\mathrm{lp}_\ell(y)\qquad\text{for every user }\ell. \]
+<p>Random order gives \(\gamma_1\gamma_2=1/4\). Balanced rules give \(c_K^2\).</p>
+<div class="where">Lean: <code class="lean">qsdh_quarter</code> <code class="lean">qsdh_cK</code> · <code class="lean">contUtil_ge</code> <code class="lean">contUtil_quarter</code> <code class="lean">contUtil_cK</code></div></div>
+
+<div class="thm"><div class="head"><span class="tag">Q(d)</span> Total welfare with SDH's own selection</div>
+\[ \mathbb E\big[\text{weight of the best capped set of found pairs}\big]\ \ge\ c_K^2\sum_\ell \mathrm{lp}_\ell(y)=c_K^2\sum_e\int w\,y_e\,d\mu_e . \]
+<p>With no budget and SDH's own \(\tau\), this is the truthful-swiping note's Theorem 3(b), now for continuous priors as well.</p>
+<div class="where">Lean: <code class="lean">qsdh_welfare</code> · <code class="lean">contSDH_welfare</code> (key step <code class="lean">rules_le_bestMatch</code>)</div></div>
+
+<div class="thm"><div class="head"><span class="tag">Q(e)</span> No budgeted policy beats the plan</div>
+<p>Every budgeted screened policy \(P\) (section 8.4), adaptive or not, induces a feasible plan \((\tau^P,y^P)\) that promises every user exactly what \(P\) gives it:</p>
+\[ \mathrm{lp}_\ell(y^P)=\mathbb E_P[u_\ell]\qquad\text{for every user }\ell. \]
+<div class="where">Lean: <code class="lean">exists_qplan_of_policy</code> <code class="lean">isBudgetedPolicy_of_trees</code> · <code class="lean">exists_contPlan_of_policy</code></div></div>
+
+<div class="thm"><div class="head"><span class="tag">Q(f)</span> Any monotone, homogeneous objective</div>
+<p>Let \(W\) be a function of the users' expected utilities that is</p>
+<ul>
+  <li><em>monotone</em>: if every user is better off, \(W\) does not go down;</li>
+  <li><em>positively homogeneous</em>: \(W(\gamma u)=\gamma W(u)\) for \(\gamma\ge0\).</li>
+</ul>
+<p>If the plan is \(\varepsilon\)-optimal for \(W\) (no feasible plan beats it by more than \(\varepsilon\)), then against every budgeted policy \(P\):</p>
+\[ W\big(\mathbb E[u(\text{Q-SDH})]\big)\ \ge\ \gamma_1\gamma_2\Big(W\big(\mathbb E_P[u]\big)-\varepsilon\Big),\qquad \gamma_1\gamma_2\in\{1/4,\ c_K^2\}. \]
+<p>Covered and proved in Lean: max-min over all users or any subset (for example, the users who can match at all), max-min of weighted or normalized utilities, weighted total welfare. Also covered by the hypotheses but not instantiated in Lean: Nash welfare (the geometric mean).</p>
+<div class="where">Lean: <code class="lean">objective_of_perUser</code> <code class="lean">qsdh_objective_quarter</code> <code class="lean">qsdh_objective_cK</code> · <code class="lean">cont_objective_quarter</code> <code class="lean">cont_objective_cK</code> · instances <code class="lean">isMonoHom_inf'</code> <code class="lean">isMonoHom_weightedInf</code> <code class="lean">isMonoHom_weightedSum</code></div></div>
+</section>
+
+<section id="proofs">
+<h2><span class="num">8</span>How the proofs work</h2>
+
+<h3>8.1 Calls (Q(b))</h3>
+<p>The query coin of a pair is independent of its values. A query charges \(\ell\) either \(1\), or \(1\) exactly when the other side said yes. Averaging: \(\mathbb E[\text{charge}]=\tau_e\cdot a^\ell_e\). Sum over the user's pairs. In the continuous file this is one integral per pair, moved off the product measure with <code class="lean">integral_coord</code> (the expectation of a function of one coordinate is its integral under that coordinate's law).</p>
+
+<h3>8.2 Every user keeps a share (Q(c))</h3>
+<p><strong>Discrete priors.</strong> After thinning, pair \(e\) is a candidate in combination \(c\) with probability exactly \(x_{e,c}\), independently across pairs. The max-min work (<code class="lean">MaxMinSDH.lean</code>) proved that in this situation a pair's expected value to \(i\) factors as</p>
+\[ \mathbb E[\text{gain}]\cdot\kappa_1\cdot\kappa_2 , \]
+<p>where \(\kappa_1\) is the chance that stage 1 keeps the pair given it is a candidate and \(\kappa_2\) the chance that stage 2 keeps it given stage 1 passed it on. Balance gives \(\kappa_1\ge\gamma_1\) and \(\kappa_2\ge\gamma_2\). That theorem only needs \(x_{e,c}\le\tau_e\pi_{e,c}\), so it applies to any query-aware plan unchanged.</p>
+<p><strong>Continuous priors: the coarsening lemma.</strong> The rules never look at values. So, given the candidate pattern \(\eta\) (which pairs are candidates), \(i\)'s utility is</p>
+\[ \sum_j w_I(s_{ij})\,\kappa_{ij}(\eta), \]
+<p>where \(\kappa_{ij}(\eta)\) is the chance the two stages keep \((i,j)\) given \(\eta\), and \(\kappa_{ij}(\eta)=0\) when \((i,j)\) is not a candidate (<code class="lean">keep2</code>, <code class="lean">keep2_none</code>). Averaging over values and candidate coins, every term is a product of functions of one pair each. Fubini for such products (<code class="lean">integral_fintype_prod_eq_prod</code> from Mathlib) turns the expectation into</p>
+\[ \mathbb E\big[w_I(s_{ij})\,\kappa_{ij}(\eta)\big]=\sum_{\eta}\kappa_{ij}(\eta)\prod_{e}\Big(\int f^{\eta}_e\,d\mu_e\Big), \]
+<p>where \(f^\eta_{ij}=w_I\,y_{ij}\) if \(\eta\) makes \((i,j)\) a candidate and \(0\) otherwise, and \(f^\eta_e\) is \(y_e\) or \(1-y_e\) for every other pair. Only three numbers per pair appear: \(X_e\), \(G^I_e\), \(G^J_e\). This is <code class="lean">integral_prodExp_bern</code>.</p>
+<p><strong>The surrogate market.</strong> Build a discrete market with one combination per pair that always occurs, worth \(\bar w_I=G^I_e/X_e\) to \(i\) and \(\bar w_J=G^J_e/X_e\) to \(j\), and the plan "use \(e\) with probability \(X_e\)" (<code class="lean">surrogate</code>, <code class="lean">surPlan</code>). Its candidate law is Bernoulli\((X_e)\) and its expected gains are \(X_e\bar w=G_e\), the same three numbers. So:</p>
+<ul>
+  <li><code class="lean">contUtilI_eq</code>: Q-SDH's expected utility for every user <em>equals</em> MM-SDH's in the surrogate market, for any rules.</li>
+  <li><code class="lean">lpSurplus_surrogate</code>: the planned surpluses are equal too.</li>
+  <li>So the discrete theorems (<code class="lean">mmUtilI_ge</code>, <code class="lean">mmsdh_quarter</code>, <code class="lean">mmsdh_cK</code>) transfer directly.</li>
+</ul>
+<div class="box caution"><span class="label">Two details the reduction needed</span>
+<ul>
+  <li><strong>Surrogate pairs must be acceptable</strong>, or the rules would see different candidates. That needs \(G_e\gt0\) whenever \(X_e\gt0\). It holds because \(y_e=0\) off the acceptable set, where both net values are positive (<code class="lean">gainP_pos</code>, via "positive integral iff positive-measure support").</li>
+  <li><strong>Pairs that are never used</strong> (\(X_e=0\)) get the placeholder value \(1\). That is harmless because \(G_e=0\) then too (<code class="lean">gainP_eq_zero</code>), so \(X_e\bar w_e=G_e\) still holds (<code class="lean">candP_mul_wbar</code>).</li>
+</ul>
+</div>
+
+<h3>8.3 Total welfare with SDH's own selection (Q(d))</h3>
+<p>In every realization, the two rule stages select a set that is capped and made of candidates, and candidates are found pairs. So the best capped set of found pairs weighs at least as much (<code class="lean">rules_le_bestMatch</code>). Taking expectations, SDH's welfare is at least the users' total utility under the rule mechanism. With \(c_K\)-balanced rules, Q(c) summed over all users gives \(c_K^2\sum_\ell\mathrm{lp}_\ell(y)\).</p>
+<p>To compare the two in the same probability space, each pair gets three outcomes given its values: candidate (probability \(y_e(s)\)), found but not kept (\(\tau_e\mathbf 1[s\in A_e]-y_e(s)\)), not found (the rest). Forgetting the middle distinction gives SDH's "found" law, and merging the last two gives the candidate law (<code class="lean">prodExp_map</code>).</p>
+<div class="box caution"><span class="label">Total, not per user</span>
+<p>SDH's own selection can starve one user. The max-min work proved a counterexample where the worst-off user gets \(\theta^*/3\) (<code class="lean">maxMin_sdh_counterexample</code>). That is why per-user guarantees use the rule-based selection.</p>
+</div>
+
+<h3>8.4 No budgeted policy beats the plan (Q(e))</h3>
+<p><strong>What a budgeted screened policy is.</strong> It can query pairs one at a time, choosing each query using coins and every answer so far. It matches only pairs it has queried and found acceptable, within caps, and its expected calls are within budget. Given all values \(\omega\), write</p>
+<ul>
+  <li>\(q_e(\omega)\): the chance it queries \(e\);</li>
+  <li>\(m_e(\omega)\): the chance it matches \(e\).</li>
+</ul>
+<p>Then \(m_e\le q_e\), \(m_e=0\) unless \(e\) is acceptable, and \(\sum_{e\ni\ell}m_e\le K_\ell\). The one property that matters is <strong>non-anticipation</strong>: \(q_e(\omega)\) does not depend on \(e\)'s own values. The decision to query \(e\) is made before \(e\)'s values are seen, so the path to that decision never looks at them. Lean proves this for every random mixture of adaptive query trees (<code class="lean">QTree.mem_run_update</code>, <code class="lean">isBudgetedPolicy_of_trees</code>).</p>
+<p><strong>The induced plan.</strong></p>
+\[ \tau^P_e=\mathbb E[q_e(\omega)],\qquad y^P_e(s)=\mathbb E\big[m_e(\omega\text{ with }\omega_e:=s)\big]. \]
+<p>The second is "how often the policy matches \(e\) when \(e\)'s values are \(s\)", with everything else averaged out.</p>
+<p><strong>The key tool: resampling.</strong> Replacing pair \(e\)'s values by a fresh independent draw from \(\mu_e\) does not change the joint law of all values (<code class="lean">measurePreserving_update</code>, proved with Mathlib's <code class="lean">Measure.pi_eq</code>). Integrated, for any integrable \(f\):</p>
+\[ \mathbb E\big[m_e(\omega)\,f(\omega_e)\big]=\int f(s)\,y^P_e(s)\,d\mu_e(s). \]
+<p>This is <code class="lean">integral_mul_coord_eq</code>. Each constraint of the plan follows from it:</p>
+<ul>
+  <li>\(f=w_I\): the planned surplus equals the policy's expected utility.</li>
+  <li>\(f=1\): planned matches equal the policy's expected matches, so the caps hold.</li>
+  <li>Non-anticipation: \(q_e(\omega\text{ with }\omega_e:=s)=q_e(\omega)\), so \(y^P_e(s)\le\mathbb E[q_e]=\tau^P_e\).</li>
+  <li>The same identity with \(q\) in place of \(m\) gives the policy's expected calls as \(\tau^P_e a^\ell_e\), so the budget carries over.</li>
+</ul>
+<div class="box"><span class="label">Example: an adaptive policy and its plan</span>
+<p>From the truthful-swiping note's worked example: Ann values Bo, Cy and Dee so that each pair is acceptable with probability \(1/2\), with net weights \(4\), \(2.5\) and \(2\); Ann's cap is \(1\). Policy: query Bo; if acceptable, match. Otherwise query Cy; if acceptable, match. Otherwise query Dee.</p>
+<ul>
+  <li>Query chances: \(\tau_{\text{Bo}}=1\), \(\tau_{\text{Cy}}=1/2\), \(\tau_{\text{Dee}}=1/4\). Each depends only on the <em>other</em> pairs' answers.</li>
+  <li>Use chances when acceptable: \(y_{\text{Bo}}=1\), \(y_{\text{Cy}}=1/2\), \(y_{\text{Dee}}=1/4\), each equal to its \(\tau\).</li>
+  <li>Value \(\tfrac12\cdot4+\tfrac14\cdot2.5+\tfrac18\cdot2=2.875\); Ann's expected calls \(1.75\); expected matches \(7/8\le1\).</li>
+</ul>
+<p>So this adaptive policy is one feasible plan of the Q-LP with Ann's budget \(1.75\), and Q-SDH run on the best such plan gets at least \(c_1^2\approx0.40\) of it without ever adapting.</p>
+</div>
+
+<h3>8.5 Objectives (Q(f))</h3>
+<p>Three steps, with \(\gamma=\gamma_1\gamma_2\):</p>
+<ol>
+  <li>By Q(c), \(\mathbb E[u_\ell]\ge\gamma\,\mathrm{lp}_\ell(y)\) for every user. Monotone and homogeneous give \(W(\mathbb E[u])\ge W(\gamma\,\mathrm{lp}(y))=\gamma\,W(\mathrm{lp}(y))\).</li>
+  <li>By Q(e), \(W(\mathbb E_P[u])=W(\mathrm{lp}(y^P))\) for a feasible plan \(y^P\).</li>
+  <li>\(\varepsilon\)-optimality: \(W(\mathrm{lp}(y^P))\le W(\mathrm{lp}(y))+\varepsilon\).</li>
+</ol>
+<p>Max-min is \(W(u)=\min_\ell u_\ell\). A user with no possible partner forces this to \(0\) for every policy, so the theorem also allows the minimum over any nonempty set of users, or \(\min_\ell u_\ell/M_\ell\) with positive weights such as each user's best case (<code class="lean">isMonoHom_inf'</code>, <code class="lean">isMonoHom_weightedInf</code>).</p>
+</section>
+
+<section id="map">
+<h2><span class="num">9</span>Proof map</h2>
+<p>Arrows point from a result to the results that use it. Grey boxes were proved earlier (truthful-swiping and max-min work); the rest is new.</p>
+<div class="mermaidwrap">
+<pre class="mermaid">
+%%{init: {'theme':'neutral'}}%%
+flowchart TD
+  OLD1["SDH welfare for any query probabilities<br/>lpValue_le_sdhValue"]:::old
+  OLD2["MM-SDH per-user composition<br/>mmUtilI_ge, mmsdh_quarter, mmsdh_cK"]:::old
+  OLD3["sdh_dsic"]:::old
+  RS["Resampling<br/>prodExp_update, measurePreserving_update"]
+  CO["Coarsening lemma<br/>integral_prodExp_bern"]
+  SU["Surrogate market<br/>contUtilI_eq, lpSurplus_surrogate"]
+  RB["Rules never beat SDH's best set<br/>rules_le_bestMatch"]
+  QA["Q(a) truthful"]
+  QB["Q(b) calls"]
+  QC["Q(c) every user"]
+  QD["Q(d) total welfare"]
+  QE["Q(e) benchmark"]
+  QF["Q(f) objectives"]
+  OLD3 --> QA
+  RS --> QB
+  RS --> QE
+  OLD2 --> QC
+  CO --> SU --> QC
+  OLD1 --> QD
+  QC --> QD
+  RB --> QD
+  QC --> QF
+  QE --> QF
+  classDef old fill:#e9ecef,stroke:#9aa3ad,color:#222
+</pre>
+</div>
+</section>
+
+<section id="assumptions">
+<h2><span class="num">10</span>Assumptions and modeling choices</h2>
+<p>Each item says what was assumed, why the proof needs it, and what changes without it.</p>
+<dl class="assume">
+<div><dt>1. Pairs are independent</dt><dd>The values of different pairs are drawn independently. Within a pair, \(q_{ij}\) and \(q_{ji}\) may have any joint law.
+<span class="why"><b>Why</b>Both the resampling step (Q(e)) and the coarsening and contention-resolution steps (Q(c), Q(d)) factor expectations pair by pair.</span>
+<span class="cost"><b>Without it</b>Correlated priors (for example, a user who is popular with everyone in a way the prior doesn't capture) break both the benchmark bound and the constants.</span></dd></div>
+<div><dt>2. Priors are probability laws with finite means</dt><dd>\(\mathbb E|q_{ij}|\) and \(\mathbb E|q_{ji}|\) are finite (<code class="lean">Regular</code>). Continuous, discrete and mixed priors are all allowed.
+<span class="why"><b>Why</b>Expected utilities are integrals of net values; they must exist.</span>
+<span class="cost"><b>Without it</b>Heavy-tailed values with no mean make expected utility undefined.</span></dd></div>
+<div><dt>3. A truthful, accurate oracle; known costs and caps</dt><dd>Inherited from the truthful-swiping note: a query reveals a value exactly, and costs and caps are known to the platform.
+<span class="why"><b>Why</b>Screening relies on the answers being right.</span>
+<span class="cost"><b>Without it</b>Strategic or noisy oracles are open; the truthful-swiping note shows SDH is manipulable through reports.</span></dd></div>
+<div><dt>4. Utility is additive within the cap</dt><dd>A user's utility is the sum of its net values over its matches. This covers additive users and top-\(k\) users whose cap is at most \(k\).
+<span class="why"><b>Why</b>Planned surplus and expected utility are then sums over pairs.</span>
+<span class="cost"><b>Without it</b>General subadditive users are handled only through cap 1 in the earlier notes.</span></dd></div>
+<div><dt>5. A fixed asking order inside a pair</dt><dd>Both Q-SDH and the benchmark ask the side less likely to accept first.
+<span class="why"><b>Why</b>It fixes how calls are charged to each user (\(a^\ell_e\)).</span>
+<span class="cost"><b>Without it</b>A benchmark that chooses the order pair by pair needs one \(\tau\) per order; the proof should go through the same way but isn't done.</span></dd></div>
+<div><dt>6. Budgets bound expected calls</dt><dd>Under the prior, not in every realization.
+<span class="why"><b>Why</b>The plan's constraints are linear in \(\tau\) and the queries stay independent.</span>
+<span class="cost"><b>Without it</b>A hard cap needs dependent rounding or truncation, which breaks the independence the constants rely on. On the real ratings the overshoot reached 9.8 calls at a budget of 8.</span></dd></div>
+<div><dt>7. The benchmark is a class of screened, non-anticipating policies</dt><dd>Policies match only pairs they queried and found acceptable. Lean describes them by the law of their (queried, matched) sets given all values (discrete), or by the marginals \(q_e,m_e\) (continuous), with caps holding in expectation given the values.
+<span class="why"><b>Why</b>That is everything the proof uses. The class contains every adaptive policy, so the bound is, if anything, stronger than needed.</span>
+<span class="cost"><b>Not covered</b>Policies that show unscreened profiles and learn from swipes. For top-\(k\) users those can't be truthful cheaply (Proposition 6 of the truthful-swiping note).</span></dd></div>
+<div><dt>8. Selection rules see only the candidate sets</dt><dd>Rules choose from which pairs are candidates, with their own coins, never from values or swipes.
+<span class="why"><b>Why</b>It keeps the mechanism swipe-local (so truthful), makes users' selections independent (needed for \(\kappa_1\kappa_2\)), and is what makes the continuous case collapse to three numbers per pair.</span>
+<span class="cost"><b>Trade-off</b>SDH's max-weight selection uses values; it gets total welfare (Q(d)) but not per-user guarantees.</span></dd></div>
+<div><dt>9. Thinning is part of the per-user mechanism</dt><dd>Q-SDH keeps a found pair with probability \(y_e(s)/\tau_e\) before selecting.
+<span class="why"><b>Why</b>It makes candidates appear with exactly the plan's probabilities, which balanced rules need.</span>
+<span class="cost"><b>Trade-off</b>It throws away found pairs below the plan's bar. Filling spare slots afterwards with found pairs never hurts anyone under additive utility; that variant ("random + fill") was tested on data but is not in Lean.</span></dd></div>
+<div><dt>10. Objectives compare expected utilities</dt><dd>\(W\) is applied to the vector of expected utilities (ex ante): max-min means "maximize the smallest expected utility".
+<span class="why"><b>Why</b>Expected utilities are linear in the plan, so Q(e) gives an exact match.</span>
+<span class="cost"><b>Not covered</b>\(\mathbb E[W(u)]\), such as the expected minimum, is a different and harder objective.</span></dd></div>
+<div><dt>11. An \(\varepsilon\)-optimal plan, not an exact optimum</dt><dd>
+<span class="why"><b>Why</b>With continuous priors the plan is infinite-dimensional and an exact optimum need not exist. An \(\varepsilon\)-optimal plan always exists.</span>
+<span class="cost"><b>Outside Lean</b>How to compute the plan (for example on quantile slices of each prior). Every guarantee is relative to the plan actually run.</span></dd></div>
+<div><dt>12. The \(c_K\) rules exist but aren't explicit</dt><dd>
+<span class="why"><b>Why</b>Their existence comes from a minimax theorem.</span>
+<span class="cost"><b>Trade-off</b>Random order is explicit and gets \(1/4\) instead of \(c_K^2\) (about \(0.53\) at \(K=2\)).</span></dd></div>
+<div><dt>13. How randomness is modeled in the continuous file</dt><dd>Values use Mathlib's product measure. The mechanism's coins, given the values, are finite sums: a pair is a candidate with probability \(y_e(s)\). The query coin enters only the calls, as \(\tau_e\cdot\mathbb E[\text{charge}]\). SDH's value uses "found" with probability \(\tau_e\mathbf 1[s\in A_e]\).
+<span class="why"><b>Why</b>That is exactly the joint law of values and coins, written without building extra measure spaces.</span></dd></div>
+<div><dt>14. Measurability</dt><dd>Plans \(y_e\) and policy marginals \(q_e,m_e\) are measurable functions. A technical requirement for integrals to make sense; every plan or policy one would write down satisfies it.</dd></div>
+</dl>
+</section>
+
+<section id="lean">
+<h2><span class="num">11</span>What is in Lean</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>File</th><th>Contents</th></tr></thead>
+<tbody>
+<tr><td><code class="lean">BudgetedSDH.lean</code><br><span class="small">22 theorems</span></td><td>Resampling for finite laws (<code class="lean">prodExp_update</code>); the query-aware plan (<code class="lean">QFeasible</code>); calls; Q(c), Q(d) from the existing theorems; budgeted policies, adaptive query trees and the benchmark; the objective theorem and its instances; <code class="lean">qfeasible_scaled</code>.</td></tr>
+<tr><td><code class="lean">ContinuousSDH.lean</code><br><span class="small">52 theorems</span></td><td>Resampling and integration tools for product measures; the coarsening lemma; the continuous market and plan; calls; the surrogate market and the exact reduction; Q(c); SDH's welfare Q(d); the benchmark Q(e); objectives Q(f).</td></tr>
+<tr><td>Reused, proved earlier</td><td><code class="lean">lpValue_le_sdhValue</code> (SDH for any \(\tau\) with \(x\le\tau\pi\)); <code class="lean">mmUtilI_ge</code>, <code class="lean">mmsdh_quarter</code>, <code class="lean">mmsdh_cK</code> (MM-SDH per user); <code class="lean">uniformRule_balanced</code>; <code class="lean">exists_balanced_rule</code>; <code class="lean">sdh_dsic</code>.</td></tr>
+</tbody></table></div>
+<p>To check everything, run <code>lean/check.sh</code> from the repo root. It builds the project and reports open results and non-standard axioms. Current output: 973 theorems, all fully proved, none open, only Lean's standard axioms. <code>lean/README.md</code> lists each result with its Lean names under "Query budgets in screened DH".</p>
+</section>
+
+<section id="open">
+<h2><span class="num">12</span>Not covered</h2>
+<ul>
+  <li><strong>Hard per-user caps</strong> on calls instead of a cap on expected calls.</li>
+  <li><strong>Better constants.</strong> \(1/4\) and \(c_K^2\) are what the analysis gives; on the speed-dating data users got 0.63–0.92 of their planned surplus.</li>
+  <li><strong>Computing the continuous plan</strong>, including its perspective form \(\tau_eF_e(x_e/\tau_e)\).</li>
+  <li><strong>Leximin</strong>, which is not a real-valued objective. Q(c) still holds user by user.</li>
+  <li><strong>Nash welfare and \(p\)-means</strong>: covered by Q(f)'s hypotheses, not instantiated in Lean.</li>
+  <li><strong>A benchmark that chooses the asking order</strong> pair by pair.</li>
+  <li><strong>Strategic or noisy oracles.</strong></li>
+</ul>
+</section>
+
+<section id="constants">
+<h2><span class="num">13</span>The constant \(c_K\)</h2>
+<p>\(c_K=1-e^{-K}K^K/K!\), the Poisson constant from the match-quality work: with a random number of candidates averaging at most \(K\), keeping the best \(K\) keeps at least a \(c_K\) share. It increases with \(K\) toward \(1\).</p>
+<div class="tablewrap"><table>
+<thead><tr><th class="num">\(K\)</th><th class="num">\(c_K\)</th><th class="num">\(c_K^2\)</th><th>Compare</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td class="num">0.632</td><td class="num">0.400</td><td>random order: 0.25</td></tr>
+<tr><td class="num">2</td><td class="num">0.729</td><td class="num">0.532</td><td>the benchmark runs use \(K=2\)</td></tr>
+<tr><td class="num">3</td><td class="num">0.776</td><td class="num">0.602</td><td></td></tr>
+<tr><td class="num">4</td><td class="num">0.805</td><td class="num">0.647</td><td></td></tr>
+</tbody></table></div>
+</section>
+
+<footer>Source: vault note “Query Budgets in Screened DH”, <code>lean/DatingAlgo/BudgetedSDH.lean</code>, <code>lean/DatingAlgo/ContinuousSDH.lean</code>, and <code>data/scripts/query_budget_check.py</code> for the speed-dating numbers.</footer>
+</main>
+</div>
+
+</body>
+</html>

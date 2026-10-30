@@ -134,3 +134,7 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - + [[Query Budgets in Screened DH]] (Theorem Q: query-aware plan with per-user call budgets; truthfulness, calls, per-user 1/4 and c_K², SDH's welfare c_K², benchmark against every budgeted policy including adaptive ones, monotone homogeneous objectives including max-min; for priors with finite means; machine-checked in `lean/DatingAlgo/BudgetedSDH.lean` and `ContinuousSDH.lean`, 973 theorems all proved)
 - ~ [[Truthful Swiping with an LLM Oracle]] (Theorem 3(b) for continuous priors and the query-aware plan now proved; Preliminary, T3 and Gaps updated)
 - ~ index
+
+## [2026-10-30] query | Q-SDH Proof Guide
+- + `attachments/Q-SDH Proof Guide.html` (a long explainer of Theorem Q for readers: symbols, a worked one-pair example, each result with its Lean names, how the proofs work, a proof map, the 14 assumptions and what each one costs)
+- ~ [[Query Budgets in Screened DH]] (a callout linking the guide)
