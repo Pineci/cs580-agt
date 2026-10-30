@@ -126,3 +126,11 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 ## [2026-10-30] query | Max-Min Match Quality and Egalitarian Matching (correction, Lean)
 - ~ [[Max-Min Match Quality and Egalitarian Matching]] (new Correction section and a pointer callout; Eeshan's text unchanged: the per-user $c_K^2$ claim fails for SDH's max-weight selection, with a machine-checked counterexample at $\theta^*/3$; Theorem MM machine-checked in `lean/`: $\mathrm{OPT}_{\min} \le \theta^*$, balanced two-stage selection gives $\gamma_1\gamma_2$ per user, random order $1/4$, $c_K$-balanced rules (via Sion) give the note's $c_K^2$; price of fairness 1.61, not 4.32, after a tie-break)
 - ~ index (the note was not indexed)
+
+## [2026-10-30] query | Truthful Swiping with an LLM Oracle (query budgets on the speed-dating data)
+- ~ [[Truthful Swiping with an LLM Oracle]] (T3 gets a test of query budgets with `data/scripts/query_budget_check.py`: the unbudgeted plan queries 96–100% of pairs; a query-aware plan, with $\tau_e$ as an LP variable, keeps 77–79% of SDH's welfare on a quarter of the calls and restores MM-SDH's worst-off user on about a third, well ahead of Theorem 3(d)'s scaling; Evidence, Gaps and the Preliminary callout updated)
+
+## [2026-10-30] query | Query Budgets in Screened DH
+- + [[Query Budgets in Screened DH]] (Theorem Q: query-aware plan with per-user call budgets; truthfulness, calls, per-user 1/4 and c_K², SDH's welfare c_K², benchmark against every budgeted policy including adaptive ones, monotone homogeneous objectives including max-min; for priors with finite means; machine-checked in `lean/DatingAlgo/BudgetedSDH.lean` and `ContinuousSDH.lean`, 973 theorems all proved)
+- ~ [[Truthful Swiping with an LLM Oracle]] (Theorem 3(b) for continuous priors and the query-aware plan now proved; Preliminary, T3 and Gaps updated)
+- ~ index

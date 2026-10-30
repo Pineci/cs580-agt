@@ -33,4 +33,6 @@ import DatingAlgo.UniformRule
 import DatingAlgo.BalancedCRS
 import DatingAlgo.MaxMinSDH
 import DatingAlgo.MaxMinCounterexample
+import DatingAlgo.BudgetedSDH
+import DatingAlgo.ContinuousSDH
 import DatingAlgo.Targets

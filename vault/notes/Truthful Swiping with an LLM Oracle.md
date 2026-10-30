@@ -2,7 +2,7 @@
 type: synthesis
 question: "With a truthful, accurate LLM oracle for match values, can a dating-heuristic platform make sincere swiping a dominant strategy, earn close to full-information welfare, and use few oracle queries, for additive, top-k and general utilities?"
 created: 2026-10-22
-updated: 2026-10-26
+updated: 2026-10-30
 tags: [dating/platforms, matching/quality, game-theory/incentives, elicitation, research/project]
 aliases: [truthful swiping, sincere swiping, screened DH, SDH, price of individual rationality, cost-separable, swipe-local policy, DSIC swiping]
 sources: ["[[Rios 2026 - The Dating Heuristic]]", "[[Lee 2015 - Propose with a Rose]]"]
@@ -14,7 +14,7 @@ status: seed
 > [!question] With a truthful, accurate LLM oracle for match values, can a dating-heuristic platform make sincere swiping a dominant strategy, earn close to full-information welfare, and use few oracle queries, for additive, top-k and general utilities?
 
 > [!note] Preliminary
-> Written 2026-10-22. Revised 2026-10-26: the terminology for dominant strategies is fixed, and the note adds Section T5 (DSIC), a worked example and a glossary. Every result is machine-checked in Lean except the continuous-values extension of Theorem 3(b) (see Evidence). Formalizing corrected Theorem 3(c), sharpened Theorem 2(b) from $1/\lceil b/k\rceil$ to $k/b$, and weakened the hypotheses of Theorem 4 and Proposition 6(b) to $np\to\infty$. This continues [[Strategic Users in the Dating Heuristic Framework]], with the choices made for this phase:
+> Written 2026-10-22. Revised 2026-10-26: the terminology for dominant strategies is fixed, and the note adds Section T5 (DSIC), a worked example and a glossary. Every result is machine-checked in Lean (see Evidence); the continuous-values extension of Theorem 3(b) was added on 2026-10-30. Formalizing corrected Theorem 3(c), sharpened Theorem 2(b) from $1/\lceil b/k\rceil$ to $k/b$, and weakened the hypotheses of Theorem 4 and Proposition 6(b) to $np\to\infty$. Revised 2026-10-30: T3 adds a test of query budgets on the speed-dating data, and the query-aware plan and Theorem 3(b) for continuous priors are proved in [[Query Budgets in Screened DH]]. This continues [[Strategic Users in the Dating Heuristic Framework]], with the choices made for this phase:
 > - a truthful swipe is the *sincere threshold*: swipe right iff the match is worth it on its own;
 > - match costs first, then swipe budgets;
 > - welfare is compared with *full information*, the best policy that knows every value;
@@ -274,7 +274,7 @@ On such sets every user's utility is additive, so welfare is $\sum w_e$.
   - Geometrically, the plan matches $e$ when $s$ lies in the acceptable quadrant ($s_1>c_\ell$, $s_2>c_x$) and above the line $(s_1-c_\ell)+(s_2-c_x)=\theta_e$. Call $\theta_e$ the pair's bar.
   - Let $F_e(x_e)$ be the expected weight of that top $x_e$ mass. It is concave, because the best outcomes are added first.
   - The plan becomes $\max\sum_eF_e(x_e)$ under the same constraints: one number per pair and a concave objective. Solve it directly, or cut each pair's weight distribution into $M$ equal-probability slices to get an ordinary LP with $M$ variables per pair.
-- **Welfare is unchanged.** The proof of (b) uses only two facts: screening finds each pair at least as often as the plan uses it, and pairs are independent. The layer-cake step is an integral anyway. So $\gamma$ is the same.
+- **Welfare is unchanged.** The proof of (b) uses only two facts: screening finds each pair at least as often as the plan uses it, and pairs are independent. The layer-cake step is an integral anyway. So $\gamma$ is the same. *Lean-checked 2026-10-30* for any priors with finite means (`contSDH_welfare`; [[Query Budgets in Screened DH]], Theorem Q(d)), by a different route: the per-user bound summed over users, through a discrete surrogate market.
 - **Queries can get worse.**
   - A continuous weight has no atom at the bar, so $y_e$ is 1 above the bar and 0 below.
   - Then $\tau_e=1$ for every pair the plan uses at all, since you can't tell whether a pair clears the bar without asking.
@@ -291,11 +291,40 @@ On such sets every user's utility is additive, so welfare is $\sum w_e$.
     | query with probability $1/3$, keep every acceptable $q$ | $\frac13\int_1^4\frac q4\,dq=\frac58$ | $1/3$ |
 
   - With continuous values there is a real trade-off between welfare and calls, and the plan above ignores the calls.
-- **A likely fix (not worked out).**
+- **A likely fix.** Worked out and Lean-checked in [[Query Budgets in Screened DH]] (Theorem Q).
   - Make $\tau_e$ a variable of the plan, with $x_{e,s}\le\tau_e\pi_{e,s}$ and a call budget per user.
   - For continuous values the pair's value becomes $\tau_eF_e(x_e/\tau_e)$. That is the perspective of $F_e$, which is jointly concave. The table's three rows are points on this curve.
-  - The proof of (b) looks unchanged, since it only needs screening to find each pair at least as often as the plan uses it. This is not yet checked (Gaps).
+  - The proof of (b) carries over, since it only needs screening to find each pair at least as often as the plan uses it. Checked in Lean, together with a matching upper bound: no budgeted policy, adaptive or not, beats the query-aware plan's value.
 - **Evidence.** The script tests only discrete priors (two values per side). The example is exact arithmetic.
+
+**Query budgets on the speed-dating data (2026-10-30).** `data/scripts/query_budget_check.py` tests the fix above on waves 2 and 4 of the speed-dating benchmark: 16–19 users per side and $K=2$. The prior is the one in `run_algorithm_benchmark_v2.py`. Each rating is a known rater effect plus a known rated-user effect plus a pair-specific term, cut into 7 quantile atoms, and only the oracle reveals that pair-specific term. Values are redrawn from the prior in each of 500 trials.
+- **The unbudgeted plan queries almost every pair.** It does so even with discrete values: 96–100% of pairs, which is 15–16 calls per user at cost 4 and 12 at median cost, out of 17–18 possible. With 2 atoms (`--atoms 2`) it queries about 40%.
+  - *Why.* By LP duality each user's cap has a price $\lambda_\ell$. The plan uses combination $s$ of $e=\{\ell,x\}$ every time it occurs when $w_{e,s}>\lambda_\ell+\lambda_x$, and never when $w_{e,s}<\lambda_\ell+\lambda_x$. So $\tau_e=1$ whenever $e$'s best combination beats $\lambda_\ell+\lambda_x$, and a finer prior gives more pairs such a combination. *(Derived here; not in Lean.)*
+- **Two plans under a budget of $Q$ expected calls per user.**
+  - *Scaled:* (d), with the exact call count, $\lambda=\min(1,Q/\max_\ell\mathrm{calls}_\ell)$.
+  - *Query-aware:* the fix above. $\tau_e$ is a variable, with $x_{e,s}\le\tau_e\pi_{e,s}$ and $\sum_{e\ni\ell}\mathrm{calls}_{\ell,e}\,\tau_e\le Q$. Every scaled plan is feasible for it.
+  - SDH plans use step 3's max-weight selection. MM-SDH plans ([[Max-Min Match Quality and Egalitarian Matching]]) use random order, then fill spare slots.
+- **Results**, as a share of the unbudgeted plan's value. The query-aware plan comes first and the scaled plan is in parentheses. The MM-SDH column pools both costs.
+
+  | $Q$ | SDH welfare, cost 4 | SDH welfare, median cost | MM-SDH worst-off user |
+  | --- | --- | --- | --- |
+  | 2 | 61% (47%) | 37–41% (22–24%) | 45–68% (13–21%) |
+  | 4 | 77–79% (69%) | 58–61% (40–42%) | 74–105% (23–42%) |
+  | 8 | 89–91% (87%) | 82–83% (67%) | 101–110% (52–65%) |
+
+- **Reading.**
+  - At cost 4, a quarter of the calls keeps about 78% of welfare. The query-aware plan's lead is largest at small budgets and when acceptable pairs are scarce, as Theorem 4 suggests.
+  - The query-aware plan queries fewer pairs and uses whatever they turn up. At $Q=2$ it queries 16–18% of pairs and keeps every acceptable one it finds.
+  - The scaled plan queries every pair with probability about $1/8$ and plans to use only the 14–15% of finds in their best combinations. Max-weight selection uses the other finds anyway, so the scaled plan's welfare is 1.2–4.6 times its LP value, and (d)'s guarantee is pessimistic.
+  - Max-min gains the most. Scaling shrinks $\theta$ along with the plan. The query-aware plan restores the worst-off user with about a third of the calls.
+- **Guarantees.**
+  - Query-aware $\mathbb E\,W/\mathrm{LP}$ was 0.74–1.01, above $c_2^2\approx0.53$.
+  - Under query-aware MM-SDH, every user got 0.63–0.92 of its planned surplus, above the $1/4$ proved for random order.
+  - Both results fit the guarantees, which are now proved in Lean ([[Query Budgets in Screened DH]], Theorem Q(c), (d)).
+- **Catches.**
+  - The utilitarian query-aware plan concentrates its queries. At median cost its worst-off user gets 0.00–0.12, against 0.05–0.41 under scaling.
+  - The budget holds only in expectation over the prior. With the real ratings fixed, the busiest user is charged up to 3.0 calls at $Q=2$ and 9.8 at $Q=8$, against 2.1 and 8.2 for the scaled plan. A hard cap is not addressed.
+  - With the real ratings fixed, small budgets leave some users at 0 in every trial: all of a user's few queried pairs can be bad. Scaled plans try every pair now and then.
 
 ### Worked example
 Four users, all top-1 with match cost 1, in a two-directional design with $K=1$. So $b=2$ and $b'=\min(b,k)=1$.
@@ -475,6 +504,7 @@ A platform that flips coins adds one more quantifier. *Universally* truthful mea
   - *Impossibility 1:* the 10/5 table and the $-0.265$ Bayes–Nash example.
   - *Worked example:* $\mathrm{LP}=3.25$, $\tau=(1,1,0)$, SDH $=2.625$, $\mathrm{OPT_{IR}}=2.875$, and 2 calls for Ann.
   - *Not checked by script:* Proposition 6(b) is a counting argument (it is proved in Lean).
+- **Speed-dating data, 2026-10-30.** `data/scripts/query_budget_check.py` (waves 2 and 4, seed 42, 500 trials): the query-budget results in T3.
 - **Lean, 2026-10-26.** `lean/check.sh`: the whole project builds (777 theorems), every theorem is fully proved, and only the standard axioms are used. `lean/README.md` maps each result to its Lean name and lists the modeling choices. The SDH results are in `lean/DatingAlgo/TruthfulSwiping.lean`, `ScreenedDH.lean` and `ProdExp.lean`; the rest are in `SwipeLocal.lean`, `SwipeRegret.lean`, `MatroidSwiping.lean`, `Orientation.lean`, `SDHRobust.lean`, `EdgeColoring.lean`, `PriceOfIR.lean`, `QueryLowerBound.lean`, `WorkedExample.lean` and `MatroidSDH.lean`.
   - *Theorem 1* (`sincere_best`, `sincere_not_best`, `costSeparable_topK_iff`): for every set $R$ of profiles that would match, assuming only subadditivity and $v(\{x\})=q_x$.
   - *Theorems 3(a), 5(a)* (`sdh_dsic`): SDH's two-period game, against every behavior of the others, including strategies that react to what they see, for every realization of values and coins. The proof also shows that for top-$k$ users DSIC needs only that a user has at most $k$ planned partners (`sdh_dsic_topK`).
@@ -496,11 +526,12 @@ A platform that flips coins adds one more quantifier. *Universally* truthful mea
 
 ## Gaps
 - **Proofs.** Every numbered result is in Lean (see Evidence). Not in Lean:
-  - Theorem 3(b) for continuous priors: the Lean framework has finitely many value combinations per pair. The continuous example, the concavity of $F_e$ and $\tau_e=1$ for fully used pairs are checked.
+  - Theorem 3(b) for continuous priors: proved 2026-10-30 in `lean/DatingAlgo/ContinuousSDH.lean` (`contSDH_welfare`), for any priors with finite means. The perspective form $\tau_eF_e(x_e/\tau_e)$ of the continuous plan is not formalized.
   - The inequality $U_k^{\rm net}\ge\rho c_k\,\mathrm{OPT_0}$ in Proposition 4(b), which cites R5 of [[Top-k Match Quality]] (not formalized there either).
   - Proposition 5(d), which the note does not analyze.
 - **Constants.** $c_{b'}^2$ is loose. Plugging in the stochastic-matching algorithms above should improve $b'=1$. Whether $(1-\varepsilon)\mathrm{OPT_{IR}}$ is reachable with $O_\varepsilon(b'/p)$ queries per user is open.
-- **Query-aware plan.** With continuous values the plan queries every pair it uses (T3, Continuous values). Making $\tau_e$ a plan variable with a call budget looks like it keeps Theorem 3(b), but it is not worked out or checked.
+- **Query-aware plan.** With continuous values the plan queries every pair it uses (T3, Continuous values). Making $\tau_e$ a plan variable with a call budget keeps Theorem 3(b): proved and Lean-checked in [[Query Budgets in Screened DH]].
+  - Tested on the speed-dating data (T3, query budgets): it beats scaling, by the most at small budgets. Still open: a hard per-user cap instead of one in expectation.
 - **General submodular utilities against $\mathrm{OPT_{IR}}$.** Cost-separable families are not matroids, and only the matching bound ($1/b$) is known.
 - **Complements.** Non-subadditive utilities are out of scope.
 - **Private $k$.** If users report $k$ instead of the oracle knowing it, over-reporting buys options: shown $k+1$ sure matches, a top-$k$ user keeps its best $k$. So $k$ must come from the oracle.

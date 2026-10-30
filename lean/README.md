@@ -131,7 +131,8 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
 | Proposition 6: zero-query DSIC for top-$k$ iff at most $k$ profiles that can match; then $\mathbb E W \le 2p(1+o(1))\,\mathrm{OPT_{IR}}$ | `SwipeRegret.lean` (`zeroQuery_topK_dsic_iff`), `QueryLowerBound.lean` (`prop6b_policy`, `prop6b_asymp`) | proved |
 | T5 examples: ex post but not DSIC; SDH is manipulable through oracle reports | `SwipeRegret.lean` (`expost_not_dsic`), `SDHRobust.lean` (`report_manipulation`) | proved |
 | Worked example: LP $= 3.25$, $\tau = (1,1,0)$, SDH $= 2.625$, $\mathrm{OPT_{IR}} = 2.875$, 2 calls for Ann | `WorkedExample.lean` | proved, on the `ScreenedMarket` definitions |
-| Continuous values: the example table; $F_e$ concave; a fully used combination forces $\tau_e = 1$ | `WorkedExample.lean` (`continuous_example`, `pairValue_concave`, `sdhTau_eq_one_of_full`) | proved. Theorem 3(b) for continuous priors is **not** formalized: the framework has finitely many value combinations per pair |
+| Continuous values: the example table; $F_e$ concave; a fully used combination forces $\tau_e = 1$ | `WorkedExample.lean` (`continuous_example`, `pairValue_concave`, `sdhTau_eq_one_of_full`) | proved |
+| Theorem 3(b) for continuous priors (any priors with finite means): SDH $\ge c_K^2$ times the plan's value | `ContinuousSDH.lean` (`contSDH_welfare`) | proved, with SDH's own max-weight selection, for every feasible query-aware plan (SDH's plan is the case with no budget). See the query-budget section below |
 
 ### Max-min screened DH (vault note "Max-Min Match Quality and Egalitarian Matching")
 
@@ -149,6 +150,24 @@ random selection gives `1/4`. See the note's Correction section.
 | The note's constant: a $c_K$-balanced rule exists for the rank-$K$ uniform matroid (Chekuri–Vondrák–Zenklusen), so with balanced rules every user gets $\ge c_K^2$ of its planned surplus and the worst-off user $\ge c_K^2\,\theta^* \ge c_K^2\,\mathrm{OPT}_{\min}$, for $K$ at most every cap | `BalancedCRS.lean` (`exists_balanced_rule`, via Mathlib's Sion minimax theorem and `prodExp_randomWeight_gap`); `MaxMinSDH.lean` (`mmsdh_cK`, `mmsdh_cK_maxMin`) | proved. The rules exist but are not explicit: they depend on the plan's candidate probabilities, never on values or swipes |
 | Counterexample: SDH's max-weight selection, with any tie-breaking, gives the worst-off user $\theta^*/3 < c_1^2\,\theta^*$ on a max-min optimal plan (3 users, caps 1) | `MaxMinCounterexample.lean` (`mmExample_maxMin`, `mmExample_sdhUtil`, `maxMin_sdh_counterexample`) | proved: the note's claim is **refuted** for SDH as defined |
 | Truthfulness of MM-SDH | `TruthfulSwiping.lean` (`sdh_dsic`) | covered: `sdh_dsic` holds for every planned set of acceptable pairs, so it applies to MM-SDH's selected set unchanged |
+
+### Query budgets in screened DH (vault note "Query Budgets in Screened DH")
+
+The plan's query probabilities $\tau_e$ become variables, with $x_{e,s} \le \tau_e \pi_{e,s}$
+(densities $y_e \le \tau_e$ for general priors) and a per-user budget on expected calls.
+`BudgetedSDH.lean` has finitely many value combinations per pair; `ContinuousSDH.lean` has
+any priors with finite means, continuous ones included.
+
+| Result | File | Status |
+| --- | --- | --- |
+| Q(b): Q-SDH's expected calls are $\sum_e \tau_e a^\ell_e$, within budget | `BudgetedSDH.lean` (`qsdh_callsI`, `qsdh_callsJ`); `ContinuousSDH.lean` (`contCallsI_eq`, `contCallsJ_eq`) | proved |
+| Q(c): every user gets $\gamma_1\gamma_2$ of its planned surplus with balanced rules; $1/4$ with random order, $c_K^2$ with $c_K$-balanced rules | `BudgetedSDH.lean` (`qsdh_quarter`, `qsdh_cK`); `ContinuousSDH.lean` (`contUtil_ge`, `contUtil_quarter`, `contUtil_cK`) | proved. Discrete: direct from the max-min theorems. Continuous: Q-SDH's utility equals MM-SDH's in a discrete surrogate market (`contUtilI_eq`, `contUtilJ_eq`, via the coarsening lemma `integral_prodExp_bern`) |
+| Q(d): SDH's max-weight selection keeps $c_K^2$ of the plan's value | `BudgetedSDH.lean` (`qsdh_welfare`); `ContinuousSDH.lean` (`contSDH_welfare`, key step `rules_le_bestMatch`) | proved |
+| Q(e): every budgeted screened policy induces a feasible query-aware plan with the same expected surplus for every user | `BudgetedSDH.lean` (`exists_qplan_of_policy`; adaptive query trees: `QTree.mem_run_update`, `isBudgetedPolicy_of_trees`); `ContinuousSDH.lean` (`exists_contPlan_of_policy`, via `measurePreserving_update`, `integral_mul_coord_eq`) | proved. Policies are described by the law of their (queried, matched) sets given all values (discrete) or by the chances $q_e, m_e$ of querying and matching $e$ given all values (continuous). The one property used is non-anticipation: the chance of querying $e$ does not depend on $e$'s own values. Every mixture of adaptive query trees has it |
+| Q(f): for an objective $W$ that is monotone and positively homogeneous, Q-SDH on an $\varepsilon$-optimal plan gets $\gamma(W(P) - \varepsilon)$ against every budgeted policy $P$; $\gamma = 1/4$ or $c_K^2$ | `BudgetedSDH.lean` (`objective_of_perUser`, `qsdh_objective_quarter`, `qsdh_objective_cK`); `ContinuousSDH.lean` (`cont_objective_of_perUser`, `cont_objective_quarter`, `cont_objective_cK`) | proved |
+| Objectives covered: max-min over any nonempty set of users, max-min of weighted (e.g. normalized) utilities, weighted welfare | `BudgetedSDH.lean` (`isMonoHom_inf'`, `isMonoHom_weightedInf`, `isMonoHom_weightedSum`) | proved |
+| The query-aware plan is never worse than Theorem 3(d)'s scaling | `BudgetedSDH.lean` (`qfeasible_scaled`) | proved |
+| Q(a): truthfulness | `TruthfulSwiping.lean` (`sdh_dsic`) | covered: `sdh_dsic` holds for every planned set of acceptable pairs |
 
 ## Layout
 
@@ -189,6 +208,8 @@ random selection gives `1/4`. See the note's Correction section.
 | `DatingAlgo/BalancedCRS.lean` | a `c_K`-balanced rule exists (Sion's minimax theorem + the `c_K` correlation gap) |
 | `DatingAlgo/MaxMinSDH.lean` | max-min SDH: the benchmark, the mechanism, the composition theorem, the `1/4` and `c_K^2` guarantees |
 | `DatingAlgo/MaxMinCounterexample.lean` | SDH's own selection fails the note's max-min guarantee |
+| `DatingAlgo/BudgetedSDH.lean` | query budgets, discrete priors: the query-aware plan, calls, budgeted and adaptive policies, the benchmark, monotone homogeneous objectives |
+| `DatingAlgo/ContinuousSDH.lean` | query budgets for any priors with finite means: resampling and coarsening lemmas, the surrogate market, per-user and total-welfare guarantees, the benchmark, objectives |
 | `DatingAlgo/Targets.lean` | open targets (none at the moment) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
 
@@ -197,8 +218,10 @@ random selection gives `1/4`. See the note's Correction section.
 - **Abstract first stage.** The two-period model takes first-stage decisions as
   abstract. A design is any predicate on decisions, so Theorem 4.3 holds "for every
   design" literally. `Designs.lean` connects it to concrete display sets.
-- **No measure theory.** All randomness is independent coin flips over finite sets, so
-  expectations are finite sums (`indepExp`).
+- **No measure theory, except for continuous priors.** All randomness is independent coin
+  flips over finite sets, so expectations are finite sums (`indepExp`, `prodExp`).
+  `ContinuousSDH.lean` is the exception: values have arbitrary laws (`Measure.pi`), while
+  the coins given the values stay finite sums.
 - **Count and quality share one theorem.** Count and quality are the same model with
   different rewards (`r2 = φ²` versus `φ² q`), so Theorem 4.3 and R2 are one theorem.
 - **Bounding DHT in the counterexamples.** Both counterexamples bound DHT's responders by
@@ -259,6 +282,19 @@ random selection gives `1/4`. See the note's Correction section.
   - A selection rule (`IsRule`) sees only its own candidate set and its own coins. That
     keeps the policy swipe-local and makes different users' selections independent,
     which the composition proof needs.
+
+- **Query budgets** (`BudgetedSDH.lean`, `ContinuousSDH.lean`):
+  - Calls are charged as in `ScreenedDH.lean`: the side less likely to accept is asked
+    first, the other side only after a yes. Budgets bound expected calls.
+  - Budgeted policies are described by what the proof needs: the law of the queried and
+    matched sets (discrete) or their marginals $q_e, m_e$ (continuous), given all values.
+    This class contains every adaptive policy, so the benchmark bound covers them all.
+  - Continuous priors are laws on $\mathbb R^2$ with finite means. Given the values, Q-SDH's
+    candidates are independent coins with probability $y_e(s)$; the query coin
+    (probability $\tau_e$) only enters the calls. SDH's value (`contSDHValue`) uses the
+    found pairs, found with probability $\tau_e\,\mathbb 1[\text{acceptable}]$.
+  - The objective theorems compare $W$ of expected utilities (ex ante), and need an
+    $\varepsilon$-optimal plan, which always exists; no optimal continuous plan is assumed.
 
 ## Conventions
 
