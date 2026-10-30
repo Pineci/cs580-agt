@@ -50,7 +50,7 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 863 theorems, all fully proved. The count includes lemmas Lean generates
+Current count: 973 theorems, all fully proved. The count includes lemmas Lean generates
 for definitions and structures, such as the fields of `Feasible19`.
 
 ### Rios & Torrico's results
