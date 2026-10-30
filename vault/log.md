@@ -122,3 +122,7 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-10-26] query | Truthful Swiping with an LLM Oracle (Lean verification of the remaining results)
 - ~ [[Truthful Swiping with an LLM Oracle]] (every result now machine-checked in `lean/` except Theorem 3(b) for continuous priors; Theorem 2(b) sharpened to $k/b$ via König's edge-coloring theorem; Theorem 4 and Proposition 6(b) need only $np\to\infty$, with a Chebyshev-and-König benchmark; Bayes–Nash example clarified; Preliminary, Evidence, Gaps and Glossary updated)
+
+## [2026-10-30] query | Max-Min Match Quality and Egalitarian Matching (correction, Lean)
+- ~ [[Max-Min Match Quality and Egalitarian Matching]] (new Correction section and a pointer callout; Eeshan's text unchanged: the per-user $c_K^2$ claim fails for SDH's max-weight selection, with a machine-checked counterexample at $\theta^*/3$; Theorem MM machine-checked in `lean/`: $\mathrm{OPT}_{\min} \le \theta^*$, balanced two-stage selection gives $\gamma_1\gamma_2$ per user, random order $1/4$, $c_K$-balanced rules (via Sion) give the note's $c_K^2$; price of fairness 1.61, not 4.32, after a tie-break)
+- ~ index (the note was not indexed)
