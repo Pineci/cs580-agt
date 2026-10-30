@@ -4,7 +4,8 @@ Machine-checked versions of Rios & Torrico's dating-heuristic results and of the
 project's own match-quality and truthful-swiping results, in Lean 4 with Mathlib.
 - The math is in the vault notes `vault/sources/Rios 2026 - The Dating Heuristic.md`,
   `vault/notes/Match Quality in the Dating Heuristic Framework.md` and
-  `vault/notes/Truthful Swiping with an LLM Oracle.md`.
+  `vault/notes/Truthful Swiping with an LLM Oracle.md` and
+  `vault/notes/Max-Min Match Quality and Egalitarian Matching.md`.
 - `lean/check.sh` reports the current status.
 
 ## Setup
@@ -49,7 +50,7 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 777 theorems, all fully proved. The count includes lemmas Lean generates
+Current count: 863 theorems, all fully proved. The count includes lemmas Lean generates
 for definitions and structures, such as the fields of `Feasible19`.
 
 ### Rios & Torrico's results
@@ -132,6 +133,23 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
 | Worked example: LP $= 3.25$, $\tau = (1,1,0)$, SDH $= 2.625$, $\mathrm{OPT_{IR}} = 2.875$, 2 calls for Ann | `WorkedExample.lean` | proved, on the `ScreenedMarket` definitions |
 | Continuous values: the example table; $F_e$ concave; a fully used combination forces $\tau_e = 1$ | `WorkedExample.lean` (`continuous_example`, `pairValue_concave`, `sdhTau_eq_one_of_full`) | proved. Theorem 3(b) for continuous priors is **not** formalized: the framework has finitely many value combinations per pair |
 
+### Max-min screened DH (vault note "Max-Min Match Quality and Egalitarian Matching")
+
+The note claims that SDH run on a max-min optimal plan gives every user at least
+$c_K^2\,\theta^*$. That is **false** for SDH's own selection (the best capped set of
+found pairs), whose guarantee is on total weight only. It is **true** when the selection
+protects every pair: with `c_K`-balanced selection rules at both stages. Uniformly
+random selection gives `1/4`. See the note's Correction section.
+
+| Result | File | Status |
+| --- | --- | --- |
+| The max-min LP bounds the benchmark: every full-information policy (any law over capped sets of acceptable pairs, chosen knowing all values) induces a feasible plan with the same expected surplus for every user, so $\mathrm{OPT}_{\min} \le \theta^*$ | `MaxMinSDH.lean` (`exists_plan_of_policy`, `floor_le_maxMin`) | proved |
+| Composition: if every stage-1 rule is $\gamma_1$-balanced and every stage-2 rule is $\gamma_2$-balanced, every user gets at least $\gamma_1\gamma_2$ of its planned surplus | `MaxMinSDH.lean` (`mmUtilI_ge`, `mmUtilJ_ge`; key step `expect_pairVal`, an exact factorization $\mathbb E[\text{gain}]\,\kappa_1\kappa_2$) | proved, for every feasible plan and query probabilities with $x_{e,c} \le \tau_e \pi_{e,c}$. The mechanism screens and thins as SDH's analysis does (`thinLaw`) |
+| Random order: uniformly random selection is $1/2$-balanced, so every user gets $\ge 1/4$ of its planned surplus and the worst-off user $\ge \theta^*/4 \ge \mathrm{OPT}_{\min}/4$ | `UniformRule.lean` (`uniformRule_balanced`, via `min_one_div_ge`); `MaxMinSDH.lean` (`mmsdh_quarter`, `mmsdh_quarter_maxMin`) | proved. **Weaker constant than the note's** $c_K^2$ |
+| The note's constant: a $c_K$-balanced rule exists for the rank-$K$ uniform matroid (Chekuri–Vondrák–Zenklusen), so with balanced rules every user gets $\ge c_K^2$ of its planned surplus and the worst-off user $\ge c_K^2\,\theta^* \ge c_K^2\,\mathrm{OPT}_{\min}$, for $K$ at most every cap | `BalancedCRS.lean` (`exists_balanced_rule`, via Mathlib's Sion minimax theorem and `prodExp_randomWeight_gap`); `MaxMinSDH.lean` (`mmsdh_cK`, `mmsdh_cK_maxMin`) | proved. The rules exist but are not explicit: they depend on the plan's candidate probabilities, never on values or swipes |
+| Counterexample: SDH's max-weight selection, with any tie-breaking, gives the worst-off user $\theta^*/3 < c_1^2\,\theta^*$ on a max-min optimal plan (3 users, caps 1) | `MaxMinCounterexample.lean` (`mmExample_maxMin`, `mmExample_sdhUtil`, `maxMin_sdh_counterexample`) | proved: the note's claim is **refuted** for SDH as defined |
+| Truthfulness of MM-SDH | `TruthfulSwiping.lean` (`sdh_dsic`) | covered: `sdh_dsic` holds for every planned set of acceptable pairs, so it applies to MM-SDH's selected set unchanged |
+
 ## Layout
 
 | File | Contents |
@@ -166,6 +184,11 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
 | `DatingAlgo/QueryLowerBound.lean` | adaptive reveal trees, the revealing lemma, the $G(n,n,p)$ benchmark, Theorem 4, Proposition 6(b) |
 | `DatingAlgo/WorkedExample.lean` | the worked example; the continuous-values remark |
 | `DatingAlgo/MatroidSDH.lean` | matroid polytope, matroid correlation gap, Theorem 3(b) for matroid users |
+| `DatingAlgo/SelectionRule.lean` | selection rules, keep probabilities, balanced rules, the uniform rule |
+| `DatingAlgo/UniformRule.lean` | the uniform rule is `1/2`-balanced |
+| `DatingAlgo/BalancedCRS.lean` | a `c_K`-balanced rule exists (Sion's minimax theorem + the `c_K` correlation gap) |
+| `DatingAlgo/MaxMinSDH.lean` | max-min SDH: the benchmark, the mechanism, the composition theorem, the `1/4` and `c_K^2` guarantees |
+| `DatingAlgo/MaxMinCounterexample.lean` | SDH's own selection fails the note's max-min guarantee |
 | `DatingAlgo/Targets.lean` | open targets (none at the moment) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
 
@@ -226,6 +249,16 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
       backlog satisfies this.
   - Without either rule, $\mathrm{Rel}_\tau$ no longer bounds OPT (examples in the vault note).
   - `exists_isOptTau` shows that the hypothesis "optimal solution of $\mathrm{Rel}_\tau$" can be met.
+
+- **Max-min SDH** (`MaxMinSDH.lean`):
+  - Utilities are additive within caps: a user's utility from a capped set is the sum of
+    its surpluses. This covers additive users, and top-$k$ users with cap at most $k$.
+  - The benchmark ranges over full-information policies that may randomize. Their
+    floor is compared user by user, so a policy that is good on average but bad for
+    one user doesn't count.
+  - A selection rule (`IsRule`) sees only its own candidate set and its own coins. That
+    keeps the policy swipe-local and makes different users' selections independent,
+    which the composition proof needs.
 
 ## Conventions
 

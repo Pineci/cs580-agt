@@ -28,4 +28,9 @@ import DatingAlgo.PriceOfIR
 import DatingAlgo.QueryLowerBound
 import DatingAlgo.WorkedExample
 import DatingAlgo.MatroidSDH
+import DatingAlgo.SelectionRule
+import DatingAlgo.UniformRule
+import DatingAlgo.BalancedCRS
+import DatingAlgo.MaxMinSDH
+import DatingAlgo.MaxMinCounterexample
 import DatingAlgo.Targets
