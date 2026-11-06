@@ -1,0 +1,156 @@
+{
+  "wave_4": {
+    "Hinge Greedy pLMC": {
+      "conversations": 46.14,
+      "top_k_quality": 13.3225,
+      "ghosting_rate": 54.56433369162949,
+      "starvation_rate": 9.055555555555555,
+      "gini": 0.16588243177474496,
+      "latency_us": 2.8376202
+    },
+    "Static Dual Pacing": {
+      "conversations": 46.47,
+      "top_k_quality": 13.299500000000002,
+      "ghosting_rate": 54.535166841125104,
+      "starvation_rate": 9.333333333333332,
+      "gini": 0.16729253041526654,
+      "latency_us": 3.6089233999999997
+    },
+    "Online SGD Dual Pacing": {
+      "conversations": 51.4,
+      "top_k_quality": 13.530000000000005,
+      "ghosting_rate": 48.302525700830586,
+      "starvation_rate": 8.11111111111111,
+      "gini": 0.15661423811368494,
+      "latency_us": 3.8141746
+    },
+    "PID Control Dual Pacing": {
+      "conversations": 51.44,
+      "top_k_quality": 11.744499999999999,
+      "ghosting_rate": 32.60151646984275,
+      "starvation_rate": 10.277777777777779,
+      "gini": 0.2062201528400721,
+      "latency_us": 7.8468714
+    },
+    "Entropy Softmax (Nesterov)": {
+      "conversations": 52.29,
+      "top_k_quality": 12.963500000000002,
+      "ghosting_rate": 42.865250257800746,
+      "starvation_rate": 7.5555555555555545,
+      "gini": 0.16611463125356327,
+      "latency_us": 8.122537600000001
+    },
+    "Dynamic OCRS Dual Pacing": {
+      "conversations": 54.0,
+      "top_k_quality": 13.136999999999999,
+      "ghosting_rate": 31.912924809975237,
+      "starvation_rate": 6.555555555555555,
+      "gini": 0.1572323886340957,
+      "latency_us": 8.9520934
+    },
+    "Periodic Re-Solving LP": {
+      "conversations": 49.09,
+      "top_k_quality": 13.503000000000002,
+      "ghosting_rate": 50.46025281533344,
+      "starvation_rate": 8.11111111111111,
+      "gini": 0.15577458424790888,
+      "latency_us": 4.086245
+    }
+  },
+  "synthetic_scaled": {
+    "Hinge Greedy pLMC": {
+      "conversations": 77.06666666666666,
+      "top_k_quality": 40.25691463765949,
+      "ghosting_rate": 58.88076641155761,
+      "starvation_rate": 22.466666666666665,
+      "gini": 0.38660149315861553,
+      "latency_us": 3.796675
+    },
+    "Static Dual Pacing": {
+      "conversations": 91.2,
+      "top_k_quality": 44.833763995437636,
+      "ghosting_rate": 52.259720690827244,
+      "starvation_rate": 16.933333333333334,
+      "gini": 0.33517927087665506,
+      "latency_us": 4.588700333333334
+    },
+    "Online SGD Dual Pacing": {
+      "conversations": 138.88333333333333,
+      "top_k_quality": 56.40055052097622,
+      "ghosting_rate": 27.41283274889463,
+      "starvation_rate": 4.2,
+      "gini": 0.1849311384339632,
+      "latency_us": 4.765360666666667
+    },
+    "PID Control Dual Pacing": {
+      "conversations": 149.81666666666666,
+      "top_k_quality": 51.17675474160602,
+      "ghosting_rate": 9.684478543727046,
+      "starvation_rate": 4.0,
+      "gini": 0.187796219194924,
+      "latency_us": 9.126787666666665
+    },
+    "Entropy Softmax (Nesterov)": {
+      "conversations": 155.25,
+      "top_k_quality": 53.22905570103113,
+      "ghosting_rate": 14.669418026373817,
+      "starvation_rate": 3.1333333333333333,
+      "gini": 0.17518240593337414,
+      "latency_us": 9.246259333333333
+    },
+    "Dynamic OCRS Dual Pacing": {
+      "conversations": 179.81666666666666,
+      "top_k_quality": 58.84255067178165,
+      "ghosting_rate": 2.3656844950016938,
+      "starvation_rate": 1.1,
+      "gini": 0.12913548822866436,
+      "latency_us": 10.283222666666665
+    },
+    "Periodic Re-Solving LP": {
+      "conversations": 113.76666666666667,
+      "top_k_quality": 51.73852987813765,
+      "ghosting_rate": 41.25901648018055,
+      "starvation_rate": 9.133333333333333,
+      "gini": 0.2455177528989333,
+      "latency_us": 5.642812333333333
+    }
+  },
+  "complexity_benchmark": {
+    "M_sizes": [
+      50,
+      100,
+      200,
+      500,
+      1000,
+      2000,
+      5000
+    ],
+    "times_full_sort_us": [
+      2.1859165,
+      3.5993545,
+      7.0481455,
+      20.7854375,
+      46.8220625,
+      99.8411875,
+      273.56275
+    ],
+    "times_quickselect_us": [
+      4.382979,
+      4.419875,
+      6.6292085,
+      7.772896,
+      12.4857705,
+      22.4934585,
+      54.35025
+    ],
+    "times_gumbel_topk_us": [
+      5.4404375,
+      6.1104375,
+      6.259021,
+      10.279458,
+      15.315979,
+      25.597125,
+      52.607
+    ]
+  }
+}

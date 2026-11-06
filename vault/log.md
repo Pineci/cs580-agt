@@ -138,3 +138,11 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 ## [2026-10-30] query | Q-SDH Proof Guide
 - + `attachments/Q-SDH Proof Guide.html` (a long explainer of Theorem Q for readers: symbols, a worked one-pair example, each result with its Lean names, how the proofs work, a proof map, the 14 assumptions and what each one costs)
 - ~ [[Query Budgets in Screened DH]] (a callout linking the guide)
+## [2026-10-27] query | Max-Min Match Quality and Egalitarian Matching
+- + [[Max-Min Match Quality and Egalitarian Matching]] (Rawlsian egalitarian objective, LP formulation, price of fairness, truthful swiping, Leximin refinement)
+
+## [2026-11-05] query | Position-Aware Reciprocal Re-Ranking and Dual Pacing
+- + [[Position-Aware Reciprocal Re-Ranking and Dual Pacing]] (Regret and error bounds vs global fluid optimum, comparative analysis against Hinge pLMC, DH-int, and Gale-Shapley, four theoretical improvements: AdaGrad dual pacing, Doubly Robust IPS debiasing, dynamic OCRS, safe budget pacing)
+
+## [2026-11-06] query | Next-Generation Continuous Reciprocal Re-Ranking
+- + [[Next-Generation Continuous Reciprocal Re-Ranking]] (Bounded O(1) regret via periodic fluid LP re-solving, stochastic competitive ratios beyond 1-1/e via Top-k Poisson scaling and Dynamic OCRS, computational complexity reduction from O(M log M) to O(M + K log K) via QuickSelect, smooth continuous softmax re-ranking with Nesterov accelerated dual prox O(1/t^2), closed-loop stability via industrial PID feedback dual pacing)
