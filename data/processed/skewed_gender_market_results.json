@@ -1,0 +1,56 @@
+{
+  "Hinge Greedy pLMC": {
+    "conversations": 52.08,
+    "male_match_rate": 42.42666666666667,
+    "female_match_rate": 89.44,
+    "ghosting_rate": 48.368421002742686,
+    "male_starvation": 57.57333333333334,
+    "gini": 0.5145503013411102,
+    "female_backlog": 23.1008
+  },
+  "Static Dual Pacing": {
+    "conversations": 54.8,
+    "male_match_rate": 44.32000000000001,
+    "female_match_rate": 92.0,
+    "ghosting_rate": 46.088393166386766,
+    "male_starvation": 55.68,
+    "gini": 0.4970894323141477,
+    "female_backlog": 22.996800000000004
+  },
+  "Online SGD Dual Pacing": {
+    "conversations": 53.06,
+    "male_match_rate": 41.84,
+    "female_match_rate": 92.0,
+    "ghosting_rate": 41.59108772220711,
+    "male_starvation": 58.16,
+    "gini": 0.5133788477451691,
+    "female_backlog": 22.6528
+  },
+  "PID Control Dual Pacing": {
+    "conversations": 48.4,
+    "male_match_rate": 36.53333333333333,
+    "female_match_rate": 88.8,
+    "ghosting_rate": 40.601340148747916,
+    "male_starvation": 63.46666666666667,
+    "gini": 0.5634563035188038,
+    "female_backlog": 22.5
+  },
+  "Dynamic OCRS (Standard)": {
+    "conversations": 58.24,
+    "male_match_rate": 45.84,
+    "female_match_rate": 97.6,
+    "ghosting_rate": 37.34994329802922,
+    "male_starvation": 54.16,
+    "gini": 0.47892548962060666,
+    "female_backlog": 22.6032
+  },
+  "Dynamic OCRS (Asymmetric Mod)": {
+    "conversations": 50.5,
+    "male_match_rate": 39.413333333333334,
+    "female_match_rate": 95.36,
+    "ghosting_rate": 37.475908728572286,
+    "male_starvation": 60.58666666666667,
+    "gini": 0.5298608039948232,
+    "female_backlog": 14.6176
+  }
+}

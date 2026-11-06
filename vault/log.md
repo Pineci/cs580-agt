@@ -146,3 +146,6 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-11-06] query | Next-Generation Continuous Reciprocal Re-Ranking
 - + [[Next-Generation Continuous Reciprocal Re-Ranking]] (Bounded O(1) regret via periodic fluid LP re-solving, stochastic competitive ratios beyond 1-1/e via Top-k Poisson scaling and Dynamic OCRS, computational complexity reduction from O(M log M) to O(M + K log K) via QuickSelect, smooth continuous softmax re-ranking with Nesterov accelerated dual prox O(1/t^2), closed-loop stability via industrial PID feedback dual pacing)
+
+## [2026-11-06] query | Gender-Skewed Reciprocal Matching and Asymmetric Pacing
+- + [[Gender-Skewed Reciprocal Matching and Asymmetric Pacing]] (Empirical data for 3:1 male-to-female ratio, mathematical behavior of female shadow price surge lambda_w* and slack male shadow prices lambda_m*=0, theoretical modifications: asymmetric like budgets B_m << B_w, inverted proposal flow, and asymmetric Dynamic OCRS; simulation results on 75M x 25W market)
