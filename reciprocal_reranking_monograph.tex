@@ -69,9 +69,9 @@
 Modern online dating platforms (such as Tinder, Bumble, and Hinge) face an existential challenge: while recommendation feeds generate billions of mutual matches, over $70\%$ of matches result in zero exchanged messages, leading to user exhaustion, ghosting, and platform churn. Recent industry breakthroughs (e.g., Hinge's ACM SIGIR 2024 model) attempt to solve this by predicting late-stage conversational intent ($P(\text{Conversation})$) and greedily ranking candidates by predicted conversational probability ($\mathrm{pLMC}$). In this monograph, we prove that greedy pointwise ranking in two-sided reciprocal markets triggers a catastrophic \emph{Tragedy of the Commons}: uncoordinated ranking herds attention toward a small fraction of popular, articulate users, overloading their inboxes beyond human conversational bandwidth ($C_j \approx 2\text{--}4$ active chats) and starving the rest of the market. Consequently, greedy ranking achieves an unbounded competitive ratio ($\Theta(1/N) \to 0$ in the worst case).
 
 To overcome this market failure, we develop a unified, production-grade \textbf{Two-Stage Position-Aware Reciprocal Re-Ranking Framework}. Our framework decouples macro market coordination from micro real-time feed generation:
-(1) An \textbf{Offline Global Fluid LP} solves a continuous market-clearing relaxation across the city geoshard, extracting dual shadow prices ($\lambda_j^*$) that quantify real-time inbox congestion;
-(2) An \textbf{Online Real-Time Re-Ranker} evaluates each user's feed in under $2$ milliseconds by proving that the optimal slate permutation reduces via the Hardy--Littlewood--P\'olya Rearrangement Theorem to sorting candidates by their net marginal conversation contribution: $S_{ij} = \phi_{ij} [\phi_{ji}(q_{ij} - \lambda_j^*) - \mu_i^*]$.
-Under a finite daily like budget ($B_i \approx 8$), we prove that sincere swiping is a Dominant Strategy Incentive Compatible (DSIC) equilibrium, completely eliminating strategic ``carpet-bombing.''
+(1) An \textbf{Offline Global Fluid LP} solves a continuous market-clearing relaxation across the city geoshard over all users $\ell \in I \cup J$ and potentials $\mathcal{P}_\ell$, extracting dual shadow prices ($\lambda_\ell^*$) that quantify real-time inbox congestion;
+(2) An \textbf{Online Real-Time Re-Ranker} evaluates each user's feed in under $2$ milliseconds by proving that the optimal slate permutation reduces via the Hardy--Littlewood--P\'olya Rearrangement Theorem to sorting candidates $\ell' \in \mathcal{P}_\ell$ by their net marginal conversation contribution: $S_{\ell\ell'} = \phi_{\ell\ell'} [\phi_{\ell'\ell}(q_{\ell\ell'} - \lambda_{\ell'}^*) - \mu_\ell^*]$.
+Under a finite daily like budget ($B_\ell \approx 8$), we prove that sincere swiping is a Dominant Strategy Incentive Compatible (DSIC) equilibrium, completely eliminating strategic ``carpet-bombing.''
 
 Furthermore, we present major theoretical and algorithmic breakthroughs:
 (i) \textbf{Bounded $O(1)$ Regret via Periodic Re-Solving}: We prove that re-solving the residual fluid LP periodically converts the $O(\sqrt{T})$ random-walk tracking error into a mean-reverting process, bounding regret by a constant independent of horizon $T$;
@@ -279,9 +279,9 @@ Our system separates macro market coordination from micro real-time feed assembl
 \begin{tcolorbox}[colback=blue!3!white,colframe=blue!60!black,arc=2mm,title=\textbf{STAGE 1: Offline Macro Planning (Batch Fluid LP --- Solved Hourly/Nightly)}]
 \small
 \begin{itemize}[leftmargin=1.5em]
-    \item Aggregates city-wide candidate supply and active user demand.
-    \item Solves a global continuous relaxation across all user pairs $\{i, j\}$.
-    \item \textbf{Output}: Congestion Shadow Prices $\boldsymbol{\lambda}^* = (\lambda_1^*, \dots, \lambda_{|J|}^*)$ and Budget Hurdles $\boldsymbol{\mu}^*$.
+    \item Aggregates city-wide candidate supply and active user demand across both market partitions $\ell \in I \cup J$ with potential sets $\mathcal{P}_\ell$.
+    \item Solves a global continuous relaxation across all viable cross-side pairs $\{\ell, \ell'\}$.
+    \item \textbf{Output}: Congestion Shadow Prices $\boldsymbol{\lambda}^* = (\lambda_\ell^*)_{\ell \in I \cup J}$ and Budget Hurdles $\boldsymbol{\mu}^* = (\mu_\ell^*)_{\ell \in I \cup J}$.
 \end{itemize}
 \end{tcolorbox}
 
@@ -292,72 +292,85 @@ Our system separates macro market coordination from micro real-time feed assembl
 \begin{tcolorbox}[colback=green!3!white,colframe=green!50!black,arc=2mm,title=\textbf{STAGE 2: Online Micro Re-Ranking (Executed on Mobile App Open in $<2$ ms)}]
 \small
 \begin{itemize}[leftmargin=1.5em]
-    \item User $i$ opens app: Two-Tower retrieves candidate pool $\mathcal{C}_i \subset J$ ($|\mathcal{C}_i| \approx 100\text{--}1000$).
-    \item Queries in-memory Redis cache for candidate shadow prices $\lambda_j^*$ ($O(1)$ memory lookup).
-    \item Computes Net Marginal Contribution: $S_{ij} = \phi_{ij} \cdot \left[ \phi_{ji}(q_{ij} - \lambda_j^*) - \mu_i^* \right]$.
-    \item Selects and ranks top $K$ candidates via QuickSelect Introselect in $O(M + K \log K)$ time.
-    \item \textbf{Output}: The final personalized, congestion-controlled card deck served to User $i$.
+    \item User $\ell \in I \cup J$ opens app: Two-Tower retrieves candidate pool $\mathcal{C}_\ell \subseteq \mathcal{P}_\ell$ ($|\mathcal{C}_\ell| \approx 100\text{--}1000$).
+    \item Queries in-memory Redis cache for candidate shadow prices $\lambda_{\ell'}^*$ and user $\ell$'s like hurdle $\mu_\ell^*$ ($O(1)$ memory lookup).
+    \item Computes Net Marginal Contribution: $S_{\ell\ell'} = \phi_{\ell\ell'} \cdot \left[ \phi_{\ell'\ell}(q_{\ell\ell'} - \lambda_{\ell'}^*) - \mu_\ell^* \right]$.
+    \item Selects and ranks top $K$ candidates via QuickSelect Introselect in $O(|\mathcal{C}_\ell| + K \log K)$ time.
+    \item \textbf{Output}: The final personalized, congestion-controlled card deck served to User $\ell$.
 \end{itemize}
 \end{tcolorbox}
 
-\subsection{Stage 1: The Offline Ex-Ante Global Fluid LP}
-In Stage 1, the platform solves a continuous Linear Program over historical or forecasted active users in the geographic cluster.
+\subsection{Stage 1: The Offline Ex-Ante Global Fluid LP in Reciprocal Potential Notation}
+In a real-world dating market, market participants cannot be segregated into a one-way initiator set $I$ and candidate set $J$. Every user acts as both an active swiper (holding the phone) and a candidate profile (receiving likes).
+Following the foundational reciprocal matching formulation of \textbf{Ignacio Rios \& Alfredo Torrico (2026)}, let the market consist of two disjoint participant sets $I$ and $J$ (e.g., heterosexual men and women for exposition), spanning the total user universe:
+\[
+    \ell \in I \cup J.
+\]
+For each user $\ell \in I \cup J$, let $\mathcal{P}_\ell$ denote their set of acceptable potential candidates on the opposite market side:
+\[
+    \mathcal{P}_\ell \subseteq \begin{cases} J & \text{if } \ell \in I \\ I & \text{if } \ell \in J \end{cases}
+\]
+where potential compatibility is symmetric: $\ell' \in \mathcal{P}_\ell \iff \ell \in \mathcal{P}_{\ell'}$.
 
-Let $y_{ij} \in [0, 1]$ denote the aggregate exposure probability of candidate $j$ to user $i$ across their browsing horizon ($y_{ij} = \sum_{r=1}^K \alpha_r x_{ijr}$).
-To enforce Top-$k$ diminishing returns ($k \approx 1\text{--}3$ active conversations), we define \textbf{credit variables} $z_{ij} \in [0, 1]$ representing the probability that pair $\{i, j\}$ forms a conversation credited toward user $i$'s utility.
+For any user $\ell \in I \cup J$ and candidate $\ell' \in \mathcal{P}_\ell$:
+\begin{itemize}[leftmargin=1.5em]
+    \item Let $y_{\ell\ell'} \in [0, 1]$ denote the aggregate exposure probability of displaying candidate $\ell'$ to user $\ell$ across their browsing horizon ($y_{\ell\ell'} = \sum_{r=1}^K \alpha_r x_{\ell\ell' r}$).
+    \item To model Top-$k$ diminishing returns ($k_\ell \approx 1\text{--}3$ active conversations), we define the \textbf{conversation credit variable} $z_{\ell\ell'} \in [0, 1]$ representing whether (and to what expected fraction) the mutual conversation between $\ell$ and $\ell'$ actually counts toward user $\ell$'s daily romantic utility quota.
+\end{itemize}
 
+The platform solves the continuous Linear Program:
 \begin{align}
-    \mathrm{OPT}_{\text{fluid}} = \max_{\mathbf{y}, \mathbf{z}} \quad & \sum_{i \in I} \sum_{j \in J} q_{ij} z_{ij} \label{eq:fluid_obj} \\
-    \text{subject to} \quad & z_{ij} \le \phi_{ij} \phi_{ji} y_{ij}, \quad \forall i \in I, \; j \in J \tag{C1: Realized Conversation Bound} \\
-    & \sum_{j \in J} z_{ij} \le k, \quad \forall i \in I \tag{C2: User Top-$k$ Satiation Cap} \\
-    & \sum_{j \in J} \phi_{ij} y_{ij} \le B_i, \quad \forall i \in I \tag{C3: User Daily Like Budget} \\
-    & \sum_{i \in I} \phi_{ij} \phi_{ji} y_{ij} \le C_j, \quad \forall j \in J \tag{C4: Candidate Inbox Capacity} \\
-    & 0 \le y_{ij} \le 1, \quad 0 \le z_{ij} \le 1
+    \mathrm{OPT}_{\text{fluid}} = \max_{\mathbf{y}, \mathbf{z}} \quad & \sum_{\ell \in I \cup J} \sum_{\ell' \in \mathcal{P}_\ell} q_{\ell\ell'} z_{\ell\ell'} \label{eq:fluid_obj} \\
+    \text{subject to} \quad & z_{\ell\ell'} \le \phi_{\ell\ell'} \phi_{\ell'\ell} y_{\ell\ell'}, \quad \forall \ell \in I \cup J, \; \ell' \in \mathcal{P}_\ell \tag{C1: Realized Conversation Bound} \\
+    & \sum_{\ell' \in \mathcal{P}_\ell} z_{\ell\ell'} \le k_\ell, \quad \forall \ell \in I \cup J \tag{C2: User Top-$k$ Satiation Cap} \\
+    & \sum_{\ell' \in \mathcal{P}_\ell} \phi_{\ell\ell'} y_{\ell\ell'} \le B_\ell, \quad \forall \ell \in I \cup J \tag{C3: User Swiping Like Budget} \\
+    & \sum_{\ell' \in \mathcal{P}_\ell} \phi_{\ell'\ell} \phi_{\ell\ell'} y_{\ell'\ell} \le C_\ell, \quad \forall \ell \in I \cup J \tag{C4: Profile Inbox Capacity} \\
+    & 0 \le y_{\ell\ell'} \le 1, \quad 0 \le z_{\ell\ell'} \le 1, \quad \forall \ell \in I \cup J, \; \ell' \in \mathcal{P}_\ell
 \end{align}
 
 \subsection{Economic Interpretation of Dual Shadow Prices}
-Assign dual multipliers to the coupling constraints:
+Assign dual multipliers to the coupling constraints for every market participant $\ell \in I \cup J$:
 \begin{itemize}[leftmargin=2em]
-    \item $\lambda_j \ge 0$: Dual multiplier on Candidate $j$'s Inbox Capacity (C4) $\implies$ \textbf{Candidate $j$'s Congestion Shadow Price}.
-    \item $\mu_i \ge 0$: Dual multiplier on User $i$'s Like Budget (C3) $\implies$ \textbf{User $i$'s Budget Opportunity Cost}.
-    \item $\nu_i \ge 0$: Dual multiplier on User $i$'s Top-$k$ Satiation Cap (C2).
+    \item $\lambda_\ell \ge 0$: Dual multiplier on User $\ell$'s Profile Inbox Capacity (C4) $\implies$ \textbf{User $\ell$'s Inbox Congestion Shadow Price (Surge Tax)}.
+    \item $\mu_\ell \ge 0$: Dual multiplier on User $\ell$'s Outgoing Like Budget (C3) $\implies$ \textbf{User $\ell$'s Budget Opportunity Cost (Hurdle Rate)}.
+    \item $\nu_\ell \ge 0$: Dual multiplier on User $\ell$'s Top-$k$ Satiation Cap (C2).
 \end{itemize}
 
-The dual variables provide a powerful economic signal:
+Notice the crucial operational duality captured by these variables:
 \begin{itemize}[leftmargin=2em]
-    \item \textbf{$\lambda_j^*$ (The Inbox Surge Tax)}: Measures the marginal market congestion created by showing Candidate $j$. If Candidate Bob is in extreme demand, $\lambda_{\text{Bob}}^*$ surges. If Candidate Charlie has an empty inbox, $\lambda_{\text{Charlie}}^* = 0$.
-    \item \textbf{$\mu_i^*$ (The Like Hurdle)}: Represents the shadow price of User $i$'s scarce likes ($B_i = 8$). Profiles whose expected conversation value falls below $\mu_i^*$ are not worth expending a scarce daily like on.
+    \item \textbf{$\lambda_\ell^*$ (The Inbox Surge Tax)}: When others swipe on user $\ell$, $\lambda_\ell^*$ acts as a mathematical barrier protecting $\ell$'s inbox from congestion and ghosting. If user $\ell$ (e.g., Candidate Bob) receives overwhelming interest across the city, $\lambda_{\text{Bob}}^*$ surges. If user $\ell$ (e.g., Candidate Charlie) has an empty inbox, $\lambda_{\text{Charlie}}^* = 0$.
+    \item \textbf{$\mu_\ell^*$ (The Like Hurdle)}: When user $\ell$ swipes on others, $\mu_\ell^*$ represents the hurdle rate of $\ell$'s scarce likes ($B_\ell = 8$). Profiles whose expected conversation value falls below $\mu_\ell^*$ are not worth expending a scarce daily like on.
 \end{itemize}
 
 \subsection{Stage 2: The Real-Time Micro Re-Ranking Algorithm}
-When User $i$ opens the app on their phone, the platform executes a closed-form ranking pass:
+When User $\ell \in I \cup J$ opens the app on their phone, the platform retrieves their candidate pool $\mathcal{C}_\ell \subseteq \mathcal{P}_\ell$ and executes a closed-form ranking pass:
 
 \begin{theorem}[The Optimal Re-Ranking Rule via the Rearrangement Theorem]
 \label{thm:rearrangement}
-Dualizing constraints (C3) and (C4) in the Lagrangian relaxation of the fluid problem, the subproblem for User $i$ decomposes across candidates into:
+Dualizing constraints (C3) and (C4) in the Lagrangian relaxation of the fluid problem, the subproblem for User $\ell$ decomposes across potentials $\ell' \in \mathcal{C}_\ell$ into:
 \begin{equation}
-    \max_{\mathbf{x}_i} \sum_{r=1}^K \alpha_r \left( \sum_{j \in \mathcal{C}_i} S_{ij} x_{ijr} \right)
+    \max_{\mathbf{x}_\ell} \sum_{r=1}^K \alpha_r \left( \sum_{\ell' \in \mathcal{C}_\ell} S_{\ell\ell'} x_{\ell\ell' r} \right)
 \end{equation}
-where the \textbf{Net Marginal Conversation Contribution} $S_{ij}$ is defined as:
+where the \textbf{Net Marginal Conversation Contribution} $S_{\ell\ell'}$ is defined as:
 \begin{equation}
-    S_{ij} = \phi_{ij} \cdot \left[ \phi_{ji} (q_{ij} - \lambda_j^*) - \mu_i^* \right].
+    S_{\ell\ell'} = \phi_{\ell\ell'} \cdot \left[ \phi_{\ell'\ell} (q_{\ell\ell'} - \lambda_{\ell'}^*) - \mu_\ell^* \right].
 \end{equation}
-Because position attention weights strictly decrease ($\alpha_1 > \alpha_2 > \dots > \alpha_K > 0$), by the \textbf{Hardy--Littlewood--P\'olya Rearrangement Inequality}, the objective is uniquely maximized by \textbf{sorting all candidates in strictly descending order of $S_{ij}$}:
+Because position attention weights strictly decrease ($\alpha_1 > \alpha_2 > \dots > \alpha_K > 0$), by the \textbf{Hardy--Littlewood--P\'olya Rearrangement Inequality}, the objective is uniquely maximized by \textbf{sorting all candidates in strictly descending order of $S_{\ell\ell'}$}:
 \begin{equation}
-    S_{i, \pi(1)} \ge S_{i, \pi(2)} \ge \dots \ge S_{i, \pi(K)}.
+    S_{\ell, \pi(1)} \ge S_{\ell, \pi(2)} \ge \dots \ge S_{\ell, \pi(K)}.
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-Let $\mathbf{a} = (\alpha_1, \alpha_2, \dots, \alpha_K)$ be a vector of strictly decreasing non-negative reals ($\alpha_1 > \alpha_2 > \dots > \alpha_K$). Let $\mathbf{b} = (S_{i, \pi(1)}, \dots, S_{i, \pi(K)})$ be the chosen candidates assigned to ranks $1, \dots, K$.
+Let $\mathbf{a} = (\alpha_1, \alpha_2, \dots, \alpha_K)$ be a vector of strictly decreasing non-negative reals ($\alpha_1 > \alpha_2 > \dots > \alpha_K$). Let $\mathbf{b} = (S_{\ell, \pi(1)}, \dots, S_{\ell, \pi(K)})$ be the chosen candidates assigned to ranks $1, \dots, K$.
 The total objective value is the dot product $\mathbf{a} \cdot \mathbf{b} = \sum_{r=1}^K \alpha_r b_r$.
-The classical Rearrangement Inequality states that for any two sequences of numbers, their dot product is maximized when both sequences are ordered in the same monotonic direction. Since $\mathbf{a}$ is strictly descending, the sum is maximized if and only if $b_1 \ge b_2 \ge \dots \ge b_K$, which corresponds precisely to sorting candidates in descending order of $S_{ij}$.
+The classical Rearrangement Inequality states that for any two sequences of numbers, their dot product is maximized when both sequences are ordered in the same monotonic direction. Since $\mathbf{a}$ is strictly descending, the sum is maximized if and only if $b_1 \ge b_2 \ge \dots \ge b_K$, which corresponds precisely to sorting candidates in descending order of $S_{\ell\ell'}$.
 \end{proof}
 
 \begin{ideabox}[How the Re-Ranking Engine Solves Congestion in Real Time]
 Look at the net marginal score:
 \[
-    S_{ij} = \underbrace{\phi_{ij}}_{\text{User } i \text{ must like } j} \times \Big( \underbrace{\phi_{ji} q_{ij}}_{\text{Hinge's Raw Conversation Yield}} - \underbrace{\phi_{ji} \lambda_j^*}_{\text{Congestion Tax}} - \underbrace{\mu_i^*}_{\text{Budget Hurdle}} \Big)
+    S_{\ell\ell'} = \underbrace{\phi_{\ell\ell'}}_{\text{User } \ell \text{ likes } \ell'} \times \Big( \underbrace{\phi_{\ell'\ell} q_{\ell\ell'}}_{\text{Raw Conversation Yield}} - \underbrace{\phi_{\ell'\ell} \lambda_{\ell'}^*}_{\text{Candidate } \ell' \text{ Congestion Tax}} - \underbrace{\mu_\ell^*}_{\text{User } \ell \text{ Budget Hurdle}} \Big)
 \]
 \begin{enumerate}[leftmargin=1.5em]
     \item When Candidate Bob is flooded with incoming likes across the city, Bob's cached shadow price $\lambda_{\text{Bob}}^*$ surges.
@@ -372,25 +385,25 @@ Why does this mechanism force users to swipe sincerely, completely eliminating t
 
 \begin{theorem}[Dominant Strategy Incentive Compatibility (DSIC)]
 \label{thm:dsic}
-Let each user $i$ possess an intrinsic reservation cost $c_i > 0$ representing their personal opportunity cost of time spent evaluating a profile and holding a date. Under the scarce like budget $B_i$ ($B_i = 8$) and the re-ranked slate, \textbf{swiping right if and only if expected conversation quality exceeds reservation cost ($q_{ij} \ge c_i$) is a strictly Dominant Strategy (DSIC)}.
+Let each user $\ell \in I \cup J$ possess an intrinsic reservation cost $c_\ell > 0$ representing their personal opportunity cost of time spent evaluating a profile and holding a date. Under the scarce like budget $B_\ell$ ($B_\ell = 8$) and the re-ranked slate, \textbf{swiping right on candidate $\ell' \in \mathcal{P}_\ell$ if and only if expected conversation quality exceeds reservation cost ($q_{\ell\ell'} \ge c_\ell$) is a strictly Dominant Strategy (DSIC)}.
 \end{theorem}
 
 \begin{proof}
 The proof relies on two properties:
 \begin{enumerate}[leftmargin=2em]
-    \item \textbf{Exogeneity of Slate Ranks}: Candidate positions $\pi_i$ are determined exclusively by pre-computed vector embeddings and dual shadow prices $\lambda_j^*$. User $i$'s swipe decision on card $r$ cannot change the identities or ranks of profiles already present in their daily deck.
+    \item \textbf{Exogeneity of Slate Ranks}: Candidate positions $\pi_\ell$ are determined exclusively by pre-computed vector embeddings and dual shadow prices $\lambda_{\ell'}^*$. User $\ell$'s swipe decision on card $r$ cannot change the identities or ranks of profiles already present in their daily deck.
     \item \textbf{Strict Loss from False Likes (Carpet-Bombing)}:
-    Suppose User $i$ swiped right on an unwanted candidate $j$ where $q_{ij} < c_i$.
-    With probability $\phi_{ji}$, Candidate $j$ reciprocates. The match forms and generates negative net surplus:
+    Suppose User $\ell$ swiped right on an unwanted candidate $\ell' \in \mathcal{P}_\ell$ where $q_{\ell\ell'} < c_\ell$.
+    With probability $\phi_{\ell'\ell}$, Candidate $\ell'$ reciprocates. The match forms and generates negative net surplus:
     \[
-        u_i = q_{ij} - c_i < 0.
+        u_\ell = q_{\ell\ell'} - c_\ell < 0.
     \]
-    Furthermore, this false swipe consumes $1$ unit of User $i$'s scarce like budget $B_i$. Since $B_i = 8$, spending a like on Candidate $j$ deprives User $i$ of the ability to swipe right on a future card $r' > r$ where $q_{i, r'} > c_i$. The expected loss is strictly negative.
+    Furthermore, this false swipe consumes $1$ unit of User $\ell$'s scarce like budget $B_\ell$. Since $B_\ell = 8$, spending a like on Candidate $\ell'$ deprives User $\ell$ of the ability to swipe right on a future card $r' > r$ where $q_{\ell, r'} > c_\ell$. The expected loss is strictly negative.
     \item \textbf{Strict Loss from False Passes}:
-    Suppose User $i$ skipped a candidate $j$ where $q_{ij} \ge c_i$. 
-    User $i$ receives utility $0$. Swiping right yields expected positive surplus $\phi_{ji}(q_{ij} - c_i) \ge 0$.
+    Suppose User $\ell$ skipped a candidate $\ell' \in \mathcal{P}_\ell$ where $q_{\ell\ell'} \ge c_\ell$. 
+    User $\ell$ receives utility $0$. Swiping right yields expected positive surplus $\phi_{\ell'\ell}(q_{\ell\ell'} - c_\ell) \ge 0$.
 \end{enumerate}
-Therefore, no strategic deviation can strictly improve expected utility over sincere swiping ($q_{ij} \ge c_i \iff \text{Swipe Right}$).
+Therefore, no strategic deviation can strictly improve expected utility over sincere swiping ($q_{\ell\ell'} \ge c_\ell \iff \text{Swipe Right}$).
 \end{proof}
 
 \newpage
@@ -405,54 +418,54 @@ To elevate the algorithm from a basic dual heuristic to a state-of-the-art onlin
 In real dating markets, user popularity follows a heavy-tailed Pareto distribution: a small minority of users receive frequent likes, while the long tail receives sparse interactions.
 We replace uniform gradient descent with \textbf{Coordinate-Wise Adaptive Mirror Descent (AdaGrad)}:
 \begin{equation}
-    \eta_{j, t} = \frac{\eta_0}{\sqrt{\sum_{s=1}^t g_{j, s}^2 + \varepsilon}}
+    \eta_{\ell', t} = \frac{\eta_0}{\sqrt{\sum_{s=1}^t g_{\ell', s}^2 + \varepsilon}}
 \end{equation}
-where $g_{j, s}$ is Candidate $j$'s congestion subgradient at session $s$.
+where $g_{\ell', s}$ is Candidate $\ell'$'s congestion subgradient at session $s$.
 
 \begin{proposition}[Accelerated Convergence under Skewed Demand]
-Under coordinate-wise AdaGrad pacing, the accumulated dual regret improves from $O(\sqrt{|J| T})$ to:
+Under coordinate-wise AdaGrad pacing, the accumulated dual regret improves from $O(\sqrt{|I \cup J| T})$ to:
 \begin{equation}
-    \mathrm{Regret}_{\text{AdaGrad}}(T) \le O\left( \sum_{j \in J} \|g_{j, 1:T}\|_2 \right).
+    \mathrm{Regret}_{\text{AdaGrad}}(T) \le O\left( \sum_{\ell' \in I \cup J} \|g_{\ell', 1:T}\|_2 \right).
 \end{equation}
-When $80\%$ of users experience sparse arrivals ($\sum_{s} g_{j, s}^2 \ll T$), the bound satisfies $\sum_{j} \|g_j\|_2 \ll \sqrt{|J|T}$, accelerating convergence by $3\text{--}5\times$ over uniform learning rates.
+When $80\%$ of users experience sparse arrivals ($\sum_{s} g_{\ell', s}^2 \ll T$), the bound satisfies $\sum_{\ell'} \|g_{\ell'}\|_2 \ll \sqrt{|I \cup J|T}$, accelerating convergence by $3\text{--}5\times$ over uniform learning rates.
 \end{proposition}
 
 \subsection{Optimization 2: Doubly Robust Inverse Propensity Scored (IPS) Dual Updates}
 To remove position bias confounding ($\alpha_r$) from candidate shadow price updates, we construct an \textbf{Inverse Propensity Scored (IPS) Doubly Robust Subgradient}:
 \begin{equation}
-    \tilde{g}_j(t) = \frac{\mathbf{1}_{\{i(t) \text{ likes } j \text{ at rank } r\}}}{\alpha_r} \cdot \phi_{ji} - C_j.
+    \tilde{g}_{\ell'}(t) = \frac{\mathbf{1}_{\{\ell(t) \text{ likes } \ell' \text{ at rank } r\}}}{\alpha_r} \cdot \phi_{\ell'\ell} - C_{\ell'}.
 \end{equation}
 
 \begin{theorem}[Unbiased Dual Pacing]
 Because the observation indicator satisfies $\mathbb{E}[\mathbf{1}_{\{\text{evaluated at rank } r\}}] = \alpha_r$, the IPS gradient estimator is \textbf{strictly conditionally unbiased}:
 \begin{equation}
-    \mathbb{E}\left[ \tilde{g}_j(t) \;\middle|\; i(t) \right] = \frac{\alpha_r \cdot \phi_{ij}}{\alpha_r} \cdot \phi_{ji} - C_j = \phi_{ij} \phi_{ji} - C_j.
+    \mathbb{E}\left[ \tilde{g}_{\ell'}(t) \;\middle|\; \ell(t) \right] = \frac{\alpha_r \cdot \phi_{\ell\ell'}}{\alpha_r} \cdot \phi_{\ell'\ell} - C_{\ell'} = \phi_{\ell\ell'} \phi_{\ell'\ell} - C_{\ell'}.
 \end{equation}
-The dual shadow prices $\lambda_j^{(t)}$ converge to the true underlying market equilibrium, completely free of position confounding.
+The dual shadow prices $\lambda_{\ell'}^{(t)}$ converge to the true underlying market equilibrium, completely free of position confounding.
 \end{theorem}
 
 \subsection{Optimization 3: Online Dynamic Contention Resolution (Dynamic OCRS)}
 Static credit bounds lose a constant factor of $c_1 = 1 - 1/e \approx 0.632$ due to Bernoulli match overshoot. We eliminate this loss by implementing a \textbf{Dynamic Contention Resolution Scheme (Dynamic OCRS)} with state-dependent capacity barriers:
 \begin{equation}
-    \nu_i(t) = \begin{cases} 0 & \text{if } M_i(t) < k \\ \infty & \text{if } M_i(t) \ge k \end{cases}, \qquad \Omega_j(t) = \log\left(\frac{1}{\max(1e-4, \; 1 - \text{fill}_j(t))}\right).
+    \nu_\ell(t) = \begin{cases} 0 & \text{if } M_\ell(t) < k_\ell \\ \infty & \text{if } M_\ell(t) \ge k_\ell \end{cases}, \qquad \Omega_{\ell'}(t) = \log\left(\frac{1}{\max(1e-4, \; 1 - \text{fill}_{\ell'}(t))}\right).
 \end{equation}
-When User $i$ achieves their target $k$ active conversations or Candidate $j$'s inbox approaches capacity, dynamic scaling immediately diverts exposure, raising the guaranteed competitive ratio to $\ge 1 - 1/e$.
+When User $\ell$ achieves their target $k_\ell$ active conversations or Candidate $\ell'$'s inbox approaches capacity, dynamic scaling immediately diverts exposure, raising the guaranteed competitive ratio to $\ge 1 - 1/e$.
 
 \subsection{Optimization 4: Safe Budget Pacing Across Browse Positions}
-To enforce smooth browsing discipline across the deck, we scale the budget opportunity cost hurdle $\mu_i$ dynamically as a function of browsing depth $r$:
+To enforce smooth browsing discipline across the deck, we scale the budget opportunity cost hurdle $\mu_\ell$ dynamically as a function of browsing depth $r$:
 \begin{equation}
-    \mu_i(r) = \mu_i^* \cdot \left( 1 + \kappa \cdot \max\left(0, \; \frac{\text{LikesSpent}(r) - B_i \cdot \frac{r}{K}}{\sqrt{B_i}} \right) \right).
+    \mu_\ell(r) = \mu_\ell^* \cdot \left( 1 + \kappa \cdot \max\left(0, \; \frac{\text{LikesSpent}(r) - B_\ell \cdot \frac{r}{K}}{\sqrt{B_\ell}} \right) \right).
 \end{equation}
-If the user expends likes too rapidly in early positions ($r < 10$), $\mu_i(r)$ automatically escalates, reserving remaining likes for exceptional candidates appearing later in the feed.
+If the user expends likes too rapidly in early positions ($r < 10$), $\mu_\ell(r)$ automatically escalates, reserving remaining likes for exceptional candidates appearing later in the feed.
 
 \subsection{Optimization 5: Periodic Fluid LP Re-Solving for Bounded $O(1)$ Regret}
 While static dual pacing accumulates $O(\sqrt{T})$ tracking error due to random walk arrivals, \textbf{Periodic Re-Solving of the Fluid LP} converts tracking deviations into a mean-reverting process:
 
 \begin{theorem}[Bounded $O(1)$ Regret of Re-Solving LP]
 \label{thm:resolving_bound}
-Let remaining horizon be $T - t$ and remaining capacity be $\tilde{C}_j(t) = C_j - \mathrm{Matches}_j(t)$. Re-solving the fluid LP at checkpoint intervals $H = \Theta(1)$ under basis strict complementarity yields an Ornstein-Uhlenbeck contraction on capacity errors:
+Let remaining horizon be $T - t$ and remaining capacity be $\tilde{C}_{\ell'}(t) = C_{\ell'} - \mathrm{Matches}_{\ell'}(t)$. Re-solving the fluid LP at checkpoint intervals $H = \Theta(1)$ under basis strict complementarity yields an Ornstein-Uhlenbeck contraction on capacity errors:
 \begin{equation}
-    \mathbb{E}\left[ |\tilde{C}_j(t) - C_j(1 - t/T)| \right] \le O(1).
+    \mathbb{E}\left[ |\tilde{C}_{\ell'}(t) - C_{\ell'}(1 - t/T)| \right] \le O(1).
 \end{equation}
 Consequently, total regret against the hindsight ex-ante fluid optimum satisfies:
 \begin{equation}
@@ -461,20 +474,20 @@ Consequently, total regret against the hindsight ex-ante fluid optimum satisfies
 \end{theorem}
 
 \subsection{Optimization 6: Smooth Entropy Softmax Re-Ranking (Nesterov Dual Prox)}
-Adding an entropy penalty $\tau \sum y_{ij} \log y_{ij}$ regularizes the fluid objective. The conjugate dual $D_\tau(\boldsymbol{\lambda})$ is $L$-smooth with Lipschitz constant $L = 1/\tau$.
+Adding an entropy penalty $\tau \sum_{\ell \in I \cup J} \sum_{\ell' \in \mathcal{P}_\ell} y_{\ell\ell'} \log y_{\ell\ell'}$ regularizes the fluid objective. The conjugate dual $D_\tau(\boldsymbol{\lambda})$ is $L$-smooth with Lipschitz constant $L = 1/\tau$.
 By applying \textbf{Nesterov Accelerated Dual Mirror Prox}, dual price tracking converges at rate:
 \begin{equation}
     D_\tau(\boldsymbol{\lambda}^{(t)}) - D_\tau(\boldsymbol{\lambda}^*) \le O\left(\frac{1}{\tau t^2}\right).
 \end{equation}
-Continuous card decks are sampled without replacement via the \textbf{Gumbel-Top-$K$ trick} ($\tilde{S}_{ij} = S_{ij}/\tau + G_{ij}$), eliminating deterministic rank jitter.
+Continuous card decks are sampled without replacement via the \textbf{Gumbel-Top-$K$ trick} ($\tilde{S}_{\ell\ell'} = S_{\ell\ell'}/\tau + G_{\ell\ell'}$), eliminating deterministic rank jitter.
 
 \subsection{Optimization 7: Industrial Closed-Loop Stability via PID Dual Pacing}
 In streaming production environments, open-loop subgradient descent experiences lag and overshoot. We implement a \textbf{Proportional-Integral-Derivative (PID) Pacing Controller}:
 \begin{equation}
-    e_j(t) = \text{LikesReceived}_j(t) - C_j \cdot \frac{t}{T}
+    e_{\ell'}(t) = \text{LikesReceived}_{\ell'}(t) - C_{\ell'} \cdot \frac{t}{T}
 \end{equation}
 \begin{equation}
-    \lambda_j^{\text{PID}}(t) = \max\left(0, \; K_p \cdot e_j(t) + K_i \int_0^t e_j(s) ds + K_d \frac{de_j(t)}{dt}\right).
+    \lambda_{\ell'}^{\text{PID}}(t) = \max\left(0, \; K_p \cdot e_{\ell'}(t) + K_i \int_0^t e_{\ell'}(s) ds + K_d \frac{de_{\ell'}(t)}{dt}\right).
 \end{equation}
 The derivative term ($K_d \frac{de}{dt}$) predicts and dampens viral traffic spikes, while the integral term ($K_i \int e$) forces steady-state queue errors to zero.
 
@@ -698,7 +711,7 @@ Under greedy sorting, uncoordinated male likes dogpile on the top $5\%$ of women
 \end{warningbox}
 
 \subsection{Theoretical Foundations of Heavily Skewed Matching Markets}
-Let $M$ denote the long side (men, $|M| = 75$) and $W$ denote the short side (women, $|W| = 25$), with skew ratio $r = |M|/|W| = 3$.
+In the reciprocal potential formulation of Section \ref{sec:solution}, consider a heterosexual market with disjoint partitions $I = M$ (men, $|M| = 75$) and $J = W$ (women, $|W| = 25$), such that $\mathcal{P}_m = W$ for all $m \in M$ and $\mathcal{P}_w = M$ for all $w \in W$, with demographic skew ratio $r = |M|/|W| = 3$.
 
 \begin{theorem}[Asymmetric Dual Degeneracy and Complementary Slackness]
 \label{thm:asymmetric_slackness}
@@ -812,14 +825,14 @@ Dynamic OCRS (Asymmetric Mod: $B_m=5$) & $50.50$ & $39.4\%$ & $37.5\%$ & $60.6\%
     \begin{enumerate}[leftmargin=1.5em]
         \item The heavy optimization (Fluid LP) runs asynchronously in the background on AWS/GCP clusters.
         \item Dual shadow prices $\boldsymbol{\lambda}^*$ are written to an in-memory Redis cluster ($<0.1$ ms lookup).
-        \item Calculating scores $S_{ij}$ and selecting top $K$ candidates via QuickSelect takes **$12$ microseconds in C++ / Go for $M=1000$**, clearing the latency SLA by three orders of magnitude.
+        \item Calculating scores $S_{\ell\ell'}$ and selecting top $K$ candidates via QuickSelect takes **$12$ microseconds in C++ / Go for $M=1000$**, clearing the latency SLA by three orders of magnitude.
     \end{enumerate}
 \end{itemize}
 
 \subsection{Asynchronous App Opens and Dynamic Session Arrivals}
 \begin{itemize}[leftmargin=1.5em]
     \item \textbf{Production Reality}: Users do not arrive in synchronized discrete batches. Alice opens her app at 9:15 AM; Bob opens his at 7:45 PM.
-    \item \textbf{Engineering Solution}: The online algorithm is naturally event-driven. Shadow prices $\lambda_j$ are updated via streaming micro-increments or PID controllers whenever a like is delivered to Candidate $j$'s backlog, providing instantaneous congestion feedback.
+    \item \textbf{Engineering Solution}: The online algorithm is naturally event-driven. Shadow prices $\lambda_{\ell'}$ are updated via streaming micro-increments or PID controllers whenever a like is delivered to Candidate $\ell'$'s backlog, providing instantaneous congestion feedback.
 \end{itemize}
 
 \subsection{The Cold-Start Problem for Brand-New Users}
