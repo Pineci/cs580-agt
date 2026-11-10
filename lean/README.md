@@ -50,7 +50,7 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 973 theorems, all fully proved. The count includes lemmas Lean generates
+Current count: 1008 theorems, all fully proved. The count includes lemmas Lean generates
 for definitions and structures, such as the fields of `Feasible19`.
 
 ### Rios & Torrico's results
@@ -134,6 +134,23 @@ keeps only DHT's response step (vault note, "Repairing the relaxation").
 | Continuous values: the example table; $F_e$ concave; a fully used combination forces $\tau_e = 1$ | `WorkedExample.lean` (`continuous_example`, `pairValue_concave`, `sdhTau_eq_one_of_full`) | proved |
 | Theorem 3(b) for continuous priors (any priors with finite means): SDH $\ge c_K^2$ times the plan's value | `ContinuousSDH.lean` (`contSDH_welfare`) | proved, with SDH's own max-weight selection, for every feasible query-aware plan (SDH's plan is the case with no budget). See the query-budget section below |
 
+### The live-set theorem and the two-cost model (vault note "The Live-Set Theorem for Truthful Swiping")
+
+One user, yes/no swipes, a platform that cannot see values. `twoCostUtil v c d S` is
+$\max_{T \subseteq S} v(T) - c\lvert T\rvert - d\lvert S \setminus T\rvert$. A `SwipeTree`
+is what the user faces once the platform's coins and the others' strategies are fixed.
+
+| Result | File | Status |
+| --- | --- | --- |
+| Theorem A, top-$k$: for $d > 0$, sincere swiping is dominant iff the matches are $X \cap S$ for a live set with $\lvert S\rvert \le k$ | `LiveSet.lean` (`liveSet_iff` for any outcome rule with $M(X) \subseteq X$; `swipeTree_liveSet_iff` for swipe trees; `liveSet_of_dominant`, `twoCost_sincere_best_topK` for the two directions) | proved. Types are the value vectors within $\delta \le c$ of the cost; the "if" direction holds for every non-negative value vector and $d \ge 0$ |
+| Theorem A, additive users: matches are $X \cap S$ with $S$ unrestricted | `LiveSet.lean` (`liveSet_iff_additive`) | proved, as the case $k = \lvert\beta\rvert$ |
+| Theorem A at $d = 0$: the size restriction disappears | `LiveSet.lean` (`liveSet_iff_zero_drop`) | proved for top-$k$ with $k \ge 1$ (the note states it for every subadditive class) |
+| Corollary: own-swipe independence | `LiveSet.lean` (`own_swipe_independence`) | proved |
+| Swipe trees: every path is the path of the set it likes; matches are liked profiles | `LiveSet.lean` (`SwipeTree.exists_run_of_reach`, `SwipeTree.run_subset`) | proved |
+| Theorem B, top-$k$: under a live set of any size the regret of sincere swiping is exactly $d(\lvert M\rvert - k)^+$; welfare identity; sincere is best at $d = 0$ | `LiveSet.lean` (`twoCost_topK_regret_le`, `twoCost_topK_regret_attained`, `twoCost_topK_eq_net`, `twoCost_zero_drop_sincere_best`) | proved, for $0 \le d \le c$ and non-negative values |
+| $d = c$ is the one-cost model | `LiveSet.lean` (`twoCostUtil_eq_swipeUtil`) | proved, for monotone valuations |
+| Theorem A for matroid users and for classes containing top-1; Theorem A′ (platform coins); Theorem B for matroid and subadditive users; Theorem B′ (general costs); Proposition P | — | not formalized |
+
 ### Max-min screened DH (vault note "Max-Min Match Quality and Egalitarian Matching")
 
 The note claims that SDH run on a max-min optimal plan gives every user at least
@@ -210,6 +227,7 @@ any priors with finite means, continuous ones included.
 | `DatingAlgo/MaxMinCounterexample.lean` | SDH's own selection fails the note's max-min guarantee |
 | `DatingAlgo/BudgetedSDH.lean` | query budgets, discrete priors: the query-aware plan, calls, budgeted and adaptive policies, the benchmark, monotone homogeneous objectives |
 | `DatingAlgo/ContinuousSDH.lean` | query budgets for any priors with finite means: resampling and coarsening lemmas, the surrogate market, per-user and total-welfare guarantees, the benchmark, objectives |
+| `DatingAlgo/LiveSet.lean` | two-cost utility, swipe trees, Theorem A (live-set characterization) and Theorem B (regret $d(\lvert M\rvert-k)^+$) for top-$k$ users |
 | `DatingAlgo/Targets.lean` | open targets (none at the moment) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
 
