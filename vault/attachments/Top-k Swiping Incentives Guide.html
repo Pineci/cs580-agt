@@ -1,0 +1,518 @@
+<!doctype html>
+<!-- Standalone copy of the top-k swiping incentives guide (companion to the vault note
+     "Truthful Top-k Swiping in Like-Aware Feeds"). Open it in a web browser; fonts and
+     MathJax load from the web. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top-k Swiping Incentives</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+<style>
+/* Layout: same family as the Q-SDH Proof Guide. One reading column, a sticky contents rail on wide screens,
+   each result as a statement box, a short version, and an expandable detailed version. */
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --ink: #17202b;
+  --muted: #546072;
+  --rule: #d8dee6;
+  --accent: #1d5c88;
+  --accent-soft: #e5eef6;
+  --lean: #57408a;
+  --lean-soft: #efeaf8;
+  --caution: #845700;
+  --caution-soft: #fbf2df;
+  --good: #2f6b3a;
+  --good-soft: #e6f2e8;
+  --f-body: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-ui: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10141a; --surface: #161c24; --ink: #e3e8ef; --muted: #9ba7b6; --rule: #2a333f;
+    --accent: #8fc1e6; --accent-soft: #182836; --lean: #c5adf0; --lean-soft: #251f36;
+    --caution: #e9bb62; --caution-soft: #2c2415; --good: #8fd19c; --good-soft: #17281b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10141a; --surface: #161c24; --ink: #e3e8ef; --muted: #9ba7b6; --rule: #2a333f;
+  --accent: #8fc1e6; --accent-soft: #182836; --lean: #c5adf0; --lean-soft: #251f36;
+  --caution: #e9bb62; --caution-soft: #2c2415; --good: #8fd19c; --good-soft: #17281b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; max-width: 1120px; margin: 0 auto; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-family: var(--f-ui); font-size: 13.5px; line-height: 1.45; }
+nav.toc h2 { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+nav.toc a { color: var(--muted); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); text-decoration: underline; }
+main { min-width: 0; max-width: 46rem; }
+header.top { display: grid; gap: 12px; margin-bottom: 36px; }
+.eyebrow { font-family: var(--f-ui); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--f-ui); font-weight: 600; font-size: 2.1rem; line-height: 1.15; margin: 0; text-wrap: balance; }
+.lede { font-size: 1.12rem; color: var(--muted); margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--f-ui); font-size: 12.5px; border: 1px solid var(--rule); background: var(--surface); border-radius: 999px; padding: 3px 10px; color: var(--ink); }
+.chip strong { font-weight: 600; }
+.toggle { justify-self: start; font-family: var(--f-ui); font-size: 13.5px; font-weight: 500; color: var(--accent); background: transparent; border: 1px solid var(--accent); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.toggle:hover { background: var(--accent-soft); }
+section { margin-top: 52px; }
+h2 { font-family: var(--f-ui); font-weight: 600; font-size: 1.4rem; line-height: 1.25; margin: 0 0 14px; text-wrap: balance; scroll-margin-top: 24px; }
+h2 .num { color: var(--accent); margin-right: 8px; font-variant-numeric: tabular-nums; }
+h3 { font-family: var(--f-ui); font-weight: 600; font-size: 1.05rem; margin: 24px 0 8px; text-wrap: balance; }
+h4 { font-family: var(--f-ui); font-weight: 600; font-size: .95rem; margin: 20px 0 6px; color: var(--muted); letter-spacing: .02em; }
+p { margin: 0 0 14px; }
+ul, ol { margin: 0 0 14px; padding-left: 1.3em; }
+li { margin-bottom: 6px; }
+a { color: var(--accent); }
+code, .lean { font-family: var(--f-mono); font-size: .84em; }
+.lean { color: var(--lean); background: var(--lean-soft); padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+.box { border: 1px solid var(--rule); background: var(--surface); padding: 14px 18px; margin: 18px 0; border-radius: 4px; }
+.box > :last-child { margin-bottom: 0; }
+.box .label { font-family: var(--f-ui); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; }
+.box.plain { background: var(--accent-soft); border-color: transparent; }
+.box.plain .label { color: var(--accent); }
+.box.caution { background: var(--caution-soft); border-color: transparent; }
+.box.caution .label { color: var(--caution); }
+.box.example { background: var(--good-soft); border-color: transparent; }
+.box.example .label { color: var(--good); }
+.thm { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 14px 18px; margin: 16px 0 20px; border-radius: 0 4px 4px 0; }
+.thm .head { font-family: var(--f-ui); font-weight: 600; font-size: .98rem; margin-bottom: 6px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.thm .head .tag { color: var(--accent); }
+.thm .head .status { font-weight: 500; font-size: 12.5px; color: var(--muted); }
+.thm > :last-child { margin-bottom: 0; }
+.level { font-family: var(--f-ui); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--muted); margin: 18px 0 6px; }
+details.deep { border: 1px solid var(--rule); background: var(--surface); border-radius: 4px; margin: 18px 0; }
+details.deep > summary { cursor: pointer; list-style: none; font-family: var(--f-ui); font-weight: 600; font-size: .98rem; padding: 11px 16px; display: flex; gap: 10px; align-items: baseline; }
+details.deep > summary::-webkit-details-marker { display: none; }
+details.deep > summary::before { content: "\25B8"; color: var(--accent); display: inline-block; transition: transform .15s ease; }
+details.deep[open] > summary::before { transform: rotate(90deg); }
+details.deep > summary .hint { font-weight: 400; font-size: 13px; color: var(--muted); }
+details.deep > summary:hover { color: var(--accent); }
+.deep-body { padding: 6px 18px 16px; border-top: 1px solid var(--rule); }
+.deep-body > :last-child { margin-bottom: 0; }
+.tablewrap { overflow-x: auto; margin: 14px 0 18px; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--f-ui); font-size: 12.5px; letter-spacing: .03em; color: var(--muted); font-weight: 600; background: var(--bg); }
+tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.steps { counter-reset: step; list-style: none; padding-left: 0; }
+.steps > li { counter-increment: step; position: relative; padding-left: 2.2em; margin-bottom: 10px; }
+.steps > li::before { content: counter(step); position: absolute; left: 0; top: .15em; font-family: var(--f-ui); font-size: 12.5px; font-weight: 600; color: var(--accent); width: 1.6em; height: 1.6em; border: 1px solid var(--accent); border-radius: 50%; display: grid; place-items: center; }
+.formula { overflow-x: auto; margin: 8px 0 14px; }
+.small { font-size: .9rem; color: var(--muted); }
+dl.assume { display: grid; gap: 14px; margin: 16px 0; }
+dl.assume > div { border-top: 1px solid var(--rule); padding-top: 12px; }
+dl.assume dt { font-family: var(--f-ui); font-weight: 600; margin-bottom: 4px; }
+dl.assume dd { margin: 0; }
+dl.assume .why, dl.assume .cost { display: block; margin-top: 4px; }
+dl.assume .why b, dl.assume .cost b { font-family: var(--f-ui); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.flow { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: stretch; margin: 18px 0 10px; }
+.flow .node { border: 1px solid var(--rule); background: var(--surface); border-radius: 4px; padding: 12px 14px; font-family: var(--f-ui); font-size: 14px; line-height: 1.45; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.flow .role { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.flow .arrow { align-self: center; display: grid; justify-items: center; gap: 2px; font-family: var(--f-ui); font-size: 12px; color: var(--accent); text-align: center; max-width: 8.5em; }
+.flow .glyph { font-size: 22px; line-height: 1; }
+.tag-claim { justify-self: start; font-family: var(--f-ui); font-size: 12px; font-weight: 500; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 1px 9px; }
+.under { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+.under .node { border: 1px dashed var(--rule); border-radius: 4px; padding: 10px 14px; font-family: var(--f-ui); font-size: 13.5px; line-height: 1.45; display: grid; gap: 6px; min-width: 0; }
+footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--rule); font-family: var(--f-ui); font-size: 13px; color: var(--muted); }
+footer p { margin-bottom: 8px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  nav.toc { position: static; border: 1px solid var(--rule); background: var(--surface); padding: 14px 16px; border-radius: 4px; }
+  nav.toc ol { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  body { font-size: 16.5px; }
+  h1 { font-size: 1.7rem; }
+}
+@media (max-width: 680px) {
+  .flow { grid-template-columns: minmax(0, 1fr); }
+  .flow .arrow { max-width: none; grid-auto-flow: column; gap: 8px; align-items: center; }
+  .flow .glyph { transform: rotate(90deg); }
+  .under { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#short">1 · The short version</a></li>
+    <li><a href="#symbols">2 · Symbols</a></li>
+    <li><a href="#start">3 · Where we start</a></li>
+    <li><a href="#target">4 · The new target</a></li>
+    <li><a href="#claim-a">5 · Claim A</a></li>
+    <li><a href="#claim-b">6 · Claim B</a></li>
+    <li><a href="#feedback">7 · The feedback rule</a></li>
+    <li><a href="#claim-c">8 · Claim C</a></li>
+    <li><a href="#together">9 · Putting it together</a></li>
+    <li><a href="#assumptions">10 · Assumptions</a></li>
+    <li><a href="#open">11 · Open questions</a></li>
+    <li><a href="#background">12 · Background</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+  <div class="eyebrow">CS 580 · dating heuristic project · informal proofs, 2026-11-06</div>
+  <h1>Truthful swiping for top-k users when likes shape the feed</h1>
+  <p class="lede">When likes only act as consent, a user who wants just their best k matches can swipe honestly only if the feed shows them at most k acceptable profiles. This guide follows what happens once the ranking is allowed to use likes: what stays impossible, what becomes true, and the design that results. Every result has a short version and a detailed version you can expand.</p>
+  <div class="chips">
+    <span class="chip"><strong>4</strong> new results</span>
+    <span class="chip">informal proofs, <strong>not in Lean</strong></span>
+    <span class="chip">builds on: Truthful Swiping with an LLM Oracle</span>
+    <span class="chip">ranking model: reciprocal re-ranking</span>
+    <span class="chip">vault note: Truthful Top-k Swiping in Like-Aware Feeds</span>
+  </div>
+  <button class="toggle" id="toggle-all" type="button">Expand all details</button>
+</header>
+
+<section id="short">
+<h2><span class="num">1</span>The short version</h2>
+<ul>
+  <li><strong>Starting point (Lean-checked).</strong> If your likes only act as consent, honest swiping for a top-k user needs feeds that show at most k acceptable profiles. Without an oracle, that caps welfare at about \(2p\) of the optimum for top-1 users. So the ranking has to use likes.</li>
+  <li><strong>Claim A.</strong> With yes/no swipes, "like everyone you'd accept" can never be the best move once more than k of them would match, whatever the platform does with the likes.</li>
+  <li><strong>New target.</strong> Ask for something weaker that a top-k user actually wants: your likes should be your favorites.</li>
+  <li><strong>Claim B.</strong> If everyone in a batch is about equally likely to like you back, which is what an Elo-style band does, your best move is to like your favorites.</li>
+  <li><strong>The feedback rule.</strong> If liking more can only make your future feed worse, you never like someone you don't want.</li>
+  <li><strong>Claim C.</strong> In a "Likes you" queue every like is a sure match, so picking your top k is the best move in every outcome.</li>
+  <li><strong>Together.</strong> One side proposes from banded feeds with at most k likes outstanding; the other side picks from its queue.</li>
+</ul>
+<div class="box plain"><span class="label">In plain words</span>
+<p>You can't get people to say yes to everyone they'd accept. You can get their yeses to be honest about who they like most: show them choices with similar odds, make extra likes cost something, and let the side that answers choose among sure things.</p>
+</div>
+</section>
+
+<section id="symbols">
+<h2><span class="num">2</span>Symbols</h2>
+<p>The model is the vault's strategic model (note <em>Truthful Swiping with an LLM Oracle</em>, Model), placed inside a ranked feed.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>top-k user</td><td>enjoys only their k best matches. Utility is the sum of the k largest values among their matches, minus \(c\) per match. For \(k=1\), one partner.</td></tr>
+<tr><td>\(v_{ij}\)</td><td>how much user \(i\) values profile \(j\)</td></tr>
+<tr><td>\(c_i\)</td><td>what one match costs \(i\): a conversation, a date, or the cost of ghosting it</td></tr>
+<tr><td>acceptable</td><td>\(v_{ij} &gt; c_i\): worth it on its own</td></tr>
+<tr><td>batch \(N\)</td><td>the profiles shown to you together (a feed page or session)</td></tr>
+<tr><td>\(D\)</td><td>the profiles in the batch that you like</td></tr>
+<tr><td>\(A\)</td><td>the acceptable profiles in the batch</td></tr>
+<tr><td>\(R\)</td><td>the shown profiles who would match you: they like you back and the platform allows it. Your matches come from \(D \cap R\).</td></tr>
+<tr><td>\(\varphi\)</td><td>the chance that a shown profile likes you back</td></tr>
+<tr><td>sincere threshold</td><td>like exactly \(A\): everyone you'd accept</td></tr>
+<tr><td>value-monotone</td><td>like your top \(m\) profiles of the batch by value, for some \(m\)</td></tr>
+<tr><td>swipe-local</td><td>your feed, and who can match you, never depend on your own swipes; a like only acts as consent</td></tr>
+<tr><td>dominant (DSIC)</td><td>best in every outcome, whatever the others do</td></tr>
+<tr><td>on average (Bayesian)</td><td>best in expectation, given what you believe about others</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="start">
+<h2><span class="num">3</span>Where we start: likes as consent only</h2>
+<div class="thm"><div class="head"><span class="tag">Theorem 1 and Proposition 6</span><span class="status">vault: Truthful Swiping with an LLM Oracle · Lean-checked</span></div>
+<p>Under a swipe-local policy, honest swiping is dominant for a top-k user exactly when they never see more than k acceptable profiles. Without an oracle, keeping every top-1 user that safe holds welfare to about \(2p\) of the optimum, where \(p\) is the chance a pair is mutually acceptable.</p>
+</div>
+<div class="level">In short</div>
+<p>When your like is used only as consent, it can turn a shown pair into a match and does nothing else. Then the only reason to pass on someone you'd accept is that you might end up with too many matches. A top-k user has that problem as soon as more than k acceptable profiles are on screen. The platform could avoid it by showing each user at most k profiles who could match them, but without an oracle it can't tell who those are, so it has to show very few profiles. Welfare collapses to about \(2p\). This is the reason to design rankings that use likes on purpose.</p>
+<details class="deep"><summary>In detail <span class="hint">statements, the 10/5 example, Lean names</span></summary>
+<div class="deep-body">
+<h4>Theorem 1 (characterization)</h4>
+<p>Call the acceptable profiles you see <em>cost-separable</em> if each of them adds at least \(c\) to every set of the others. Under a swipe-local policy, honest swiping is dominant if the set is always cost-separable, and not dominant if it can fail to be. For top-k users, cost-separable means at most k acceptable profiles. Lean: <code class="lean">sincere_best</code>, <code class="lean">sincere_not_best</code>, <code class="lean">costSeparable_topK_iff</code>, and against every behavior of others <code class="lean">swipeLocal_dsic_topK</code>.</p>
+<div class="box example"><span class="label">The 10/5 example</span>
+<p>A top-1 user with cost 1 initiates toward \(r_1\) (value 10) and \(r_2\) (value 5).</p>
+<ul>
+<li>If both would like back: liking only \(r_1\) earns 9; liking both earns \(10 - 2 = 8\).</li>
+<li>If only \(r_2\) would: liking only \(r_1\) earns 0; liking both earns 4.</li>
+</ul>
+<p>The best swipes depend on what the others will do, so no way of swiping is dominant.</p>
+</div>
+<h4>Proposition 6 (no oracle)</h4>
+<p>Without queries, honest swiping is dominant for a top-k user exactly when they never see more than k profiles who can match them. On a random market where each pair is acceptable with probability \(p\), every such policy earns at most \(2p(1+o(1))\,\mathrm{OPT_{IR}}\) for top-1 users. Lean: <code class="lean">zeroQuery_topK_dsic_iff</code>, <code class="lean">prop6b_policy</code>, <code class="lean">prop6b_asymp</code>.</p>
+<h4>The approximate route (Proposition 4)</h4>
+<p>Under a swipe-local policy, honest swiping loses to the best play in hindsight by exactly \(c\,(|M|-k)^+\), the cost of matches beyond the k-th. So it is an approximate Bayes–Nash equilibrium with error \(c\,\mathbb E(|M|-k)^+\), which is about \(0.37c\) for top-1 users when matches are independent and expected to number at most one. Lean: <code class="lean">topK_regret_le</code>, <code class="lean">topK_regret_attained</code>, <code class="lean">excess_le</code>.</p>
+<h4>What "using likes" means here</h4>
+<p>Any rule under which your feed, your matches, or other people's feeds depend on your likes beyond consent. In the reciprocal re-ranking framework, the budget price \(\mu_i\), the congestion prices \(\lambda_j\), dynamic contention resolution and model retraining all do this.</p>
+</div></details>
+</section>
+
+<section id="target">
+<h2><span class="num">4</span>The new target: your likes are your favorites</h2>
+<div class="thm"><div class="head"><span class="tag">Definition</span><span class="status">value-monotone strategy</span></div>
+<p>On every batch, you like your top \(m\) profiles by value, for some \(m \ge 0\) that may depend on the batch.</p>
+</div>
+<div class="level">In short</div>
+<p>The project so far called a swipe truthful when you like everyone you'd accept. For a top-k user that isn't even what they'd want to do, and Claim A shows no mechanism can make it optimal. The replacement: if you like someone, you also like everyone in that batch you value more. How many you like can vary. The order is the honest part.</p>
+<details class="deep"><summary>In detail <span class="hint">why this target, what it gives up</span></summary>
+<div class="deep-body">
+<ul>
+<li><strong>It is what a top-k user does with sure matches.</strong> With certainty, they take their best k (Claim C).</li>
+<li><strong>It carries real information.</strong> Your likes reveal the top of your ranking within each batch.</li>
+<li><strong>It leaves the number to the mechanism.</strong> Caps, prices and feedback set \(m\). The feedback rule keeps every like above cost, so \(m\) never reaches into profiles you don't want.</li>
+<li><strong>What it gives up.</strong> The platform no longer learns exactly who clears your bar \(c\), only your order. A user may skip someone acceptable because better options are on screen.</li>
+</ul>
+</div></details>
+</section>
+
+<section id="claim-a">
+<h2><span class="num">5</span>Claim A: yes/no swipes can't tell the platform which k you'd keep</h2>
+<div class="thm"><div class="head"><span class="tag">Claim A</span><span class="status">impossibility · informal proof</span></div>
+<p>Take any mechanism, using likes however it wants, in which your input on a batch is the set you like, you get at most k matches from it, nothing is wasted, and the choice among your likes can't see your values. If a batch can contain k+1 acceptable profiles who would all match you, liking everyone you'd accept is not dominant.</p>
+</div>
+<div class="level">In short</div>
+<p>Say more than k people you'd accept would all like you back. The platform either matches you with all of them, so you pay for dates you don't want, or keeps k of them. If it keeps k, it can't tell which you'd keep: a yes on someone you adore looks the same as a yes on someone you barely accept. Whatever rule it uses, sometimes it keeps the wrong one, and then you'd have done better not swiping yes on the one you barely accept.</p>
+<div class="box example"><span class="label">Example</span>
+<p>You're top-1 with cost 1. You're shown Sam (value 10) and Pat (value 2), and both like you back. Suppose the platform keeps whoever liked you first, and that's Pat.</p>
+<ul>
+<li>Liking both gets you Pat: \(2 - 1 = 1\).</li>
+<li>Liking only Sam gets you \(10 - 1 = 9\).</li>
+</ul>
+<p>A different rule just needs different values. It can't see them, so some values make it pick wrong.</p>
+</div>
+<details class="deep"><summary>In detail <span class="hint">assumptions, proof, ways out, why rewards can't fix it</span></summary>
+<div class="deep-body">
+<h4>Assumptions about the mechanism, on one batch</h4>
+<ol>
+<li><strong>Yes/no input:</strong> your only message is the set \(D\) you like.</li>
+<li><strong>Cap:</strong> you get at most k matches from the batch, all from \(D \cap R\).</li>
+<li><strong>No waste:</strong> if at most k of your likes would match, they all do.</li>
+<li><strong>Blind to values:</strong> which matches are kept may depend on \(D\), \(R\), timing, coins and others' actions, but not on your values beyond \(D\).</li>
+</ol>
+<h4>Proof</h4>
+<ol class="steps">
+<li>Let \(M\) be what you keep when you like \(A\). \(M\) has at most k members and \(A \cap R\) has at least k+1, so some acceptable would-match \(y\) is not in \(M\).</li>
+<li>The rule can't see values, so \(M\) stays the same if your values change while \(A\) stays your acceptable set. Make \(y\) your favorite. If \(M\) has k members, pick one, \(z\), and make it barely acceptable.</li>
+<li>Deviate: like \(M - z + y\), or \(M + y\) if \(M\) had fewer than k members. At most k of these would match, so by No waste they all do.</li>
+<li>You gain \(v_y - v_z &gt; 0\), or \(v_y - c &gt; 0\). This uses others who like you back no matter what, and a dominant strategy has to be best against that too. \(\square\)</li>
+</ol>
+<h4>Ways out, and what each costs</h4>
+<div class="tablewrap"><table>
+<thead><tr><th>Drop this</th><th>What you get</th><th>Cost</th></tr></thead>
+<tbody>
+<tr><td>Cap</td><td>more than k matches can form</td><td>Theorem 1(b): extra matches cost \(c\) and add nothing</td></tr>
+<tr><td>No waste</td><td>the mechanism throws matches away to punish small like sets</td><td>lost matches</td></tr>
+<tr><td>Blind to values</td><td>the platform knows your values</td><td>an oracle (screened DH)</td></tr>
+<tr><td>Yes/no input</td><td>ranked likes, or tiers such as roses</td><td>a richer interface than swipes</td></tr>
+<tr><td>k+1 would-matches in a batch</td><td>show at most k profiles who could match</td><td>Proposition 6: about \(2p\) of the optimum for top-1</td></tr>
+</tbody></table></div>
+<h4>Can a later reward or penalty fix it?</h4>
+<p>Suppose the platform pays you back later with \(F(n)\), which depends only on how many profiles \(n\) you like in the batch. Take \(k=1\) and a small \(\varepsilon &gt; 0\).</p>
+<ul>
+<li><strong>Batch P:</strong> \(n+1\) acceptable profiles, all of whom would match. The platform keeps one; call it \(z\) and make it worth \(c+\varepsilon\), and make another, \(y\), very valuable. Liking all of them earns \(\varepsilon + F(n+1)\). Liking only \(y\) earns \((v_y - c) + F(1)\). Liking all survives only if \(F(n+1) - F(1) \ge v_y - v_z\).</li>
+<li><strong>Batch Q:</strong> one profile worth \(c+\varepsilon\) and \(n\) worth \(c-\varepsilon\), all of whom would match. Liking just the first earns \(\varepsilon + F(1)\). Liking all \(n+1\) earns at least \(-\varepsilon + F(n+1)\), whoever is kept. Liking just the first survives only if \(F(n+1) - F(1) \le 2\varepsilon\).</li>
+</ul>
+<p>\(v_y - v_z\) can be as large as you like and \(\varepsilon\) as small, so no \(F\) satisfies both.</p>
+</div></details>
+</section>
+
+<section id="claim-b">
+<h2><span class="num">6</span>Claim B: equal odds make you like your favorites</h2>
+<div class="thm"><div class="head"><span class="tag">Claim B</span><span class="status">on average · informal proof</span></div>
+<p>If everyone in a batch likes you back independently with the same probability, and your future depends on the batch only through how many you liked and how many matched, then some best response likes your top \(m\) by value.</p>
+</div>
+<div class="level">In short</div>
+<p>Why would you skip someone you prefer? Because they're less likely to like you back, so you aim for people within reach. If everyone in your batch is about equally likely to like you back, that reason is gone. Moving a like from someone you value less to someone you value more can only help, so your best move is to like your top few. An Elo-style band does this: it fills your feed with people of similar desirability, so the odds of a like back are similar.</p>
+<div class="box example"><span class="label">Example</span>
+<p>You're top-1 with one like left.</p>
+<div class="tablewrap"><table>
+<thead><tr><th></th><th>Value (net)</th><th class="num">Likes back</th><th class="num">Expected net</th></tr></thead>
+<tbody>
+<tr><td>Sam</td><td>10 (9)</td><td class="num">10%</td><td class="num">0.9</td></tr>
+<tr><td>Pat</td><td>3 (2)</td><td class="num">90%</td><td class="num">1.8</td></tr>
+<tr><td>Sam, equal odds</td><td>10 (9)</td><td class="num">50%</td><td class="num">4.5</td></tr>
+<tr><td>Pat, equal odds</td><td>3 (2)</td><td class="num">50%</td><td class="num">1.0</td></tr>
+</tbody></table></div>
+<p>With unequal odds you like Pat even though you prefer Sam. With equal odds you like Sam.</p>
+</div>
+<details class="deep"><summary>In detail <span class="hint">setup, swap proof, where each assumption is used</span></summary>
+<div class="deep-body">
+<h4>Setup</h4>
+<ul>
+<li>A batch \(N\). Each profile in it would like you back independently with the same probability \(\varphi\), whatever you do.</li>
+<li>You choose \(D \subseteq N\), possibly limited by free like slots. Your matches from the batch are \(D \cap R\).</li>
+<li>The platform's later treatment of you (feeds, prices) depends on this batch only through how many you liked and how many matched.</li>
+<li>Your utility is the top-k sum of your match values minus \(c\) per match. Any utility that rises with the values of your matches works too.</li>
+</ul>
+<h4>Proof: a swap argument</h4>
+<ol class="steps">
+<li>Take a \(D\) where you like \(x\) but not \(y\), and \(v_y &gt; v_x\). Let \(D' = D - x + y\). It has the same size, so it fits the same slots.</li>
+<li>Think of each profile's "likes me back" as a coin. Give \(y\) the coin \(x\) had, and \(x\) the coin \(y\) had. The coins are independent with the same \(\varphi\), so this relabeling changes no probabilities, and you can compare \(D\) and \(D'\) outcome by outcome.</li>
+<li>In every outcome, \(D'\) matches you with the same people as \(D\), except that \(y\) appears wherever \(x\) did.</li>
+<li>The numbers of likes and matches are the same, so the platform treats you the same afterwards, and you can play the same way from then on.</li>
+<li>Your final match set differs only by \(y\) in place of \(x\). The cost is the same and every value is at least as high, so the top-k sum is at least as high. \(D'\) does at least as well in every outcome, hence on average.</li>
+<li>Repeat until no liked profile has a more valuable unliked one. What remains is your top \(m\). \(\square\)</li>
+</ol>
+<h4>Where each assumption is used</h4>
+<ul>
+<li><strong>Equal odds</strong> is step 2. At 10% against 90%, the two coins differ and the example above breaks the claim.</li>
+<li><strong>Only counts carry forward</strong> is step 4. If your future depends on <em>which</em> profiles you liked, for example through retraining on your choices, a like can steer your future feed, and you might like someone for that reason.</li>
+<li><strong>It is a statement about averages.</strong> In an outcome where your favorite doesn't like you back, liking someone else would have been better. Claim A says that can't be avoided with yes/no swipes.</li>
+</ul>
+<h4>Open</h4>
+<p>Real bands are only approximately equal. If \(\varphi\) varies by a factor \(1 \pm \delta\) within a batch, liking your favorites should lose only a small amount that depends on \(\delta\). That bound isn't derived yet.</p>
+<h4>In the re-ranking model</h4>
+<p>The score \(S_{ij} = \varphi_{ij}\big(\varphi_{ji}(q_{ij} - \lambda_j) - \mu_i\big)\) sorts with \(\varphi_{ji}\) inside, so one feed mixes very different odds of a like back. Banding shows \(i\) only profiles whose \(\varphi_{ji}\) is close to a level set for \(i\); in the fluid LP that is a constraint on which exposures \(y_{ij}\) may be positive. The cost is the welfare lost to narrower feeds, which simulation can measure.</p>
+</div></details>
+</section>
+
+<section id="feedback">
+<h2><span class="num">7</span>The feedback rule: penalties, never rewards, for liking more</h2>
+<div class="thm"><div class="head"><span class="tag">Feedback rule</span><span class="status">on average · informal proof</span></div>
+<p>In Claim B's setting, if your future depends only on how many you liked and more likes never make it better, then some best response likes no unacceptable profile. With Claim B: some best response likes your top \(m\), all of them acceptable.</p>
+</div>
+<div class="level">In short</div>
+<p>Platforms react to likes. If liking more people can only make your future feed worse (fewer cards, less visibility), you'd never spend a like on someone you don't want, because nothing comes of it. The danger is feedback where liking more can help you: then people like profiles they don't want, to game the feed, and those matches are the ones that get ghosted. The re-ranker's budget price \(\mu_i\) is the risky kind, because liking more reshuffles your future feed and sometimes in your favor.</p>
+<details class="deep"><summary>In detail <span class="hint">proof, the two-session example, a penalty that works</span></summary>
+<div class="deep-body">
+<h4>Setup</h4>
+<p>As in Claim B: batch matches are \(D \cap R\), and slots keep you from going over k. Your best expected future utility is \(F(n)\) when you like \(n\) profiles, and \(F\) never increases as \(n\) grows.</p>
+<h4>Proof</h4>
+<p>Take a \(D\) that contains an unacceptable \(w\) (\(v_w &lt; c\)) and drop it.</p>
+<ul>
+<li><strong>This batch.</strong> If \(w\) would have matched, you lose a match whose net effect was at most \(v_w - c &lt; 0\): adding \(w\) raises your top-k sum by at most \(v_w\) and costs \(c\). Otherwise nothing changes.</li>
+<li><strong>The future.</strong> One fewer like, and \(F(n-1) \ge F(n)\).</li>
+</ul>
+<p>Both changes are weak improvements. To combine with Claim B, start from a top-\(m\) best response. Unacceptable likes sit at the bottom of it, and dropping them leaves a shorter top list without hurting you. \(\square\)</p>
+<h4>Why \(\mu_i\) fails the rule</h4>
+<p>The price updates as \(\mu_i \leftarrow \max\{0,\ \mu_i + \eta(\text{likes} - B_i/T)\}\) and enters scores as \(-\varphi_{ij}\mu_i\). A higher \(\mu_i\) therefore reorders your feed, pushing down the profiles you're predicted to like most. Whether that helps or hurts depends on your values, so \(F\) isn't decreasing for everyone.</p>
+<div class="box example"><span class="label">Two sessions, checked numerically</span>
+<p>\(\eta = 0.5\), \(B_i/T = 0.2\), \(\mu_i\) starts at 0. Liking card \(a\) in session 1 sets \(\mu_i = 0.4\); passing leaves 0. Session 2 shows one card, \(b\) or \(c\), with scores \(S_{ib} = 0.9(0.5 - \mu_i)\) and \(S_{ic} = 0.3(1 - \mu_i)\). At \(\mu_i = 0\), \(b\) leads (0.45 to 0.30). At \(\mu_i = 0.4\), \(c\) leads (0.18 to 0.09). Everyone likes back.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Net values</th><th>Honest play</th><th class="num">Earns</th><th>Deviation</th><th class="num">Earns</th></tr></thead>
+<tbody>
+<tr><td>\(a=-0.5,\ b=-1,\ c=+5\)</td><td>pass \(a\), shown \(b\), pass</td><td class="num">0</td><td>like \(a\), shown \(c\), like</td><td class="num">4.5</td></tr>
+<tr><td>\(a=+0.5,\ b=+5,\ c=-1\)</td><td>like \(a\), shown \(c\), pass</td><td class="num">0.5</td><td>pass \(a\), shown \(b\), like</td><td class="num">5</td></tr>
+</tbody></table></div>
+<p>In the first row a like on a profile you don't want pays off; in the second, a pass on one you do.</p>
+</div>
+<h4>A penalty that works</h4>
+<p>Make the reaction hurt every user: fewer cards next session, or lower placement in other people's feeds, after over-liking. Both depend only on the count and never help, so they satisfy the rule.</p>
+</div></details>
+</section>
+
+<section id="claim-c">
+<h2><span class="num">8</span>Claim C: in a "Likes you" queue, pick your top k</h2>
+<div class="thm"><div class="head"><span class="tag">Claim C</span><span class="status">dominant within a round · informal proof</span></div>
+<p>A responder who picks at most \(s\) people from a queue of profiles that already liked them does best, in every outcome, by picking their top \(\min(s, \text{number acceptable})\) by value.</p>
+</div>
+<div class="level">In short</div>
+<p>Everyone in this queue already liked you, so every yes is a guaranteed match. There's no gamble and nobody left to react, so you pick the people you like most, up to k, and only ones you actually want. Nothing anyone else does can make a different pick better.</p>
+<details class="deep"><summary>In detail <span class="hint">setup, proof, the limit across rounds</span></summary>
+<div class="deep-body">
+<h4>Setup</h4>
+<p>At the end of a round, a responder sees the queue \(Q\) of people who liked them and picks at most \(s\), where \(s\) is k minus their current matches. Each pick is a sure match, and nobody acts after the pick in that round.</p>
+<h4>Proof</h4>
+<p>This is Claim B with \(\varphi = 1\). Every coin lands on yes, so the swap argument holds outcome by outcome and no averaging is needed. Among top-\(m\) picks, adding an acceptable profile while you're below k adds \(v - c &gt; 0\), and adding an unacceptable one subtracts. So you take your top acceptable profiles, up to \(s\). The queue is already fixed, so nothing others do can change the comparison. \(\square\) It is the same argument as Proposition 1(a) of the vault note <em>Strategic Users in the Dating Heuristic Framework</em>.</p>
+<h4>The limit</h4>
+<p>Across rounds you might wait for a better queue next time. That only changes how many you pick now, and your favorites still come first. So picking your top k is dominant within a round and value-monotone across rounds.</p>
+<h4>Why initiators can't have the same guarantee</h4>
+<p>The queue is certain only because the initiators liked first without knowing the answer, and Claim A applies to them. What they get is Claim B and the feedback rule: favorites, on average. A classic result points the same way: no two-sided matching mechanism is strategy-proof for everyone, voluntary and efficient at once (Background).</p>
+</div></details>
+</section>
+
+<section id="together">
+<h2><span class="num">9</span>Putting it together</h2>
+<p>The results suggest a one-directional design: one side proposes, the other answers, as in Rios and Torrico's one-directional DH, with the re-ranker's long feeds and prices. The vault note <em>Gender-Skewed Reciprocal Matching and Asymmetric Pacing</em> proposes the same structure for skewed markets, with the short side picking from a pool of people who already liked them; Claim C is the incentive reason it works for that side.</p>
+<div class="flow" role="group" aria-label="Design flow">
+  <div class="node"><span class="role">Initiator</span>Discovery feed ranked by the fluid LP, banded so reply odds are similar<span class="tag-claim">Claim B</span></div>
+  <div class="arrow"><span class="glyph" aria-hidden="true">&rarr;</span><span>likes, at most k outstanding</span></div>
+  <div class="node"><span class="role">Responder</span>"Likes you" queue, decided at the end of the round<span class="tag-claim">Claim C</span></div>
+  <div class="arrow"><span class="glyph" aria-hidden="true">&rarr;</span><span>picks their top k</span></div>
+  <div class="node"><span class="role">Outcome</span>Matches, never more than k for anyone, so no forced extra dates</div>
+</div>
+<div class="under">
+  <div class="node"><span class="tag-claim">Feedback rule</span>Reactions to likes depend only on how many you like, and only ever as a penalty. \(\lambda_j\) stays, since it comes from likes across many users.</div>
+  <div class="node"><span class="tag-claim">Claim A</span>Why initiators get "favorites on average" and not a dominant strategy: yes/no swipes can't do better.</div>
+</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Result</th><th>About whom</th><th>What it says</th><th>Strength</th></tr></thead>
+<tbody>
+<tr><td>Theorem 1, Prop. 6</td><td>any top-k user, likes as consent</td><td>honest only with at most k acceptable on screen; without an oracle, about \(2p\) welfare</td><td>Lean-checked</td></tr>
+<tr><td>Claim A</td><td>anyone who could get more than k matches</td><td>with yes/no swipes, "like everyone acceptable" can't be optimal</td><td>impossibility</td></tr>
+<tr><td>Claim B</td><td>initiators in banded feeds</td><td>best response: like your top \(m\)</td><td>on average</td></tr>
+<tr><td>Feedback rule</td><td>everyone</td><td>count-only penalties keep likes above cost</td><td>on average</td></tr>
+<tr><td>Claim C</td><td>responders with a queue</td><td>pick your top k acceptable</td><td>every outcome, within a round</td></tr>
+</tbody></table></div>
+<div class="box caution"><span class="label">What the design gives up</span>
+<p>A dominant strategy for initiators, which Claim A rules out with yes/no swipes, and some welfare lost to banding. No welfare guarantee has been proved for the design yet (section 11).</p>
+</div>
+</section>
+
+<section id="assumptions">
+<h2><span class="num">10</span>Assumptions and what each one costs</h2>
+<dl class="assume">
+<div><dt>Top-k utility with a cost per match</dt><dd>Your utility is the sum of your k best match values minus \(c\) per match.<span class="why"><b>Used by</b>every claim</span><span class="cost"><b>Cost</b>leaves out utilities where an extra match has some small value, and values that depend on the partner's interest in you</span></dd></div>
+<div><dt>Independent values and replies</dt><dd>Values are independent across pairs; whether each shown profile likes you back is an independent coin.<span class="why"><b>Used by</b>Claim B, step 2</span><span class="cost"><b>Cost</b>correlated tastes, or a feed whose attention decay makes later cards depend on earlier ones, need a new argument</span></dd></div>
+<div><dt>Equal reply odds within a batch</dt><dd>Every profile in a batch has the same \(\varphi\).<span class="why"><b>Used by</b>Claim B</span><span class="cost"><b>Cost</b>banding narrows feeds; real bands are only approximately equal (the \(\delta\)-version is open)</span></dd></div>
+<div><dt>Only counts carry forward</dt><dd>Your future depends on a batch only through how many you liked and how many matched.<span class="why"><b>Used by</b>Claim B, the feedback rule</span><span class="cost"><b>Cost</b>no retraining on which profiles you liked within the horizon; the effect of your like on \(\lambda_j\) is treated as negligible, as in a large market</span></dd></div>
+<div><dt>Feedback is a penalty</dt><dd>Liking more never makes your future better.<span class="why"><b>Used by</b>the feedback rule</span><span class="cost"><b>Cost</b>\(\mu_i\) must act as a uniform penalty, not a reordering</span></dd></div>
+<div><dt>At most k likes outstanding</dt><dd>An initiator holds at most k unanswered likes; a slot frees when a like is declined.<span class="why"><b>Used by</b>the design (no overshoot)</span><span class="cost"><b>Cost</b>initiators can't hedge with many likes at once, which slows matching</span></dd></div>
+<div><dt>One side proposes, the other picks</dt><dd>Responders don't initiate; initiators don't pick from queues.<span class="why"><b>Used by</b>Claim C</span><span class="cost"><b>Cost</b>the responding side can't reach out first</span></dd></div>
+<div><dt>Queues are decided at the end of a round</dt><dd>A responder picks once the round's likes are in.<span class="why"><b>Used by</b>Claim C</span><span class="cost"><b>Cost</b>delay before matches form</span></dd></div>
+</dl>
+</section>
+
+<section id="open">
+<h2><span class="num">11</span>Open questions and next steps</h2>
+<ol>
+<li><strong>Welfare of the design.</strong> Compare it with the best policy facing users who like their favorites. Users' thresholds depend on the feed, a fixed point that is already open as Proposition 4(d) of the truthful-swiping note.</li>
+<li><strong>Approximate bands.</strong> Bound the loss from liking your favorites when reply odds vary by \(1 \pm \delta\) within a batch.</li>
+<li><strong>The cost of banding.</strong> Measure it on the speed-dating data with the re-ranking simulator.</li>
+<li><strong>Lean.</strong> Claims A–C are small and in the style of Theorem 1, so they should formalize alongside <code class="lean">TruthfulSwiping.lean</code> and <code class="lean">SwipeLocal.lean</code>.</li>
+<li><strong>Richer messages.</strong> Ranked likes or roses with deferred acceptance, and their approximate truthfulness in large markets (Background).</li>
+</ol>
+</section>
+
+<section id="background">
+<h2><span class="num">12</span>Background from outside the vault</h2>
+<p class="small">General knowledge, not yet ingested as vault sources. Ingest the papers before citing them in the writeup.</p>
+<ul>
+<li><strong>Alcalde and Barberà (1994).</strong> In one-to-one two-sided matching, no mechanism is strategy-proof, individually rational and Pareto efficient at once. Something has to give, which is why the design keeps a dominant strategy only for responders.</li>
+<li><strong>Deferred acceptance.</strong> Strategy-proof for the proposing side when each proposer wants one match (Dubins and Freedman 1981; Roth 1982), as the vault's <em>Deferred Acceptance</em> note records.</li>
+<li><strong>Large markets.</strong> With short preference lists, the receiving side of deferred acceptance has little to gain from lying (Immorlica and Mahdian 2005; Kojima and Pathak 2009; Ashlagi, Kanoria and Leshno 2017). Feeds with like caps produce short lists.</li>
+<li><strong>Elo in dating apps.</strong> Apps have used hidden desirability scores learned from likes received; the vault's Kanoria and Saban source note mentions Tinder's.</li>
+</ul>
+</section>
+
+<footer>
+<p>Companion to the vault note <em>Truthful Top-k Swiping in Like-Aware Feeds</em> (2026-11-06). Claims A–C and the feedback rule are informal proofs and are not machine-checked. Theorem 1, Propositions 4 and 6, and their Lean names come from the vault note <em>Truthful Swiping with an LLM Oracle</em> and <code>lean/README.md</code>.</p>
+</footer>
+</main>
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById('toggle-all');
+  var all = Array.prototype.slice.call(document.querySelectorAll('details.deep'));
+  function sync() {
+    var allOpen = all.every(function (d) { return d.open; });
+    btn.textContent = allOpen ? 'Collapse all details' : 'Expand all details';
+  }
+  btn.addEventListener('click', function () {
+    var open = !all.every(function (d) { return d.open; });
+    all.forEach(function (d) { d.open = open; });
+    sync();
+  });
+  all.forEach(function (d) { d.addEventListener('toggle', sync); });
+})();
+</script>
+</body>
+</html>

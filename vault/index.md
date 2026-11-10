@@ -1,7 +1,7 @@
 ---
 type: map
 created: 2026-01-01
-updated: 2026-10-26
+updated: 2026-11-09
 origin: claude
 ---
 # Index
@@ -45,3 +45,6 @@ Catalog of the vault. Every note in `notes/`, `sources/`, and `maps/` gets one l
 - [[Position-Aware Reciprocal Re-Ranking and Dual Pacing]] — Regret and error bounds vs global fluid optimum, comparative analysis against Hinge pLMC, DH-int, and Gale-Shapley, four theoretical improvements (AdaGrad, IPS debiasing, dynamic OCRS, safe budget pacing)
 - [[Next-Generation Continuous Reciprocal Re-Ranking]] — Bounded O(1) regret via periodic fluid re-solving, stochastic competitive ratios beyond 1-1/e via Top-k Poisson scaling and Dynamic OCRS, complexity reduction to O(M+K log K) via QuickSelect, smooth continuous softmax re-ranking with Nesterov accelerated dual prox O(1/t^2), closed-loop stability via industrial PID feedback dual pacing
 - [[Gender-Skewed Reciprocal Matching and Asymmetric Pacing]] — Empirical data for 3:1 male-to-female ratio, mathematical behavior of female shadow price surge lambda_w* and slack male shadow prices lambda_m*=0, theoretical modifications: asymmetric like budgets B_m << B_w, inverted proposal flow, and asymmetric Dynamic OCRS; simulation results on 75M x 25W market
+- [[Truthful Top-k Swiping in Like-Aware Feeds]] — incentives when the ranking may use likes: the re-ranker as written isn't truthful; with yes/no likes no mechanism makes the sincere threshold dominant for top-k (Claim A); value-monotone likes from equal reply odds (Claim B), count-only penalties, and sure-match queues (Claim C); a one-directional design (informal, seed)
+- [[The Live-Set Theorem for Truthful Swiping]] — headline result: with yes/no swipes and a value-blind platform, sincere swiping is dominant iff matches are the acceptable profiles in a live set fixed without the user's swipes (at most k for top-k; independent sets for matroids; one profile for classes containing top-1); two-cost model (adopted): the barrier stays for every d>0 but deviating gains only d per dropped match; general costs move the cap to the first rise in marginal cost; others' likes lift zero-query truthful welfare from 2p to about sqrt(p) (informal, brute-force checked, seed)
+- [[Welfare of Truthful Feeds in the Two-Cost Model]] — the adopted model with a conversation rule (a match counts only if both keep it): Theorems A and B for conversations, second chances break truthfulness; Theorem C: capped initiators plus a responder queue get c_k of the best with exactly truthful initiators (c_k c_m when responders look at only m admirers, 0.18 for pair welfare); Proposition T: long feeds on both sides reach a constant share on the random market against sqrt(p) (informal, brute-force checked, seed)

@@ -149,3 +149,27 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-11-06] query | Gender-Skewed Reciprocal Matching and Asymmetric Pacing
 - + [[Gender-Skewed Reciprocal Matching and Asymmetric Pacing]] (Empirical data for 3:1 male-to-female ratio, mathematical behavior of female shadow price surge lambda_w* and slack male shadow prices lambda_m*=0, theoretical modifications: asymmetric like budgets B_m << B_w, inverted proposal flow, and asymmetric Dynamic OCRS; simulation results on 75M x 25W market)
+
+## [2026-11-06] query | Truthful Top-k Swiping in Like-Aware Feeds
+- + [[Truthful Top-k Swiping in Like-Aware Feeds]] (incentives for top-k users when the ranking uses likes: why the re-ranker's DSIC claim fails, Claims A–C, the feedback rule, a one-directional design; informal proofs; records a conflict with the re-ranking and gender-skew notes)
+- + `attachments/Top-k Swiping Incentives Guide.html` (explains every result in short and in detail)
+
+## [2026-11-09] query | The Live-Set Theorem for Truthful Swiping
+- + [[The Live-Set Theorem for Truthful Swiping]] (Theorem A: sincere swiping is dominant iff matches are the acceptable profiles in a live set fixed without the user's swipes; Theorem A' for platform coins; valuation classes; Theorem B and the two-cost model; Proposition P: others' likes give sqrt(p) on the random market; brute force in `data/scripts/live_set_check.py`)
+- ~ [[Truthful Top-k Swiping in Like-Aware Feeds]] (Claim A points to the new note)
+- + `inbox/lu2026conversations.pdf` (Lu, Turkel, Chen & Afghahi, SIGIR 2026; copied in, not ingested yet)
+- ~ index
+
+## [2026-11-09] query | Welfare of Truthful Feeds in the Two-Cost Model
+- + [[Welfare of Truthful Feeds in the Two-Cost Model]] (adopted model: costs c and d, a match counts only if both users keep it; Proposition 1: Theorems A and B for conversations and the fallback counterexample; Theorem C: capped initiators and a responder queue; Proposition T: long feeds on the random market)
+- ~ [[The Live-Set Theorem for Truthful Swiping]] (two-cost model marked adopted; new section on other cost functions with Theorem B'; evidence and gaps updated)
+- ~ `data/scripts/live_set_check.py` (checks E, F, G)
+- ~ index
+
+## [2026-11-09] query | Responder queue: partial scrolling and pair welfare
+- ~ [[Welfare of Truthful Feeds in the Two-Cost Model]] (Theorem C': responders who look at the first m admirers, two-cap lemma, factor c_k c_m; Theorem D: thinned queue gets 1/4 of the pair LP, best of two gets 1/(4 + 1/c_k); net-of-drop-cost remark; gaps updated)
+- ~ `data/scripts/live_set_check.py` (check H)
+- ~ index
+
+## [2026-11-09] lean | Theorems A and B formalized
+- ~ [[The Live-Set Theorem for Truthful Swiping]] (records the Lean status: Theorems A and B for top-k and additive users are proved in `lean/DatingAlgo/LiveSet.lean`; gaps list what is not formalized)
