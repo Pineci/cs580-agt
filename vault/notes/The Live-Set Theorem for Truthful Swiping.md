@@ -2,7 +2,7 @@
 type: synthesis
 question: "With yes/no swipes and a platform that cannot see values, which mechanisms make sincere swiping a dominant strategy? Does letting the feed react to likes, or charging less for dropped matches, lift the limit of k acceptable profiles for top-k users?"
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-10
 tags: [dating/platforms, game-theory/incentives, matching/quality, research/project]
 aliases: [live-set theorem, Theorem A, Theorem B, top-k barrier, binary-swipe barrier, live set, own-swipe independence, two-cost model, drop cost, general cost functions, cyclic-priority mechanism]
 sources: ["[[Rios 2026 - The Dating Heuristic]]"]
@@ -117,7 +117,7 @@ $$\sum_{r>t^*}\min\big(d,\ c_r-v_{(r)}\big)\ \le\ \sum_{r=k_1+1}^{m}\min\big(d,\
 - **(c) Comparison.** Swipe-local policies with display caps get at most $2p$ (Proposition 6(b)). The gain needs feeds of length about $1/\sqrt p$ and both sides to be selective: if one side accepts everyone, the bound in (a) is $p$.
 
 ### Ways around the theorem
-- **An oracle or other outside information about values:** screened DH ([[Truthful Swiping with an LLM Oracle]]).
+- **An oracle or other outside information about values:** screened DH ([[Truthful Swiping with an LLM Oracle]]). With the user's values on the live set, the platform can keep the best $k$ mutual likes itself and the cap disappears ([[Queries and the Live-Set Theorem]], Theorem E).
 - **Richer messages:** ranked likes or roses ([[Preference Signaling]]).
 - **A different truthful action:** pick at most $k$ from a queue of sure matches (Claim C of [[Truthful Top-k Swiping in Like-Aware Feeds]]).
 - **Approximate truthfulness:** Theorem B, or Bayesian best responses (Claim B there).

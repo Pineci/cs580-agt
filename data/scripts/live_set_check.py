@@ -1,5 +1,6 @@
 """Brute-force checks for the vault notes "The Live-Set Theorem for Truthful Swiping"
-(checks A-E) and "Welfare of Truthful Feeds in the Two-Cost Model" (checks F-G).
+(checks A-E), "Welfare of Truthful Feeds in the Two-Cost Model" (checks F-H) and
+"Queries and the Live-Set Theorem" (checks I-J).
 
 One user, a set N of profiles, binary swipes, and a platform that cannot see the user's
 values. With the platform's coins and the other users' strategies fixed, the platform is a
@@ -34,6 +35,14 @@ Checks
      keeps k, and the whole mechanism against its LP bound. Theorem D: in a thinned queue
      every acceptable admirer is kept with probability at least 1/2 whatever the responder
      prefers, so pair welfare is at least 1/4 of the pair LP.
+  I. Queried values. Theorem E: if the platform keeps a user's best k acceptable mutual
+     likes by value, sincere swiping is dominant under a live set of any size and gives the
+     user's full-information optimum; the lazy version queries only on overshoot; the slot
+     rule for unqueried live profiles. Theorem F: a query budget B is a window of B
+     admirers; conversations and expected queries for one responder.
+  J. Theorem G: the screened queue. Initiator feeds are screened by queries under per-user
+     budgets, the kept profiles are chosen by a uniformly random rule, and conversations
+     are compared with the LP bound, on random markets and on the symmetric random market.
 
 Run from the repository root:  python3 data/scripts/live_set_check.py
 """
@@ -706,6 +715,162 @@ def check_attention_and_pairs(seed=13):
           f">= {worst:.3f} (guarantee 0.25)")
 
 
+# ------------------------------------------------------------------------ queried values
+def check_queries(seed=17):
+    print("I. Queried values (Theorems E and F)")
+    rng = np.random.default_rng(seed)
+    n = 5
+    full = (1 << n) - 1
+
+    def best_k(q, cand, k):
+        """The k most valuable members of cand (a bitmask)."""
+        order = sorted((i for i in range(n) if cand >> i & 1), key=lambda i: -q[i])[:k]
+        return sum(1 << i for i in order)
+
+    lazy_saved = 0
+    for _ in range(3000):
+        k = int(rng.integers(1, 4))
+        d = float(rng.choice([0.0, 0.3, 1.0])) * C
+        q = tuple(rng.uniform(0, 3, n))
+        R = int(rng.integers(0, 1 << n))                 # would match if liked; any size
+        acc = sum(1 << i for i in range(n) if q[i] > C)
+        u = lambda M: utility(("topk", k), q, M, d)
+        # (1) Keep-best: the platform knows q on the live set.
+        keep = lambda D: best_k(q, D & R & acc, k)
+        sincere = u(keep(acc))
+        assert all(u(keep(D)) <= sincere + 1e-9 for D in range(1 << n))
+        assert abs(sincere - max(u(W) for W in submasks(R))) < 1e-9   # full-information optimum
+        # (2) Lazy: query only when more than k liked profiles would match.
+        lazy = lambda D: (D & R) if popcount(D & R) <= k else best_k(q, D & R & acc, k)
+        assert abs(u(lazy(acc)) - sincere) < 1e-9
+        assert all(u(lazy(D)) <= sincere + 1e-9 for D in range(1 << n))
+        lazy_saved += popcount(acc & R) <= k
+        # (3) Slots: unqueried live profiles S_U keep a slot each; queried ones fill the rest.
+        Qset = int(rng.integers(0, 1 << n))
+        S_U = best_k(tuple(rng.uniform(size=n)), R & ~Qset & full, k)   # at most k, value-blind
+        S_Q = R & Qset
+        slots = lambda D: (D & S_U) | best_k(q, D & S_Q & acc, k - popcount(S_U))
+        assert all(u(slots(D)) <= u(slots(acc)) + 1e-9 for D in range(1 << n))
+    print(f"   keep-best, lazy and slot rules: sincere swiping dominant in 3000 random cases "
+          f"(5 profiles, every set of likes); keep-best gives the full-information optimum; "
+          f"the lazy rule needed no query in {lazy_saved} of them")
+
+    # Reusing a free slot breaks it: k = 1, Alice queried (5), Bob not (1.1).
+    qv = (5.0, 1.1)
+    reuse = lambda like_bob: "Bob" if like_bob else "Alice"
+    pay = {"Alice": qv[0] - C, "Bob": qv[1] - C}
+    assert pay[reuse(False)] > pay[reuse(True)]
+    # A window of the first B *liked* admirers is manipulable; the first B admirers is not.
+    vals = (2.0, 5.0)                                   # admirers in queue order
+    first_liked = lambda likes: next((i for i in range(2) if likes[i]), None)
+    assert vals[first_liked((False, True))] > vals[first_liked((True, True))]
+    print("   counterexamples: giving a passed unqueried slot to a queried profile, and "
+          "windows that count only liked admirers, both reward insincere swipes")
+
+    # Theorem F for one top-1 responder: 12 admirers, each accepted with probability a.
+    a, k = 0.3, 1
+    print("   one top-1 responder, 12 admirers, acceptance 0.3, query budget B:")
+    for B in (1, 2, 4, 8, 12):
+        conv = two_cap_value([1.0] * 12, [a] * 12, k, B)
+        assert abs(conv - (1 - (1 - a) ** B)) < 1e-12
+        queries = sum(L * math.comb(B, L) * a ** L * (1 - a) ** (B - L) for L in range(k + 1, B + 1))
+        assert queries <= B * a + 1e-12
+        print(f"     B={B:<2}: conversation with probability {conv:.3f}, expected queries {queries:.2f}")
+
+
+# ------------------------------------------------------------------------ screened queue
+def keep_probability(pi, j, cap):
+    """Uniform rule: P[j is among the min(cap, #proposed) kept | j proposed], when the other
+    profiles are proposed independently with probabilities pi."""
+    dist = np.zeros(len(pi))
+    dist[0] = 1.0
+    for l, pr in enumerate(pi):
+        if l != j:
+            dist[1:] = dist[1:] * (1 - pr) + dist[:-1] * pr
+            dist[0] *= 1 - pr
+    return float(sum(min(1.0, cap / (1 + m)) * dist[m] for m in range(len(dist))))
+
+
+def check_screened_queue(seed=19):
+    print("J. Theorem G: the screened queue")
+    rng = np.random.default_rng(seed)
+    worst = math.inf
+    for _ in range(200):
+        nI, nJ = int(rng.integers(2, 6)), int(rng.integers(2, 5))
+        kI, kJ = rng.integers(1, 3, nI), rng.integers(1, 3, nJ)
+        pIJ, pJI = rng.uniform(0.05, 1, (nI, nJ)), rng.uniform(0.05, 1, (nJ, nI))
+        BJ = rng.choice([0.0, 0.5, 2.0, 10.0], nJ)    # calls of responder j's oracle
+        BI = rng.choice([0.0, 0.5, 2.0, 10.0], nI)    # calls of initiator i's oracle
+        npair = nI * nJ
+        idx = lambda kind, i, j: kind * npair + i * nJ + j     # kinds: 0 u, 1 tau, 2 s1, 3 g, 4 s2
+        nv = 5 * npair + nJ
+        A, b = [], []
+        def row(entries, rhs):
+            r = np.zeros(nv)
+            for col, val in entries:
+                r[col] += val
+            A.append(r); b.append(rhs)
+        for i in range(nI):
+            for j in range(nJ):
+                row([(idx(0, i, j), 1), (idx(1, i, j), 1)], 1.0)                       # u + tau <= 1
+                row([(idx(2, i, j), 1), (idx(3, i, j), 1), (idx(1, i, j), -pJI[j, i])], 0.0)
+                row([(idx(4, i, j), 1), (idx(3, i, j), -pIJ[i, j])], 0.0)             # s2 <= g p_ij
+            row([(idx(kind, i, j), 1) for kind in (0, 2, 4) for j in range(nJ)], float(kI[i]))
+            row([(idx(3, i, j), 1) for j in range(nJ)], float(BI[i]))
+        for j in range(nJ):
+            row([(idx(1, i, j), 1) for i in range(nI)], float(BJ[j]))
+            row([(5 * npair + j, 1)] + [(idx(0, i, j), -pIJ[i, j] * pJI[j, i]) for i in range(nI)]
+                + [(idx(2, i, j), -pIJ[i, j]) for i in range(nI)]
+                + [(idx(4, i, j), -1.0) for i in range(nI)], 0.0)
+        obj = np.concatenate([np.zeros(5 * npair), -np.ones(nJ)])
+        bounds = [(0, 1)] * (5 * npair) + [(0, float(kJ[j])) for j in range(nJ)]
+        res = linprog(obj, A_ub=np.array(A), b_ub=b, bounds=bounds, method="highs")
+        assert res.success
+        v = res.x[:5 * npair].reshape(5, nI, nJ)
+        u, s1, s2 = v[0], v[2], v[4]
+        mutual = u * pIJ * pJI.T + s1 * pIJ + s2      # P[proposed and a mutual like]
+        pi = u + s1 + s2
+        theta = np.zeros((nI, nJ))
+        for i in range(nI):
+            for j in range(nJ):
+                theta[i, j] = keep_probability(pi[i], j, int(kI[i])) * mutual[i, j]
+                assert theta[i, j] >= 0.5 * mutual[i, j] - 1e-9          # uniform rule: 1/2-balanced
+        alg = 0.0
+        for j in range(nJ):
+            got = expected_min(int(kJ[j]), theta[:, j])
+            assert got >= c_k(int(kJ[j])) * min(kJ[j], theta[:, j].sum()) - 1e-9
+            alg += got
+        lp = -res.fun
+        assert alg >= 0.5 * min(c_k(int(q)) for q in kJ) * lp - 1e-9
+        worst = min(worst, alg / lp)
+    print(f"   200 random markets with random query budgets: conversations / LP bound >= {worst:.3f} "
+          f"(proved for the random-order rule: c_k / 2 >= {c_k(1) / 2:.3f})")
+
+    # The symmetric random market: every like has probability r = sqrt(p).
+    pp, n = 0.01, 4000
+    r = math.sqrt(pp)
+    print(f"   random market, p = {pp}: share of users in a conversation by query budget per user")
+    for label, bj, bi in (("no queries", 0, 0), ("3 calls per responder", 3, 0),
+                          ("1/sqrt(p) = 10 calls per responder", 1 / r, 0),
+                          ("30 per responder, 3 per initiator", 30, 3),
+                          ("1/p = 100 per responder, 10 per initiator", 1 / pp, 1 / r)):
+        # variables U, T, S1, G, S2 (per-user totals); maximize U p + S1 r + S2
+        res = linprog([-pp, 0, -r, 0, -1],
+                      A_ub=[[0, -r, 1, 1, 0], [0, 0, 0, -r, 1], [1, 0, 1, 0, 1], [0, 1, 0, 0, 0],
+                            [0, 0, 0, 1, 0], [pp, 0, r, 0, 1]],
+                      b_ub=[0, 0, 1, bj, bi, 1], bounds=(0, None), method="highs")
+        assert res.success
+        Uq, Tq, S1q, Gq, S2q = res.x
+        lp = -res.fun
+        pi = (Uq + S1q + S2q) / n
+        keep = float(sum(math.comb(n - 1, m) * pi ** m * (1 - pi) ** (n - 1 - m) / (1 + m)
+                         for m in range(60)))
+        conv = 1 - (1 - keep * lp / n) ** n
+        assert conv >= c_k(1) ** 2 * lp - 1e-9
+        print(f"     {label:44s}: LP bound {lp:.3f}, mechanism {conv:.3f}, "
+              f"guarantee {c_k(1) ** 2 * lp:.3f}")
+
+
 if __name__ == "__main__":
     check_theorem_a()
     check_theorem_a_prime()
@@ -715,4 +880,6 @@ if __name__ == "__main__":
     check_conversations()
     check_queue()
     check_attention_and_pairs()
+    check_queries()
+    check_screened_queue()
     print("All checks passed.")

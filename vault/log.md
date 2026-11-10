@@ -173,3 +173,20 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-11-09] lean | Theorems A and B formalized
 - ~ [[The Live-Set Theorem for Truthful Swiping]] (records the Lean status: Theorems A and B for top-k and additive users are proved in `lean/DatingAlgo/LiveSet.lean`; gaps list what is not formalized)
+
+## [2026-11-10] query | Queries and the Live-Set Theorem
+- + [[Queries and the Live-Set Theorem]] (Theorem E: the keep-best rule with queried values, lazy queries, the slot rule, what queries do not fix; Theorem F: the queried queue and query budgets as windows; where queries raise welfare)
+- ~ [[The Live-Set Theorem for Truthful Swiping]], [[Welfare of Truthful Feeds in the Two-Cost Model]] (pointers to the new note)
+- ~ `lean/DatingAlgo/LiveSet.lean` (Theorem E; 1014 theorems, none open), `data/scripts/live_set_check.py` (check I)
+- ~ index
+
+## [2026-11-10] query | Screened queue (Theorem G)
+- ~ [[Queries and the Live-Set Theorem]] (Theorem G: initiator feeds screened by queries under per-user budgets, factor c_k^2 of LP_Q via balanced selection rules, the random-market table)
+- ~ `data/scripts/live_set_check.py` (check J)
+- ~ index
+
+## [2026-11-10] lean | Queue algorithms formalized
+- ~ [[Queries and the Live-Set Theorem]], [[Welfare of Truthful Feeds in the Two-Cost Model]] (Lean status: Theorem C(c), the LP upper bound, Theorem G(b) and initiators' truthfulness are proved in `lean/DatingAlgo/QueueGuarantees.lean`; 1039 theorems, none open; the two-cap lemma is not formalized)
+
+## [2026-11-11] lean | Two-cap lemma formalized
+- ~ [[Welfare of Truthful Feeds in the Two-Cost Model]], [[Queries and the Live-Set Theorem]] (Lean status: the two-cap lemma is proved in `lean/DatingAlgo/TwoCap.lean` with factor c_k c_m; 1092 theorems, none open)

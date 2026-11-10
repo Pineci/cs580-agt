@@ -2,7 +2,7 @@
 type: synthesis
 question: "With the two-cost model adopted and a match counted only when both users keep it, what do Theorems A and B say about conversations, and how much welfare can an exactly or nearly truthful feed guarantee?"
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-11
 tags: [dating/platforms, game-theory/incentives, matching/quality, research/project]
 aliases: [conversation rule, keep stage, responder queue, Queue-DH, Theorem C, Theorem D, two-cap lemma, thinned queue, Proposition T, one-sided overshoot]
 sources: ["[[Rios 2026 - The Dating Heuristic]]"]
@@ -158,4 +158,5 @@ which is at least $c_1c_2\approx0.46$ of $\mathrm{LP}_\alpha$. And $\mathrm{LP}_
 - **One role per user.** Every result here has initiators on one side and responders on the other. If a user both browses and receives likes, the two sources together can exceed $k$.
 - **The keep stage when both sides exceed $k$.** No dominant rule exists. Open: a one-shot keep stage that loses less than Proposition T's, and what happens with $h>0$.
 - **Benchmark.** Theorem C compares with mechanisms whose initiators are exactly truthful, not with $\mathrm{OPT_{IR}}$.
-- **Lean.** Nothing here is formalized.
+- **With an oracle.** [[Queries and the Live-Set Theorem]] makes the responder queue exactly truthful by querying on overshoot (Theorem F).
+- **Lean.** Theorem C(a) and (c) are formalized (`lean/DatingAlgo/QueueGuarantees.lean`: `queueConv_ge`, `queue_approx`, `conv_le_fluidConv`, `queue_initiator_truthful`). The two-cap lemma is formalized with the factor $c_kc_m$ for all $m,k$ (`lean/DatingAlgo/TwoCap.lean`: `twoCap_ge`). Its Lean proof replaces Chebyshev's inequality by two summations by parts and proves the correlation step by induction on the queue. Not formalized: Proposition 1, C(d), the sharper factor $c_m$ for $m\le k$, the market-level statement of Theorem C′, Theorem D, Proposition T.
