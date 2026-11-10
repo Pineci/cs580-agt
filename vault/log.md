@@ -190,3 +190,13 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 
 ## [2026-11-11] lean | Two-cap lemma formalized
 - ~ [[Welfare of Truthful Feeds in the Two-Cost Model]], [[Queries and the Live-Set Theorem]] (Lean status: the two-cap lemma is proved in `lean/DatingAlgo/TwoCap.lean` with factor c_k c_m; 1092 theorems, none open)
+
+## [2026-11-11] capture | Ranked-Feed Model of the Dating Market
+- + [[Ranked-Feed Model of the Dating Market]] (the ranking model: market, patience, ranking policy, matches, truthfulness; reduction to swipe trees; exposure constraint; which results hold; gaps)
+- ~ [[The Live-Set Theorem for Truthful Swiping]], [[Welfare of Truthful Feeds in the Two-Cost Model]], [[Queries and the Live-Set Theorem]] (pointer to the model from each Setting section)
+- ~ index
+
+## [2026-11-11] query | Swipe Rounds versus Ranked Feeds
+- + [[Swipe Rounds versus Ranked Feeds]] (the two versions of the model side by side, an example, what stays the same and what changes, variants of the ranking version)
+- ~ [[Ranked-Feed Model of the Dating Market]] (Related link)
+- ~ index

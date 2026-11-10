@@ -28,6 +28,7 @@ status: seed
 - **Where queries raise welfare.** On the responder side, by widening that window. On the initiator side, by screening who is shown.
 
 ### Setting
+- **Ranked feeds.** [[Ranked-Feed Model of the Dating Market]] states the model in which feeds are rankings over all candidates and records which results hold there.
 One top-$k$ user with values $q$, costs $c\ge0$ to keep a match and $d\ge0$ to drop one, and acceptable set $A=\{x:q_x>c\}$. A set $R$ of profiles would match the user if liked; it does not depend on the user's swipes and may have any size. The platform can ask a truthful oracle for $q_x$.
 
 ### Theorem E: the keep-best rule

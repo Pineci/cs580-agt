@@ -28,6 +28,7 @@ status: seed
 - **Proposition T (both sides over the cap).** On the random market, feeds of length $\lambda/p$ put a constant share of users in a conversation (0.47 at $\lambda=1$), where exact truthfulness allows at most $\sqrt p$. The price is $d$ times about one drop per user, and a keep stage that is a coordination game.
 
 ### Model
+- **Ranked feeds.** [[Ranked-Feed Model of the Dating Market]] states the model in which feeds are rankings over all candidates and records which results hold there.
 - **Sides and values.** Initiators $I$ and responders $J$. User $\ell$ has a top-$k_\ell$ valuation. Values are independent across pairs and across the two users of a pair. The platform knows the distributions and sees only swipes.
 - **Timeline.** Swipes; a *match* is a mutual like; then each user keeps or drops each match; a *conversation* is a match both keep.
 - **Payoff of $\ell$.** $v_\ell(\text{conversations})-c$ per conversation, $-d$ per match $\ell$ drops, $-h$ per match $\ell$ keeps and the partner drops. Here $0\le d\le c$, and $h=0$ unless stated.

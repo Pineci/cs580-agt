@@ -2,7 +2,7 @@
 type: synthesis
 question: "With yes/no swipes and a platform that cannot see values, which mechanisms make sincere swiping a dominant strategy? Does letting the feed react to likes, or charging less for dropped matches, lift the limit of k acceptable profiles for top-k users?"
 created: 2026-11-09
-updated: 2026-11-10
+updated: 2026-11-11
 tags: [dating/platforms, game-theory/incentives, matching/quality, research/project]
 aliases: [live-set theorem, Theorem A, Theorem B, top-k barrier, binary-swipe barrier, live set, own-swipe independence, two-cost model, drop cost, general cost functions, cyclic-priority mechanism]
 sources: ["[[Rios 2026 - The Dating Heuristic]]"]
@@ -28,6 +28,7 @@ status: seed
 - **What others' likes buy (Proposition P).** A live set may depend on who likes the user. On the random market that raises zero-query truthful welfare from about $2p$ of the optimum to between $\sqrt p/2$ and $\sqrt p$.
 
 ### Setting
+- **Ranked feeds.** [[Ranked-Feed Model of the Dating Market]] states the model in which feeds are rankings over all candidates and records which results hold there.
 - **User and values.** One user $\ell$, a finite set $N$ of profiles, and a value $q_x$ for each. Any value vector with entries in an open interval around the cost $c>0$ can occur. Profile $x$ is *acceptable* if $q_x>c$; $X$ is the acceptable set.
 - **Utility.** $u_q(S)=\max_{T\subseteq S}\big[v_q(T)-c|T|-d|S\setminus T|\big]$ for the match set $S$, with $0\le d\le c$: the user keeps $T$ and drops the rest. With $d=c$ this is the earlier model $v_q(S)-c|S|$.
 - **Family $\mathcal F$.** A valuation class comes with a family $\mathcal F$ of sets, closed under subsets, such that:
