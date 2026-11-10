@@ -36,4 +36,6 @@ import DatingAlgo.MaxMinCounterexample
 import DatingAlgo.BudgetedSDH
 import DatingAlgo.ContinuousSDH
 import DatingAlgo.LiveSet
+import DatingAlgo.QueueGuarantees
+import DatingAlgo.TwoCap
 import DatingAlgo.Targets

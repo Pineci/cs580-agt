@@ -32,6 +32,11 @@ swiping likes exactly the acceptable profiles.
 * `own_swipe_independence` (corollary): whether a liked profile matches does not depend on
   the user's other swipes.
 * `twoCost_sincere_best_topK` (the "if" direction, for every non-negative value vector).
+* `keepBest_sincere_best`, `keepBest_optimal`, `keepBest_util`, `keepBest_of_card_le`
+  (Theorem E of the note "Queries and the Live-Set Theorem"): if the platform knows the
+  user's values on the live set and keeps a best set of at most `k` acceptable liked
+  profiles, sincere swiping is dominant for a live set of any size and gives the user's
+  full-information optimum; no query is needed when at most `k` acceptable profiles match.
 * `twoCost_topK_regret_le`, `twoCost_topK_regret_attained` (Theorem B, top-`k`): under a
   live set `R` of any size, the best likes in hindsight beat sincere swiping by exactly
   `d (|M| - k)^+`, where `M` is the sincere match set. `twoCost_topK_eq_net` is the
@@ -284,6 +289,81 @@ theorem twoCost_zero_drop_sincere_best [DecidableEq β] {q : β → ℝ} (hq : �
     twoCostUtil (topK q k) c 0 (D ∩ R) ≤ twoCostUtil (topK q k) c 0 (sincereSet q c N ∩ R) := by
   have h := twoCost_topK_regret_le hq k le_rfl hc N R hD
   simpa using h
+
+/-! ### Queried values: the keep-best rule (Theorem E)
+
+Vault note "Queries and the Live-Set Theorem". The platform knows the user's values on
+the live set `R` (a truthful oracle) and matches the user with a best set of at most `k`
+acceptable liked members of `R`. `R` may have any size. -/
+
+/-- No subset of the live profiles seen is worth more than the top-`k` net value of the
+acceptable ones. -/
+theorem twoCostUtil_topK_le_net_of_subset [DecidableEq β] {q : β → ℝ} (k : ℕ) {c d : ℝ}
+    (hc : 0 ≤ c) (hd : 0 ≤ d) (N R : Finset β) {W : Finset β} (hW : W ⊆ N ∩ R) :
+    twoCostUtil (topK q k) c d W ≤ topK (fun x => q x - c) k (sincereSet q c N ∩ R) := by
+  have h1 := twoCostUtil_topK_le_net (q := q) k hc hd W
+  have hsub : W.filter (fun x => c < q x) ⊆ sincereSet q c N ∩ R := fun x hx => by
+    obtain ⟨hxW, hxq⟩ := mem_filter.mp hx
+    obtain ⟨hxN, hxR⟩ := mem_inter.mp (hW hxW)
+    exact mem_inter.mpr ⟨mem_filter.mpr ⟨hxN, hxq⟩, hxR⟩
+  exact h1.trans (topK_mono (w := fun x => q x - c) (K := k) hsub)
+
+/-- A best set of at most `k` acceptable live profiles exists: what the keep-best rule
+gives a sincere user. -/
+theorem exists_keepBest [DecidableEq β] (q : β → ℝ) (k : ℕ) (c : ℝ) (N R : Finset β) :
+    ∃ W ⊆ sincereSet q c N ∩ R, W.card ≤ k ∧
+      topK (fun x => q x - c) k (sincereSet q c N ∩ R) = ∑ x ∈ W, (q x - c) :=
+  exists_topK_eq (fun x => q x - c) k (sincereSet q c N ∩ R)
+
+/-- **Theorem E, value.** A sincere user's keep-best outcome `W'` is worth the top-`k`
+net value of the acceptable live profiles, with no drop costs. -/
+theorem keepBest_util [DecidableEq β] {q : β → ℝ} (hq : ∀ x, 0 ≤ q x) {k : ℕ} {c d : ℝ}
+    (hc : 0 ≤ c) (hd : 0 ≤ d) (N R : Finset β) {W' : Finset β}
+    (hW' : W' ⊆ sincereSet q c N ∩ R) (hW'k : W'.card ≤ k)
+    (hbest : topK (fun x => q x - c) k (sincereSet q c N ∩ R) = ∑ x ∈ W', (q x - c)) :
+    twoCostUtil (topK q k) c d W' = topK (fun x => q x - c) k (sincereSet q c N ∩ R) := by
+  have hsub : W' ⊆ N ∩ R := fun x hx =>
+    mem_inter.mpr ⟨(mem_filter.mp (mem_inter.mp (hW' hx)).1).1, (mem_inter.mp (hW' hx)).2⟩
+  have h1 := twoCostUtil_topK_le_net_of_subset (q := q) k hc hd N R hsub
+  have h2 := sum_le_twoCostUtil_topK hq c d (subset_refl W') hW'k
+  simp only [sub_self, mul_zero, sub_zero] at h2
+  linarith
+
+/-- **Theorem E (keep-best is the full-information optimum).** Under the keep-best rule a
+sincere user's outcome `W'` is at least as good as every set of live profiles seen, for a
+live set `R` of any size and every `d ≥ 0`. -/
+theorem keepBest_optimal [DecidableEq β] {q : β → ℝ} (hq : ∀ x, 0 ≤ q x) {k : ℕ} {c d : ℝ}
+    (hc : 0 ≤ c) (hd : 0 ≤ d) (N R : Finset β) {W' : Finset β}
+    (hW' : W' ⊆ sincereSet q c N ∩ R) (hW'k : W'.card ≤ k)
+    (hbest : topK (fun x => q x - c) k (sincereSet q c N ∩ R) = ∑ x ∈ W', (q x - c))
+    {W : Finset β} (hW : W ⊆ N ∩ R) :
+    twoCostUtil (topK q k) c d W ≤ twoCostUtil (topK q k) c d W' := by
+  rw [keepBest_util hq hc hd N R hW' hW'k hbest]
+  exact twoCostUtil_topK_le_net_of_subset k hc hd N R hW
+
+/-- **Theorem E (sincere swiping is dominant with queried values).** Whatever set `D ⊆ N`
+the user likes, and whichever liked live profiles `W ⊆ D ∩ R` the platform then matches
+it with, the user does no better than by swiping sincerely under the keep-best rule. No
+bound on the size of the live set `R` is needed. -/
+theorem keepBest_sincere_best [DecidableEq β] {q : β → ℝ} (hq : ∀ x, 0 ≤ q x) {k : ℕ}
+    {c d : ℝ} (hc : 0 ≤ c) (hd : 0 ≤ d) (N R : Finset β) {W' : Finset β}
+    (hW' : W' ⊆ sincereSet q c N ∩ R) (hW'k : W'.card ≤ k)
+    (hbest : topK (fun x => q x - c) k (sincereSet q c N ∩ R) = ∑ x ∈ W', (q x - c))
+    {D W : Finset β} (hD : D ⊆ N) (hW : W ⊆ D ∩ R) :
+    twoCostUtil (topK q k) c d W ≤ twoCostUtil (topK q k) c d W' :=
+  keepBest_optimal hq hc hd N R hW' hW'k hbest (hW.trans (inter_subset_inter hD (subset_refl R)))
+
+/-- **Theorem E, lazy queries.** If at most `k` acceptable profiles would match, the
+keep-best rule keeps them all, so no query is needed. -/
+theorem keepBest_of_card_le [DecidableEq β] {q : β → ℝ} (hq : ∀ x, 0 ≤ q x) {k : ℕ} (c : ℝ)
+    (N R : Finset β) (hcard : (sincereSet q c N ∩ R).card ≤ k) :
+    topK (fun x => q x - c) k (sincereSet q c N ∩ R) =
+      ∑ x ∈ sincereSet q c N ∩ R, (q x - c) := by
+  set M := sincereSet q c N ∩ R
+  have hMacc : ∀ x ∈ M, c < q x := fun x hx => (mem_filter.mp (mem_inter.mp hx).1).2
+  rw [topK_sub_const hq k hMacc, topK_eq_sum_of_card_le hq hcard, min_eq_right hcard,
+    sum_sub_distrib, sum_const, nsmul_eq_mul]
+  ring
 
 end TwoCost
 

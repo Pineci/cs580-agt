@@ -50,7 +50,7 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 1008 theorems, all fully proved. The count includes lemmas Lean generates
+Current count: 1092 theorems, all fully proved. The count includes lemmas Lean generates
 for definitions and structures, such as the fields of `Feasible19`.
 
 ### Rios & Torrico's results
@@ -149,7 +149,26 @@ is what the user faces once the platform's coins and the others' strategies are 
 | Swipe trees: every path is the path of the set it likes; matches are liked profiles | `LiveSet.lean` (`SwipeTree.exists_run_of_reach`, `SwipeTree.run_subset`) | proved |
 | Theorem B, top-$k$: under a live set of any size the regret of sincere swiping is exactly $d(\lvert M\rvert - k)^+$; welfare identity; sincere is best at $d = 0$ | `LiveSet.lean` (`twoCost_topK_regret_le`, `twoCost_topK_regret_attained`, `twoCost_topK_eq_net`, `twoCost_zero_drop_sincere_best`) | proved, for $0 \le d \le c$ and non-negative values |
 | $d = c$ is the one-cost model | `LiveSet.lean` (`twoCostUtil_eq_swipeUtil`) | proved, for monotone valuations |
+| Theorem E (vault note "Queries and the Live-Set Theorem"): with the user's values known on the live set, the keep-best rule makes sincere swiping dominant for a live set of any size and gives the full-information optimum; no query when at most $k$ acceptable profiles match | `LiveSet.lean` (`keepBest_sincere_best`, `keepBest_optimal`, `keepBest_util`, `keepBest_of_card_le`, `exists_keepBest`) | proved, for top-$k$ users, non-negative values and $c, d \ge 0$. The slot rule E(d) and Theorem F are not formalized |
 | Theorem A for matroid users and for classes containing top-1; Theorem A′ (platform coins); Theorem B for matroid and subadditive users; Theorem B′ (general costs); Proposition P | — | not formalized |
+
+### Queue algorithms (vault notes "Welfare of Truthful Feeds in the Two-Cost Model" and "Queries and the Live-Set Theorem")
+
+For each responder the initiators bring mutual likes independently, because feeds are
+drawn independently across initiators and values are independent across pairs.
+`queueConv kJ θ` is the expected number of conversations when initiator $i$ brings
+responder $j$ a mutual like with probability $\theta_{ij}$; `fluidConv kJ m` is the LP
+objective $\sum_j \min(\sum_i m_{ij}, k_j)$.
+
+| Result | File | Status |
+| --- | --- | --- |
+| Theorem C(c): the responder queue gets at least $c_K$ of the LP objective, and of any benchmark the plan dominates | `QueueGuarantees.lean` (`queueConv_ge`, `queue_plan_ge`, `queue_approx`) | proved |
+| The upper bound in Theorems C, F, G: for any joint law of the mutual likes with marginals at most $m$, expected conversations are at most the LP objective | `QueueGuarantees.lean` (`conv_le_min`, `conv_le_fluidConv`) | proved. That a mechanism's marginals are bounded by a feasible plan is the notes' modeling step and is a hypothesis |
+| Theorem G(b): the screened queue gets at least $\gamma c_K$ of $\mathrm{LP}_Q$ with $\gamma$-balanced selection rules; $\tfrac12 c_K$ with the uniform rule; $c_{K'} c_K$ with balanced rules | `QueueGuarantees.lean` (`screenedQueue_ge`, `screenedQueue_uniform_ge`, `screenedQueue_exists_ge`; `ScreenPlan.Feasible` is $\mathrm{LP}_Q$'s feasible set) | proved |
+| Truthfulness in the queue: initiators shown at most $k$ profiles; responders under the keep-best rule with any window (Theorems C, F, G (a)) | `QueueGuarantees.lean` (`queue_initiator_truthful`), `LiveSet.lean` (`keepBest_sincere_best`) | proved, for top-$k$ users |
+| Theorem F(b) with the whole queue as window | `QueueGuarantees.lean` (`queueConv_ge`) | covered: it is Theorem C(c) |
+| Two-cap lemma (Theorem C′, and the factor $c_k c_B$ of Theorem F for a finite window): a responder who looks at the first $m$ present admirers of a queue ordered by acceptance probability and keeps $k$ gets at least $c_k c_m$ of every fluid prefix within the two caps | `TwoCap.lean` (`twoCap_ge`, `twoCap_ge_full`; `twoCapValue` runs the queue from the front and `twoCapValue_eq` writes it as a sum over admirers; `capG_mul_le_twoCapG` is the correlation step, `capSum_ge` the one-cap bound for lists) | proved. The notes' sharper factor $c_m$ for $m \le k$, and the step from this lemma to the market-level statement, are not formalized |
+| Responder surplus C(d); Theorem D; Proposition T | — | not formalized. The core of C(d) is `prodExp_randomWeight_gap` |
 
 ### Max-min screened DH (vault note "Max-Min Match Quality and Egalitarian Matching")
 
@@ -228,6 +247,8 @@ any priors with finite means, continuous ones included.
 | `DatingAlgo/BudgetedSDH.lean` | query budgets, discrete priors: the query-aware plan, calls, budgeted and adaptive policies, the benchmark, monotone homogeneous objectives |
 | `DatingAlgo/ContinuousSDH.lean` | query budgets for any priors with finite means: resampling and coarsening lemmas, the surrogate market, per-user and total-welfare guarantees, the benchmark, objectives |
 | `DatingAlgo/LiveSet.lean` | two-cost utility, swipe trees, Theorem A (live-set characterization) and Theorem B (regret $d(\lvert M\rvert-k)^+$) for top-$k$ users |
+| `DatingAlgo/QueueGuarantees.lean` | conversation guarantees for the responder queue and the screened queue, the LP upper bound, truthfulness of initiators |
+| `DatingAlgo/TwoCap.lean` | the two-cap lemma for a responder's queue: look at the first $m$ present admirers, keep $k$ |
 | `DatingAlgo/Targets.lean` | open targets (none at the moment) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
 
