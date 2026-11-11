@@ -50,7 +50,7 @@ fail `lake build`. To check one file, use
 
 ## Status
 
-Current count: 1092 theorems, all fully proved. The count includes lemmas Lean generates
+Current count: 1159 theorems, all fully proved. The count includes lemmas Lean generates
 for definitions and structures, such as the fields of `Feasible19`.
 
 ### Rios & Torrico's results
@@ -170,6 +170,22 @@ objective $\sum_j \min(\sum_i m_{ij}, k_j)$.
 | Two-cap lemma (Theorem C′, and the factor $c_k c_B$ of Theorem F for a finite window): a responder who looks at the first $m$ present admirers of a queue ordered by acceptance probability and keeps $k$ gets at least $c_k c_m$ of every fluid prefix within the two caps | `TwoCap.lean` (`twoCap_ge`, `twoCap_ge_full`; `twoCapValue` runs the queue from the front and `twoCapValue_eq` writes it as a sum over admirers; `capG_mul_le_twoCapG` is the correlation step, `capSum_ge` the one-cap bound for lists) | proved. The notes' sharper factor $c_m$ for $m \le k$, and the step from this lemma to the market-level statement, are not formalized |
 | Responder surplus C(d); Theorem D; Proposition T | — | not formalized. The core of C(d) is `prodExp_randomWeight_gap` |
 
+### The clock (vault note "Ranked-Feed Model of the Dating Market")
+
+A `FeedProtocol` is what one user faces under any order of events, once the platform's
+coins and the others' strategies are fixed: internal steps of any number and kind, asks,
+and a halt with the user's matches.
+
+| Result | File | Status |
+| --- | --- | --- |
+| Proposition 1: under every clock one user's possible outcomes are the leaves of a swipe tree | `Timing.lean` (`FeedProtocol.toTree`, `FeedProtocol.outcome_iff_reach`; `FeedMarket.toProtocol` for a market with an arbitrary scheduler and arbitrary strategies of the others) | proved |
+| Theorems A, B, E hold under every clock | `Timing.lean` (`protocol_liveSet_iff`, `market_liveSet_iff`, `protocol_regret_le`, `protocol_keepBest`) | proved, for protocols that show no profile twice and match only liked profiles (`FeedProtocol.Sound`) |
+| Proposition 2(a): the queue's $c_K$ guarantee fails if a responder acts before the initiators; waiting never hurts | `Timing.lean` (`queue_guarantee_needs_order`, `queueConvAt_le`, `queueConvAt_empty`) | proved |
+| Proposition 2(b): $\mathrm{LP}_1$ is not a bound if responders swipe first | `Timing.lean` (`lp1_bound_needs_order`) | proved: $\tfrac34$ against at most $\tfrac12$ |
+| Proposition 2(c): refilling an unmatched initiator's feed in a second round breaks truthfulness | `Timing.lean` (`refill_not_truthful`) | proved |
+| The whole market: the run under a strategy profile, each user's realized matches and welfare, for any scheduler; a user's realized matches are an outcome of the protocol it faces; truthfulness for actual strategy profiles | `Timing.lean` (`FeedMarket.final`, `realized`, `welfare`, `realized_outcome`, `realized_run`, `market_sincere_dominant`) | proved |
+| Sittings, patience and exposure; the Dating Heuristic as an instance (Proposition 3); any welfare guarantee under a continuous clock | — | not formalized |
+
 ### Max-min screened DH (vault note "Max-Min Match Quality and Egalitarian Matching")
 
 The note claims that SDH run on a max-min optimal plan gives every user at least
@@ -249,6 +265,7 @@ any priors with finite means, continuous ones included.
 | `DatingAlgo/LiveSet.lean` | two-cost utility, swipe trees, Theorem A (live-set characterization) and Theorem B (regret $d(\lvert M\rvert-k)^+$) for top-$k$ users |
 | `DatingAlgo/QueueGuarantees.lean` | conversation guarantees for the responder queue and the screened queue, the LP upper bound, truthfulness of initiators |
 | `DatingAlgo/TwoCap.lean` | the two-cap lemma for a responder's queue: look at the first $m$ present admirers, keep $k$ |
+| `DatingAlgo/Timing.lean` | feed protocols under any clock: Theorems A, B, E hold for every clock; three examples showing the queue results depend on it |
 | `DatingAlgo/Targets.lean` | open targets (none at the moment) |
 | `scripts/AxiomCheck.lean` | the axiom report used by `check.sh` |
 
