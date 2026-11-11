@@ -32,6 +32,7 @@ status: seed
 - **Sides and values.** Initiators $I$ and responders $J$. User $\ell$ has a top-$k_\ell$ valuation. Values are independent across pairs and across the two users of a pair. The platform knows the distributions and sees only swipes.
 - **Timeline.** Swipes; a *match* is a mutual like; then each user keeps or drops each match; a *conversation* is a match both keep.
 - **Payoff of $\ell$.** $v_\ell(\text{conversations})-c$ per conversation, $-d$ per match $\ell$ drops, $-h$ per match $\ell$ keeps and the partner drops. Here $0\le d\le c$, and $h=0$ unless stated.
+- **Clock.** Theorems C, C′ and D assume two stages: all initiators swipe, then responders see their queues. The guarantee, the benchmark and truthfulness over further rounds each fail under another clock ([[Ranked-Feed Model of the Dating Market]], Proposition 2).
 - **One-shot keep stage.** A user's keep decisions cannot react to another user's drops.
 - **Welfare.** The sum of payoffs.
 

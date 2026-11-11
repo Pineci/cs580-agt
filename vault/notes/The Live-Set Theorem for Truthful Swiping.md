@@ -28,7 +28,7 @@ status: seed
 - **What others' likes buy (Proposition P).** A live set may depend on who likes the user. On the random market that raises zero-query truthful welfare from about $2p$ of the optimum to between $\sqrt p/2$ and $\sqrt p$.
 
 ### Setting
-- **Ranked feeds.** [[Ranked-Feed Model of the Dating Market]] states the model in which feeds are rankings over all candidates and records which results hold there.
+- **Ranked feeds and the clock.** [[Ranked-Feed Model of the Dating Market]] states the model. Theorems A and B hold under every clock, with or without rounds (Proposition 1 there; `lean/DatingAlgo/Timing.lean`).
 - **User and values.** One user $\ell$, a finite set $N$ of profiles, and a value $q_x$ for each. Any value vector with entries in an open interval around the cost $c>0$ can occur. Profile $x$ is *acceptable* if $q_x>c$; $X$ is the acceptable set.
 - **Utility.** $u_q(S)=\max_{T\subseteq S}\big[v_q(T)-c|T|-d|S\setminus T|\big]$ for the match set $S$, with $0\le d\le c$: the user keeps $T$ and drops the rest. With $d=c$ this is the earlier model $v_q(S)-c|S|$.
 - **Family $\mathcal F$.** A valuation class comes with a family $\mathcal F$ of sets, closed under subsets, such that:

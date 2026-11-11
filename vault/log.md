@@ -200,3 +200,14 @@ Format: `## [YYYY-MM-DD] operation | subject`, then bullets of notes created (+)
 - + [[Swipe Rounds versus Ranked Feeds]] (the two versions of the model side by side, an example, what stays the same and what changes, variants of the ranking version)
 - ~ [[Ranked-Feed Model of the Dating Market]] (Related link)
 - ~ index
+
+## [2026-11-11] cleanup | Clock added to the ranked-feed model
+- ~ [[Ranked-Feed Model of the Dating Market]] (correction: the model now has events, sittings and a clock; Proposition 1, clock-free results; Proposition 2, clock-dependent results; table by clock)
+- ~ [[Swipe Rounds versus Ranked Feeds]] (correction: two differences, format of a sitting and clock; four combinations; drops the "special case" claim)
+- ~ [[The Live-Set Theorem for Truthful Swiping]], [[Welfare of Truthful Feeds in the Two-Cost Model]], [[Queries and the Live-Set Theorem]] (which clock each theorem needs)
+- ~ `lean/DatingAlgo/Timing.lean` (new; 1144 theorems, none open), index
+
+## [2026-11-11] query | The Dating Heuristic as a special case of the ranked-feed model
+- ~ [[Ranked-Feed Model of the Dating Market]] (Proposition 3: containment of the Dating Heuristic's setting and its limits; incentives inside it: truthful for two rounds, not for three; the whole-market run; gaps)
+- + `data/scripts/dh_multiround_own_swipe.py` (exact DH-int on small markets over every tie-breaking rule)
+- ~ `lean/DatingAlgo/Timing.lean` (whole-market run and `market_sincere_dominant`; 1159 theorems, none open), index
